@@ -3,158 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackFlower | تسجيل الدخول</title>
+    <title>BlackFlower ProArt | الرئيسية</title>
     <style>
         :root {
-            --primary-color: #6366f1;
-            --dark-bg: #0f172a;
+            --bg-color: #0f172a;
             --card-bg: #1e293b;
-            --text-color: #f8fafc;
+            --primary: #6366f1;
+            --text: #f8fafc;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--dark-bg);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
             margin: 0;
-            overflow: hidden;
+            padding: 20px;
         }
 
-        .container {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            width: 100%;
-            max-width: 400px;
-            transition: transform 0.3s ease;
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 2rem;
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-        }
-
-        .input-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            border: 1px solid #334155;
-            background-color: #0f172a;
+        .btn-auth {
+            background: var(--primary);
             color: white;
-            box-sizing: border-box;
-        }
-
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 0.5rem;
-            background-color: var(--primary-color);
-            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
             font-weight: bold;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: opacity 0.2s;
         }
 
-        button:hover {
-            opacity: 0.9;
+        .crypto-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
 
-        .toggle-text {
+        .crypto-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
             text-align: center;
-            margin-top: 1rem;
-            font-size: 0.85rem;
-            cursor: pointer;
-            color: #94a3b8;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid #334155;
         }
 
-        .toggle-text span {
-            color: var(--primary-color);
-            text-decoration: underline;
+        .price {
+            font-size: 1.5rem;
+            color: #10b981;
+            margin: 10px 0;
         }
 
-        /* تأثيرات بسيطة للتبديل */
-        #signup-fields {
-            display: none;
-        }
+        h1 { text-align: center; color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2 id="form-title">تسجيل الدخول</h2>
+    <nav>
+        <div class="logo">BlackFlower ProArt</div>
+        <a href="signup.html" class="btn-auth">تسجيل حساب جديد</a>
+    </nav>
+
+    <h1>بورصة العملات الرقمية مباشر</h1>
     
-    <form id="auth-form">
-        <div id="signup-fields">
-            <div class="input-group">
-                <label>الاسم الكامل</label>
-                <input type="text" id="name" placeholder="أدخل اسمك">
-            </div>
-        </div>
-
-        <div class="input-group">
-            <label>البريد الإلكتروني</label>
-            <input type="email" id="email" placeholder="example@mail.com" required>
-        </div>
-
-        <div class="input-group">
-            <label>كلمة المرور</label>
-            <input type="password" id="password" placeholder="••••••••" required>
-        </div>
-
-        <button type="submit" id="submit-btn">دخول</button>
-    </form>
-
-    <div class="toggle-text" onclick="toggleForm()">
-        <p id="toggle-msg">ليس لديك حساب؟ <span>إنشاء حساب جديد</span></p>
+    <div class="crypto-container" id="crypto-list">
+        <!-- سيتم تحميل العملات هنا تلقائياً -->
+        <div class="crypto-card">جاري تحميل البيانات...</div>
     </div>
-</div>
 
-<script>
-    let isLogin = true;
+    <script>
+        async function fetchCrypto() {
+            try {
+                const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,cardano,solana&vs_currencies=usd');
+                const data = await response.json();
+                
+                const container = document.getElementById('crypto-list');
+                container.innerHTML = ''; // مسح رسالة التحميل
 
-    function toggleForm() {
-        isLogin = !isLogin;
-        const title = document.getElementById('form-title');
-        const signupFields = document.getElementById('signup-fields');
-        const submitBtn = document.getElementById('submit-btn');
-        const toggleMsg = document.getElementById('toggle-msg');
+                const coins = {
+                    'bitcoin': 'Bitcoin (BTC)',
+                    'ethereum': 'Ethereum (ETH)',
+                    'binancecoin': 'Binance Coin (BNB)',
+                    'solana': 'Solana (SOL)',
+                    'cardano': 'Cardano (ADA)'
+                };
 
-        if (isLogin) {
-            title.innerText = 'تسجيل الدخول';
-            signupFields.style.display = 'none';
-            submitBtn.innerText = 'دخول';
-            toggleMsg.innerHTML = 'ليس لديك حساب؟ <span>إنشاء حساب جديد</span>';
-        } else {
-            title.innerText = 'إنشاء حساب';
-            signupFields.style.display = 'block';
-            submitBtn.innerText = 'تسجيل';
-            toggleMsg.innerHTML = 'لديك حساب بالفعل؟ <span>دخول</span>';
+                for (const [id, name] of Object.entries(coins)) {
+                    container.innerHTML += `
+                        <div class="crypto-card">
+                            <h3>${name}</h3>
+                            <div class="price">$${data[id].usd.toLocaleString()}</div>
+                            <small>تحديث تلقائي</small>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error("خطأ في جلب البيانات", error);
+            }
         }
-    }
 
-    document.getElementById('auth-form').onsubmit = function(e) {
-        e.preventDefault();
-        alert('سيتم ربط هذا النموذج بقاعدة بيانات Supabase الخاصة بك لاحقاً!');
-    };
-</script>
-
+        fetchCrypto();
+        setInterval(fetchCrypto, 30000); // تحديث كل 30 ثانية
+    </script>
 </body>
 </html>
