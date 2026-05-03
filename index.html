@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0f172a;
             color: white;
             display: flex;
@@ -25,6 +25,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 1px solid #334155;
         }
+        h2 { text-align: center; color: #f8fafc; margin-bottom: 20px; }
         input {
             width: 100%;
             padding: 12px;
@@ -34,7 +35,9 @@
             background: #0f172a;
             color: white;
             box-sizing: border-box;
+            outline: none;
         }
+        input:focus { border-color: #6366f1; }
         button {
             width: 100%;
             padding: 12px;
@@ -44,26 +47,36 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            transition: 0.3s;
         }
-        button:disabled { background: #475569; }
-        #message { text-align: center; margin-top: 15px; font-size: 14px; }
+        button:hover { background: #4f46e5; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        #message { 
+            text-align: center; 
+            margin-top: 15px; 
+            font-size: 14px; 
+            padding: 10px;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
 
     <div class="form-card">
-        <h2 style="text-align: center;">إنشاء حساب جديد</h2>
+        <h2>إنشاء حساب جديد</h2>
         <form id="registrationForm">
             <input type="text" id="fullName" placeholder="الاسم الكامل" required>
             <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-            <input type="password" id="password" placeholder="كلمة المرور" required minlength="6">
+            <input type="password" id="password" placeholder="كلمة المرور (6 رموز على الأقل)" required minlength="6">
             <button type="submit" id="submitBtn">تسجيل الآن</button>
         </form>
         <div id="message"></div>
     </div>
 
     <script>
-        // الربط المباشر مع بياناتك التي أرسلتها
+        // إعدادات الاتصال بمشروعك
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us'; 
         
@@ -75,15 +88,19 @@
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // تهيئة الواجهة للطلب
             submitBtn.disabled = true;
-            messageDiv.innerText = "جاري الحفظ في قاعدة البيانات...";
+            messageDiv.innerText = "جاري محاولة التسجيل...";
             messageDiv.style.color = "#94a3b8";
+            messageDiv.style.background = "transparent";
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const fullName = document.getElementById('fullName').value;
 
             try {
+                // محاولة إنشاء الحساب
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
@@ -92,14 +109,21 @@
                     }
                 });
 
+                // التحقق من وجود خطأ من السيرفر
                 if (error) throw error;
 
-                messageDiv.innerText = "تم التسجيل بنجاح! راجع بريدك الإلكتروني للتأكيد.";
+                // النجاح
+                messageDiv.innerText = "تم التسجيل بنجاح! يرجى التحقق من بريدك الإلكتروني لتأكيد الحساب.";
                 messageDiv.style.color = "#10b981";
+                messageDiv.style.background = "#064e3b33";
+                form.reset();
 
             } catch (error) {
-                messageDiv.innerText = "خطأ: " + error.message;
+                // إظهار سبب الخطأ بوضوح
+                console.error("Supabase Error:", error);
+                messageDiv.innerText = "فشل التسجيل: " + error.message;
                 messageDiv.style.color = "#ef4444";
+                messageDiv.style.background = "#7f1d1d33";
             } finally {
                 submitBtn.disabled = false;
             }
