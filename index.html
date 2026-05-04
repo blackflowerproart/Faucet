@@ -3,131 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BlackFlower | تسجيل حساب</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>The BlackFlower - الصفحة الرئيسية</title>
     <style>
+        /* --- CSS RESET & BASE STYLES --- */
+        :root {
+            --bg-color: #080808; /* أسود غامق جدا خلفية */
+            --text-color: #e0e0e0; /* رمادي فاتح للنصوص */
+            --accent-color: #1a1a1a; /* لون داكن ثانوي */
+            --primary-btn-bg: #f5f5f5; /* لون أبيض مائل للرمادي للزر الرئيسي */
+            --primary-btn-text: #080808;
+            --secondary-btn-bg: #222222; /* لون داكن لزر التسجيل */
+            --secondary-btn-text: #e0e0e0;
+            --hover-transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: white;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: space-between; /* للتوزيع العمودي */
+            overflow: hidden; /* لمنع التمرير غير الضروري */
+        }
+
+        /* --- LOGO SECTION --- */
+        .logo-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            padding: 20px;
+            margin-top: 5vh; /* ترك مسافة من الأعلى */
         }
-        .form-card {
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 15px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid #334155;
+
+        .main-logo {
+            max-width: 180px; /* حجم الشعار */
+            height: auto;
+            display: block;
         }
-        h2 { text-align: center; color: #f8fafc; margin-bottom: 20px; }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
+
+        /* --- CENTRAL CONTENT (HERO) --- */
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-grow: 1; /* يشغل المساحة المتبقية */
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #aaaaaa;
+            margin-bottom: 40px;
+            max-width: 500px;
+        }
+
+        /* --- BUTTONS SECTION --- */
+        .auth-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
             border-radius: 8px;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: white;
-            box-sizing: border-box;
-            outline: none;
-        }
-        input:focus { border-color: #6366f1; }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #6366f1;
-            border: none;
-            color: white;
-            border-radius: 8px;
-            font-weight: bold;
+            transition: var(--hover-transition);
             cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-            transition: 0.3s;
+            text-transform: uppercase;
         }
-        button:hover { background: #4f46e5; }
-        button:disabled { background: #475569; cursor: not-allowed; }
-        #message { 
-            text-align: center; 
-            margin-top: 15px; 
-            font-size: 14px; 
-            padding: 10px;
-            border-radius: 5px;
+
+        /* زر الدخول (البارز) */
+        .btn-login {
+            background-color: var(--primary-btn-bg);
+            color: var(--primary-btn-text);
+            border: 1px solid var(--primary-btn-bg);
+        }
+
+        .btn-login:hover {
+            background-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* زر التسجيل (الداكن) */
+        .btn-register {
+            background-color: transparent;
+            color: var(--secondary-btn-text);
+            border: 1px solid var(--secondary-btn-text);
+        }
+
+        .btn-register:hover {
+            background-color: var(--secondary-btn-text);
+            color: var(--bg-color);
+            box-shadow: 0 4px 15px rgba(224, 224, 224, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* --- FOOTER --- */
+        .footer {
+            text-align: center;
+            padding: 15px;
+            background-color: var(--accent-color);
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* --- RESPONSIVE DESIGN (للشاشات الصغيرة) --- */
+        @media (max-width: 600px) {
+            .logo-container { margin-top: 3vh; }
+            .main-logo { max-width: 140px; }
+            .hero-title { font-size: 2.2rem; }
+            .hero-subtitle { font-size: 1rem; margin-bottom: 30px; }
+            
+            .auth-buttons {
+                flex-direction: column; /* الأزرار تحت بعض */
+                gap: 15px;
+                width: 100%;
+                max-width: 300px;
+            }
+            .btn { width: 100%; text-align: center; }
         }
     </style>
 </head>
 <body>
 
-    <div class="form-card">
-        <h2>إنشاء حساب جديد</h2>
-        <form id="registrationForm">
-            <input type="text" id="fullName" placeholder="الاسم الكامل" required>
-            <input type="email" id="email" placeholder="البريد الإلكتروني" required>
-            <input type="password" id="password" placeholder="كلمة المرور (6 رموز على الأقل)" required minlength="6">
-            <button type="submit" id="submitBtn">تسجيل الآن</button>
-        </form>
-        <div id="message"></div>
+    <!-- قسم الشعار -->
+    <div class="logo-container">
+        <!-- **ملاحظة**: يجب أن يكون ملف الشعار المرفق باسم logo.png في نفس المجلد** -->
+        <img src="logo.png" alt="The BlackFlower Logo" class="main-logo">
     </div>
 
-    <script>
-        // إعدادات الاتصال بمشروعك
-        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us'; 
+    <!-- قسم المحتوى المركزي (Hero) -->
+    <div class="hero-section">
+        <h1 class="hero-title">The BlackFlower</h1>
+        <p class="hero-subtitle">استمتع بتجربة مشاهدة استثنائية. عوالم جديدة، قصص تروى، مشاهدة بلا حدود.</p>
         
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        <!-- قسم الأزرار -->
+        <div class="auth-buttons">
+            <a href="login.html" class="btn btn-login">تسجيل الدخول</a>
+            <a href="register.html" class="btn btn-register">إنشاء حساب</a>
+        </div>
+    </div>
 
-        const form = document.getElementById('registrationForm');
-        const messageDiv = document.getElementById('message');
-        const submitBtn = document.getElementById('submitBtn');
+    <!-- التذييل (Footer) -->
+    <footer class="footer">
+        <p>&copy; 2024 The BlackFlower. جميع الحقوق محفوظة.</p>
+    </footer>
 
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // تهيئة الواجهة للطلب
-            submitBtn.disabled = true;
-            messageDiv.innerText = "جاري محاولة التسجيل...";
-            messageDiv.style.color = "#94a3b8";
-            messageDiv.style.background = "transparent";
-
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const fullName = document.getElementById('fullName').value;
-
-            try {
-                // محاولة إنشاء الحساب
-                const { data, error } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: { display_name: fullName }
-                    }
-                });
-
-                // التحقق من وجود خطأ من السيرفر
-                if (error) throw error;
-
-                // النجاح
-                messageDiv.innerText = "تم التسجيل بنجاح! يرجى التحقق من بريدك الإلكتروني لتأكيد الحساب.";
-                messageDiv.style.color = "#10b981";
-                messageDiv.style.background = "#064e3b33";
-                form.reset();
-
-            } catch (error) {
-                // إظهار سبب الخطأ بوضوح
-                console.error("Supabase Error:", error);
-                messageDiv.innerText = "فشل التسجيل: " + error.message;
-                messageDiv.style.color = "#ef4444";
-                messageDiv.style.background = "#7f1d1d33";
-            } finally {
-                submitBtn.disabled = false;
-            }
-        });
-    </script>
 </body>
 </html>
