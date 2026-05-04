@@ -19,7 +19,8 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            /* تم تغيير الخط هنا إلى Times New Roman */
+            font-family: 'Times New Roman', Times, serif;
         }
 
         body {
@@ -43,6 +44,7 @@
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid rgba(255, 255, 255, 0.1);
+            filter: grayscale(100%); /* الحفاظ على المظهر المونوكروم */
         }
 
         .content {
@@ -55,15 +57,18 @@
             font-size: 3.5rem;
             font-weight: 800;
             margin-bottom: 15px;
+            letter-spacing: 4px; /* تباعد الحروف ليعطي طابعاً رسمياً */
             background: linear-gradient(to bottom, #fff 40%, #888 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
         }
 
         p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: var(--text-dim);
             margin-bottom: 45px;
+            font-style: italic; /* الخط التايمز يظهر بجمالية عالية في وضع الإمالة */
         }
 
         .btn-container {
@@ -80,11 +85,18 @@
             border-radius: 50px;
             transition: var(--transition);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .btn-login {
             background-color: var(--primary-accent);
             color: #000;
+        }
+
+        .btn-login:hover {
+            background-color: transparent;
+            color: var(--primary-accent);
+            border: 1px solid var(--primary-accent);
         }
 
         .btn-signup {
@@ -95,7 +107,8 @@
 
         .btn-signup:hover {
             border-color: var(--primary-accent);
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: var(--primary-accent);
+            color: #000;
         }
     </style>
 </head>
@@ -110,10 +123,7 @@
         <p>The future of decentralized finance is blooming. Secure your assets and explore the next generation of crypto trading.</p>
         
         <div class="btn-container">
-            <!-- زر الدخول (يمكنك ربطه بصفحة login.html لاحقاً) -->
             <a href="#" class="btn btn-login">Login</a>
-            
-            <!-- تم تعديل الرابط هنا ليوجه لصفحة التسجيل -->
             <a href="register.html" class="btn btn-signup">Join Now</a>
         </div>
     </div>
