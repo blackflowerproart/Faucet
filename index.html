@@ -1,175 +1,160 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The BlackFlower - الصفحة الرئيسية</title>
+    <title>The BlackFlower | Crypto Ecosystem</title>
     <style>
-        /* --- CSS RESET & BASE STYLES --- */
+        /* --- CSS STYLES --- */
         :root {
-            --bg-color: #080808; /* أسود غامق جدا خلفية */
-            --text-color: #e0e0e0; /* رمادي فاتح للنصوص */
-            --accent-color: #1a1a1a; /* لون داكن ثانوي */
-            --primary-btn-bg: #f5f5f5; /* لون أبيض مائل للرمادي للزر الرئيسي */
-            --primary-btn-text: #080808;
-            --secondary-btn-bg: #222222; /* لون داكن لزر التسجيل */
-            --secondary-btn-text: #e0e0e0;
-            --hover-transition: all 0.3s ease;
+            --bg-color: #050505; /* Deep Black */
+            --primary-accent: #ffffff; /* Clean White */
+            --secondary-accent: #1a1a1a; /* Dark Grey */
+            --text-main: #f0f0f0;
+            --text-dim: #888888;
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
+            color: var(--text-main);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
-            justify-content: space-between; /* للتوزيع العمودي */
-            overflow: hidden; /* لمنع التمرير غير الضروري */
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #111 0%, #050505 100%);
         }
 
         /* --- LOGO SECTION --- */
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            margin-top: 5vh; /* ترك مسافة من الأعلى */
+        .logo-box {
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
         }
 
         .main-logo {
-            max-width: 180px; /* حجم الشعار */
-            height: auto;
-            display: block;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%; /* Making it circular to match the image style */
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* --- CENTRAL CONTENT (HERO) --- */
-        .hero-section {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        /* --- HERO SECTION --- */
+        .content {
             text-align: center;
-            flex-grow: 1; /* يشغل المساحة المتبقية */
+            max-width: 700px;
             padding: 0 20px;
+            animation: fadeIn 1.2s ease-out;
         }
 
-        .hero-title {
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 15px;
+            background: linear-gradient(to bottom, #fff 40%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: #aaaaaa;
-            margin-bottom: 40px;
-            max-width: 500px;
+        p {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            margin-bottom: 45px;
+            line-height: 1.6;
         }
 
-        /* --- BUTTONS SECTION --- */
-        .auth-buttons {
+        /* --- BUTTONS --- */
+        .btn-container {
             display: flex;
             gap: 20px;
             justify-content: center;
         }
 
         .btn {
-            display: inline-block;
-            padding: 15px 40px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 16px 35px;
+            font-size: 0.95rem;
+            font-weight: 700;
             text-decoration: none;
-            border-radius: 8px;
-            transition: var(--hover-transition);
-            cursor: pointer;
+            border-radius: 50px;
+            transition: var(--transition);
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* زر الدخول (البارز) */
         .btn-login {
-            background-color: var(--primary-btn-bg);
-            color: var(--primary-btn-text);
-            border: 1px solid var(--primary-btn-bg);
+            background-color: var(--primary-accent);
+            color: #000;
+            border: 1px solid var(--primary-accent);
         }
 
         .btn-login:hover {
-            background-color: #ffffff;
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* زر التسجيل (الداكن) */
-        .btn-register {
             background-color: transparent;
-            color: var(--secondary-btn-text);
-            border: 1px solid var(--secondary-btn-text);
+            color: var(--primary-accent);
+            transform: scale(1.05);
         }
 
-        .btn-register:hover {
-            background-color: var(--secondary-btn-text);
-            color: var(--bg-color);
-            box-shadow: 0 4px 15px rgba(224, 224, 224, 0.2);
-            transform: translateY(-2px);
+        .btn-signup {
+            background-color: transparent;
+            color: var(--primary-accent);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* --- FOOTER --- */
-        .footer {
-            text-align: center;
-            padding: 15px;
-            background-color: var(--accent-color);
-            font-size: 0.8rem;
-            color: #666;
+        .btn-signup:hover {
+            border-color: var(--primary-accent);
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: scale(1.05);
         }
 
-        /* --- RESPONSIVE DESIGN (للشاشات الصغيرة) --- */
+        /* --- ANIMATIONS --- */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* --- RESPONSIVE --- */
         @media (max-width: 600px) {
-            .logo-container { margin-top: 3vh; }
-            .main-logo { max-width: 140px; }
-            .hero-title { font-size: 2.2rem; }
-            .hero-subtitle { font-size: 1rem; margin-bottom: 30px; }
-            
-            .auth-buttons {
-                flex-direction: column; /* الأزرار تحت بعض */
-                gap: 15px;
-                width: 100%;
-                max-width: 300px;
-            }
-            .btn { width: 100%; text-align: center; }
+            h1 { font-size: 2.5rem; }
+            .btn-container { flex-direction: column; width: 100%; align-items: center; }
+            .btn { width: 80%; text-align: center; }
         }
     </style>
 </head>
 <body>
 
-    <!-- قسم الشعار -->
-    <div class="logo-container">
-        <!-- **ملاحظة**: يجب أن يكون ملف الشعار المرفق باسم logo.png في نفس المجلد** -->
-        <img src="logo.png" alt="The BlackFlower Logo" class="main-logo">
+    <!-- Logo Section using wight.jpg -->
+    <div class="logo-box">
+        <img src="wight.jpg" alt="The BlackFlower Logo" class="main-logo">
     </div>
 
-    <!-- قسم المحتوى المركزي (Hero) -->
-    <div class="hero-section">
-        <h1 class="hero-title">The BlackFlower</h1>
-        <p class="hero-subtitle">استمتع بتجربة مشاهدة استثنائية. عوالم جديدة، قصص تروى، مشاهدة بلا حدود.</p>
+    <!-- Main Marketing Content -->
+    <div class="content">
+        <h1>THE BLACKFLOWER</h1>
+        <p>
+            The future of decentralized finance is blooming. 
+            Secure your assets and explore the next generation of crypto trading with our advanced ecosystem.
+        </p>
         
-        <!-- قسم الأزرار -->
-        <div class="auth-buttons">
-            <a href="login.html" class="btn btn-login">تسجيل الدخول</a>
-            <a href="register.html" class="btn btn-register">إنشاء حساب</a>
+        <!-- Action Buttons -->
+        <div class="btn-container">
+            <a href="#login" class="btn btn-login">Login</a>
+            <a href="#register" class="btn btn-signup">Join Now</a>
         </div>
     </div>
-
-    <!-- التذييل (Footer) -->
-    <footer class="footer">
-        <p>&copy; 2024 The BlackFlower. جميع الحقوق محفوظة.</p>
-    </footer>
 
 </body>
 </html>
