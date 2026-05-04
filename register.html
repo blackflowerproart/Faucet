@@ -7,98 +7,122 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #000000;
-            --text-main: #ffffff;
-            --text-sub: #888888;
-            --border-ui: #ffffff;
+            --pure-black: #000000;
+            --pure-white: #ffffff;
+            --dark-gray: #1a1a1a;
+            --light-gray: #888888;
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--pure-black);
+            color: var(--pure-white);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            text-transform: uppercase; /* يضيف طابعاً فخماً وبسيطاً */
+            letter-spacing: 0.5px;
         }
 
         .signup-container {
+            background-color: var(--pure-black);
+            padding: 45px;
             width: 100%;
-            max-width: 360px;
-            padding: 40px;
-            border: 1px solid var(--border-ui);
-            background-color: #000;
+            max-width: 380px;
+            border: 1px solid var(--pure-white); /* إطار أبيض بسيط */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .logo-header { text-align: center; margin-bottom: 30px; }
         .logo-header img { 
-            width: 80px; height: 80px; 
-            border: 1px solid var(--border-ui);
-            filter: grayscale(100%); 
+            width: 85px; height: 85px; 
+            border: 1px solid var(--pure-white);
+            filter: grayscale(100%); /* إزالة أي ألوان من الشعار */
         }
 
-        h2 { text-align: center; font-size: 20px; letter-spacing: 4px; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: var(--text-sub); font-size: 10px; letter-spacing: 2px; margin-bottom: 30px; }
+        h2 { 
+            text-align: center; 
+            margin: 0 0 10px 0; 
+            font-size: 22px; 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+        }
 
-        /* زر جوجل أبيض وأسود */
+        .subtitle { 
+            text-align: center; 
+            color: var(--light-gray); 
+            font-size: 11px; 
+            margin-bottom: 35px; 
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        /* زر جوجل مونوكروم */
         .btn-google {
-            width: 100%; padding: 12px; border: 1px solid var(--border-ui);
-            background: transparent; color: white; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: 0.3s; font-size: 12px; font-weight: bold;
+            width: 100%; padding: 12px; border: 1px solid var(--pure-white);
+            background-color: transparent; color: var(--pure-white); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            transition: 0.3s ease; font-size: 12px; text-transform: uppercase; font-weight: 600;
         }
-        .btn-google:hover { background: white; color: black; }
-        .btn-google img { filter: invert(100%); }
+        .btn-google:hover { background-color: var(--pure-white); color: var(--pure-black); }
+        .btn-google img { filter: invert(100%); } /* تحويل أيقونة جوجل للأبيض */
 
-        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: #444; font-size: 9px; letter-spacing: 2px; }
+        .divider { 
+            display: flex; align-items: center; text-align: center; 
+            margin: 25px 0; color: #444; font-size: 10px; 
+            text-transform: uppercase; letter-spacing: 2px; 
+        }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
         .divider:not(:empty)::before { margin-right: 15px; }
         .divider:not(:empty)::after { margin-left: 15px; }
 
-        /* المدخلات */
         .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--text-sub); font-size: 10px; }
+        .input-group label { 
+            display: block; margin-bottom: 8px; 
+            color: var(--light-gray); font-size: 10px; 
+            text-transform: uppercase; letter-spacing: 1px;
+        }
         .input-group input {
             width: 100%; padding: 12px; border: none; border-bottom: 1px solid #333;
-            background: transparent; color: white; box-sizing: border-box; outline: none; transition: 0.3s;
+            background-color: transparent; color: var(--pure-white); box-sizing: border-box; 
+            outline: none; transition: 0.3s; font-size: 14px;
         }
-        .input-group input:focus { border-bottom: 1px solid white; }
+        .input-group input:focus { border-bottom: 1px solid var(--pure-white); }
 
-        /* زر التسجيل (تم تغيير الأصفر إلى الأبيض والأسود) */
+        /* زر التسجيل الأبيض والأسود */
         .btn-signup {
-            width: 100%; padding: 15px; border: 1px solid white;
-            background-color: white; color: black; /* خلفية بيضاء نص أسود */
-            font-size: 14px; font-weight: bold; cursor: pointer;
-            transition: 0.3s; letter-spacing: 2px;
+            width: 100%; padding: 16px; border: 1px solid var(--pure-white);
+            background-color: var(--pure-white); color: var(--pure-black);
+            font-size: 14px; font-weight: 800; cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase; letter-spacing: 2px; margin-top: 10px;
         }
         .btn-signup:hover {
-            background-color: black; color: white; /* عند التمرير يصبح العكس */
+            background-color: var(--pure-black);
+            color: var(--pure-white);
         }
 
-        .footer-link { text-align: center; margin-top: 25px; font-size: 10px; color: var(--text-sub); }
-        .footer-link a { color: white; text-decoration: none; border-bottom: 1px solid white; }
+        .footer-link { text-align: center; margin-top: 30px; font-size: 11px; color: var(--light-gray); }
+        .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid var(--pure-white); padding-bottom: 2px; }
     </style>
 </head>
 <body>
-
     <div class="signup-container">
-        <div class="logo-header"><img src="wight.jpg" alt="Logo"></div>
-        <h2>Registration</h2>
-        <p class="subtitle">BlackFlower Creative Studio</p>
+        <div class="logo-header"><img src="wight.jpg" alt="BlackFlower Logo"></div>
+        <h2>Join Studio</h2>
+        <p class="subtitle">Creative Marketing & Design</p>
         
         <button class="btn-google" onclick="signUpWithGoogle()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16">
-            Google Access
+            Continue with Google
         </button>
 
-        <div class="divider">Email Registry</div>
+        <div class="divider">Or Email</div>
 
         <form id="signupForm">
             <div class="input-group">
-                <label>User Identity</label>
+                <label>Full Name</label>
                 <input type="text" id="username" placeholder="NAME" required>
             </div>
             <div class="input-group">
@@ -106,32 +130,36 @@
                 <input type="email" id="email" placeholder="EMAIL@DOMAIN.COM" required>
             </div>
             <div class="input-group">
-                <label>Security Key</label>
+                <label>Password</label>
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
             <button type="submit" id="submitBtn" class="btn-signup">Create Account</button>
         </form>
-        
-        <p class="footer-link">Member? <a href="index.html">Login</a></p>
+        <p class="footer-link">Already a member? <a href="index.html">Log In</a></p>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const successURL = window.location.href.replace('register.html', 'success.html');
 
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.innerText = 'WAIT...';
+            btn.innerText = 'PROCESSING...';
             const { error } = await _supabase.auth.signUp({
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
                 options: { emailRedirectTo: successURL }
             });
-            if (error) { alert(error.message); btn.innerText = 'CREATE ACCOUNT'; }
-            else { window.location.href = "success.html"; }
+            if (error) { 
+                alert(error.message); 
+                btn.innerText = 'CREATE ACCOUNT'; 
+            } else { 
+                window.location.href = "success.html"; 
+            }
         });
 
         async function signUpWithGoogle() {
