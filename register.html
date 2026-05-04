@@ -3,155 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join The BlackFlower | Crypto Registration</title>
+    <title>Quick Register | The BlackFlower</title>
     <style>
         :root {
             --bg-color: #050505;
-            --primary-accent: #ffffff;
-            --secondary-bg: #111111;
-            --input-border: #333333;
-            --text-main: #f0f0f0;
+            --accent: #ffffff;
+            --card-bg: #111111;
             --text-dim: #888888;
-            --transition: all 0.3s ease;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
         body {
+            margin: 0;
             background-color: var(--bg-color);
-            color: var(--text-main);
-            height: 100vh;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: radial-gradient(circle at top right, #1a1a1a 0%, #050505 100%);
+            height: 100vh;
         }
 
-        .register-card {
-            background-color: var(--secondary-bg);
+        .container {
+            background: var(--card-bg);
             padding: 40px;
-            border-radius: 20px;
+            border-radius: 24px;
             width: 100%;
-            max-width: 450px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            max-width: 400px;
             text-align: center;
+            border: 1px solid #222;
         }
 
-        .mini-logo {
-            width: 70px; height: 70px;
+        .logo {
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        h2 { font-size: 1.8rem; margin-bottom: 25px; }
+        h2 { margin-bottom: 10px; font-size: 1.5rem; }
+        p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 30px; }
 
-        /* --- QUICK REGISTRATION BUTTON --- */
-        .quick-email-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        /* --- خاصية التسجيل السريع بلمسة واحدة --- */
+        .quick-auth-section {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px dashed #444;
+            margin-bottom: 20px;
+        }
+
+        .email-input-quick {
             width: 100%;
-            background-color: #fff;
-            color: #000;
-            padding: 14px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-            transition: var(--transition);
-            border: none;
-            cursor: pointer;
-        }
-
-        .quick-email-btn:hover {
-            background-color: #e0e0e0;
-            transform: translateY(-2px);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            background: #000;
+            color: #fff;
             text-align: center;
-            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .btn-fast-track {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        .btn-fast-track:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+
+        .back-link {
+            display: block;
+            margin-top: 20px;
             color: var(--text-dim);
+            text-decoration: none;
             font-size: 0.8rem;
         }
 
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--input-border);
-        }
-
-        .divider:not(:empty)::before { margin-right: .5em; }
-        .divider:not(:empty)::after { margin-left: .5em; }
-
-        /* --- FORM STYLES --- */
-        form { display: flex; flex-direction: column; gap: 15px; text-align: left; }
-        label { font-size: 0.8rem; color: var(--text-dim); margin-left: 5px; }
-        input {
-            background-color: #000;
-            border: 1px solid var(--input-border);
-            padding: 14px;
-            border-radius: 10px;
-            color: #fff;
-            transition: var(--transition);
-        }
-        input:focus { outline: none; border-color: var(--primary-accent); }
-
-        .btn-submit {
-            background-color: transparent;
-            color: var(--primary-accent);
-            padding: 14px;
-            border: 1px solid var(--input-border);
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .btn-submit:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
-
-        .footer-links { margin-top: 25px; font-size: 0.85rem; color: var(--text-dim); }
-        .footer-links a { color: var(--primary-accent); text-decoration: none; }
+        .back-link:hover { color: #fff; }
     </style>
 </head>
 <body>
 
-    <div class="register-card">
-        <img src="wight.jpg" alt="Logo" class="mini-logo">
+    <div class="container">
+        <!-- استخدام الصورة التي طلبتها -->
+        <img src="wight.jpg" alt="Logo" class="logo">
         
-        <h2>Get Started</h2>
+        <h2>Quick Access</h2>
+        <p>Enter your email to bloom into the ecosystem instantly.</p>
 
-        <!-- خيار التسجيل السريع بالبريد -->
-        <button class="quick-email-btn" onclick="alert('Redirecting to Secure Email Auth...')">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-            Continue with Email
-        </button>
-
-        <div class="divider">OR USE FORM</div>
-
-        <!-- الاستمارة التقليدية -->
-        <form>
-            <label>Full Name</label>
-            <input type="text" placeholder="John Doe">
-
-            <label>Email Address</label>
-            <input type="email" placeholder="name@email.com">
-
-            <label>Password</label>
-            <input type="password" placeholder="••••••••">
-
-            <button type="submit" class="btn-submit">Create Account</button>
-        </form>
-
-        <div class="footer-links">
-            Already a member? <a href="index.html">Login</a>
+        <!-- قسم التسجيل السريع -->
+        <div class="quick-auth-section">
+            <input type="email" class="email-input-quick" placeholder="yourname@email.com" id="quickEmail">
+            <button class="btn-fast-track" onclick="handleQuickSign()">
+                Instant Sign-Up ⚡
+            </button>
         </div>
+
+        <script>
+            function handleQuickSign() {
+                const email = document.getElementById('quickEmail').value;
+                if(email) {
+                    alert('Success! Registration link sent to: ' + email + '\nWelcome to The BlackFlower.');
+                    window.location.href = "index.html"; // يعيده للرئيسية بعد النجاح
+                } else {
+                    alert('Please enter a valid email for quick access.');
+                }
+            }
+        </script>
+
+        <a href="index.html" class="back-link">← Back to Home</a>
     </div>
 
 </body>
