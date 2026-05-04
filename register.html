@@ -116,7 +116,10 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // المسار الديناميكي لصفحة النجاح لتجنب خطأ localhost
-    const successRedirectURL = window.location.href.replace('register.html', 'success.html');
+ // هذا الكود سيحدد مكان صفحة النجاح بدقة سواء كنت تستخدم سيرفر أو تفتح ملف محلي
+const currentPath = window.location.pathname;
+const directory = currentPath.substring(0, currentPath.lastIndexOf('/'));
+const successRedirectURL = window.location.origin + directory + '/success.html';
 
     // 1. التسجيل عبر النموذج
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
