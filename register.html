@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | The BlackFlower</title>
-    <!-- Supabase JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: #0d1117;
             color: white;
             display: flex;
@@ -25,53 +24,47 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             width: 100%;
             max-width: 400px;
-            transition: transform 0.3s ease;
         }
 
-        .logo-header { text-align: center; margin-bottom: 25px; }
-        .logo-header img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #f7931a; }
+        .logo-header { text-align: center; margin-bottom: 20px; }
+        .logo-header img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid #f7931a; }
 
-        h2 { text-align: center; margin-bottom: 8px; font-weight: 800; }
+        h2 { text-align: center; margin-bottom: 8px; }
         .highlight { color: #f7931a; }
-        p.subtitle { text-align: center; color: #8b949e; font-size: 14px; margin-bottom: 30px; }
+        p.subtitle { text-align: center; color: #8b949e; font-size: 14px; margin-bottom: 25px; }
 
         /* Social Auth */
         .btn-google {
             width: 100%; padding: 12px; border: 1px solid #30363d; border-radius: 8px;
             background-color: #161b22; color: white; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 12px; 
-            font-weight: 600; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.3s;
         }
-        .btn-google:hover { background-color: #21262d; border-color: #8b949e; }
+        .btn-google:hover { background-color: #21262d; }
 
-        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: #484f58; font-size: 12px; }
+        .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #484f58; font-size: 12px; }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #30363d; }
-        .divider:not(:empty)::before { margin-right: 1em; }
-        .divider:not(:empty)::after { margin-left: 1em; }
 
-        /* Form Controls */
-        .input-group { margin-bottom: 18px; }
-        .input-group label { display: block; margin-bottom: 8px; color: #c9d1d9; font-size: 13px; font-weight: 500; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; margin-bottom: 8px; color: #c9d1d9; font-size: 13px; }
         .input-group input {
             width: 100%; padding: 12px; border: 1px solid #30363d; border-radius: 8px;
             background-color: #0d1117; color: white; box-sizing: border-box; outline: none;
         }
-        .input-group input:focus { border-color: #f7931a; box-shadow: 0 0 0 2px rgba(247, 147, 26, 0.2); }
+        .input-group input:focus { border-color: #f7931a; }
 
         .btn-signup {
             width: 100%; padding: 14px; border: none; border-radius: 8px;
-            background-color: #f7931a; color: #0d1117; font-size: 16px; font-weight: 800;
-            cursor: pointer; transition: 0.3s; text-transform: uppercase;
+            background-color: #f7931a; color: #0d1117; font-size: 16px; font-weight: bold;
+            cursor: pointer; transition: 0.3s;
         }
-        .btn-signup:hover { background-color: #e58510; transform: translateY(-1px); }
 
-        /* Success UI State */
-        #success-state { display: none; text-align: center; animation: fadeIn 0.4s ease-in-out; }
-        .success-icon { font-size: 60px; margin-bottom: 20px; }
-        
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Success State - Hidden by default */
+        #success-state { display: none; text-align: center; animation: fadeIn 0.5s ease; }
+        .success-icon { font-size: 50px; color: #f7931a; margin-bottom: 15px; }
 
-        .footer-link { text-align: center; margin-top: 25px; font-size: 14px; color: #8b949e; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .footer-link { text-align: center; margin-top: 20px; font-size: 14px; color: #8b949e; }
         .footer-link a { color: #58a6ff; text-decoration: none; }
     </style>
 </head>
@@ -79,109 +72,108 @@
 
 <div class="signup-container">
     <div class="logo-header">
-        <img src="wight.jpg" alt="The BlackFlower Logo">
+        <img src="wight.jpg" alt="Logo">
     </div>
 
-    <!-- Registration UI -->
-    <div id="register-state">
+    <!-- Registration Form Section -->
+    <div id="register-ui">
         <h2>Join <span class="highlight">BlackFlower</span></h2>
-        <p class="subtitle">Start your crypto journey with the elite.</p>
+        <p class="subtitle">Enter your details to create an account</p>
 
-        <button class="btn-google" onclick="continueWithGoogle()">
+        <button class="btn-google" onclick="signUpWithGoogle()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
             Continue with Google
         </button>
 
-        <div class="divider">OR USE EMAIL</div>
+        <div class="divider">OR</div>
 
         <form id="signupForm">
             <div class="input-group">
                 <label>Username</label>
-                <input type="text" id="username" placeholder="e.g. Satoshi_99" required>
+                <input type="text" id="username" placeholder="Choose a username" required>
             </div>
             <div class="input-group">
-                <label>Email Address</label>
-                <input type="email" id="email" placeholder="name@domain.com" required>
+                <label>Email</label>
+                <input type="email" id="email" placeholder="email@example.com" required>
             </div>
             <div class="input-group">
                 <label>Password</label>
-                <input type="password" id="password" placeholder="Min. 8 characters" required>
+                <input type="password" id="password" placeholder="••••••••" required>
             </div>
             <button type="submit" id="submitBtn" class="btn-signup">Create Account</button>
         </form>
-        <p class="footer-link">Have an account? <a href="index.html">Log In</a></p>
+        <p class="footer-link">Already have an account? <a href="index.html">Log In</a></p>
     </div>
 
-    <!-- Success UI -->
+    <!-- Success Message Section -->
     <div id="success-state">
         <div class="success-icon">✔️</div>
-        <h2>Registration Successful!</h2>
-        <p id="success-msg">Your account has been created. Please check your email for the verification link.</p>
+        <h2>Success!</h2>
+        <p id="success-msg">Your registration is complete.</p>
         <br>
-        <a href="index.html" class="btn-signup" style="display: block; text-decoration: none;">Go to Dashboard</a>
+        <a href="index.html" class="btn-signup" style="display: block; text-decoration: none;">Proceed to Dashboard</a>
     </div>
 </div>
 
 <script>
-    // Configuration
     const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
-
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    function showSuccess(customMsg) {
-        document.getElementById('register-state').style.display = 'none';
+    // Function to switch view to Success
+    function triggerSuccessUI(message) {
+        document.getElementById('register-ui').style.display = 'none';
         document.getElementById('success-state').style.display = 'block';
-        if (customMsg) document.getElementById('success-msg').innerText = customMsg;
+        if (message) document.getElementById('success-msg').innerText = message;
     }
 
-    // 1. Email & Password Signup
+    // 1. Form Registration Logic
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const username = document.getElementById('username').value;
+        const user = document.getElementById('username').value;
 
         btn.disabled = true;
-        btn.innerText = 'Creating Account...';
+        btn.innerText = 'Processing...';
 
         const { data, error } = await _supabase.auth.signUp({
             email: email,
             password: password,
-            options: {
-                data: { display_name: username },
-                emailRedirectTo: window.location.href // Returns to this page to show success
+            options: { 
+                data: { display_name: user },
+                emailRedirectTo: window.location.href 
             }
         });
 
         if (error) {
-            alert('Error: ' + error.message);
+            alert(error.message);
             btn.disabled = false;
             btn.innerText = 'Create Account';
         } else {
-            showSuccess(`Success! A confirmation email has been sent to ${email}. Please verify to continue.`);
+            triggerSuccessUI('Account created! Please check your email to verify your registration.');
         }
     });
 
-    // 2. Google OAuth (Fixed)
-    async function continueWithGoogle() {
+    // 2. Google Registration Logic
+    async function signUpWithGoogle() {
         const { error } = await _supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: {
-                redirectTo: window.location.href // Redirects back here to trigger window.onload
-            }
+            options: { redirectTo: window.location.href }
         });
-        if (error) alert('Google Sign-In Error: ' + error.message);
+        if (error) alert(error.message);
     }
 
-    // Check session on load (Handles Google callback)
+    // 3. Logic to detect return from Google
     window.onload = async () => {
         const { data: { session } } = await _supabase.auth.getSession();
+        
+        // This will only trigger if the user just successfully signed in with Google
         if (session) {
-            showSuccess('Welcome back! You have successfully signed in via Google.');
+            triggerSuccessUI('Successfully registered via Google! Welcome to the platform.');
         }
-    }
+    };
 </script>
 
 </body>
