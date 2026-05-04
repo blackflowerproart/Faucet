@@ -3,104 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | The BlackFlower</title>
+    <title>Sign Up | BlackFlower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #000000;
-            --card-bg: #000000;
-            --border-color: #ffffff;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
+            --text-main: #ffffff;
+            --text-sub: #888888;
+            --border-ui: #ffffff;
         }
+
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-primary);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            text-transform: uppercase; /* يضيف طابعاً فخماً وبسيطاً */
         }
+
         .signup-container {
-            background-color: var(--card-bg);
-            padding: 40px;
             width: 100%;
             max-width: 360px;
-            border: 1px solid var(--border-color);
+            padding: 40px;
+            border: 1px solid var(--border-ui);
+            background-color: #000;
         }
+
         .logo-header { text-align: center; margin-bottom: 30px; }
         .logo-header img { 
             width: 80px; height: 80px; 
-            border: 1px solid var(--border-color);
-            filter: grayscale(100%); /* لضمان ظهور الشعار بالأبيض والأسود */
+            border: 1px solid var(--border-ui);
+            filter: grayscale(100%); 
         }
-        h2 { text-align: center; margin: 0 0 10px 0; font-size: 22px; letter-spacing: 2px; text-transform: uppercase; }
-        .subtitle { text-align: center; color: var(--text-secondary); font-size: 12px; margin-bottom: 30px; letter-spacing: 1px; }
 
+        h2 { text-align: center; font-size: 20px; letter-spacing: 4px; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: var(--text-sub); font-size: 10px; letter-spacing: 2px; margin-bottom: 30px; }
+
+        /* زر جوجل أبيض وأسود */
         .btn-google {
-            width: 100%; padding: 12px; border: 1px solid var(--border-color);
-            background-color: transparent; color: white; cursor: pointer;
+            width: 100%; padding: 12px; border: 1px solid var(--border-ui);
+            background: transparent; color: white; cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 10px;
-            transition: 0.3s; font-size: 13px; text-transform: uppercase;
+            transition: 0.3s; font-size: 12px; font-weight: bold;
         }
-        .btn-google:hover { background-color: white; color: black; }
-        .btn-google img { filter: invert(100%); } /* جعل أيقونة جوجل بيضاء */
+        .btn-google:hover { background: white; color: black; }
+        .btn-google img { filter: invert(100%); }
 
-        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: var(--text-secondary); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; }
+        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: #444; font-size: 9px; letter-spacing: 2px; }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
         .divider:not(:empty)::before { margin-right: 15px; }
         .divider:not(:empty)::after { margin-left: 15px; }
 
+        /* المدخلات */
         .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 11px; text-transform: uppercase; }
+        .input-group label { display: block; margin-bottom: 8px; color: var(--text-sub); font-size: 10px; }
         .input-group input {
             width: 100%; padding: 12px; border: none; border-bottom: 1px solid #333;
-            background-color: transparent; color: white; box-sizing: border-box; outline: none; transition: 0.3s;
+            background: transparent; color: white; box-sizing: border-box; outline: none; transition: 0.3s;
         }
         .input-group input:focus { border-bottom: 1px solid white; }
 
+        /* زر التسجيل (تم تغيير الأصفر إلى الأبيض والأسود) */
         .btn-signup {
             width: 100%; padding: 15px; border: 1px solid white;
-            background-color: white; color: black; font-size: 14px; font-weight: bold;
-            cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+            background-color: white; color: black; /* خلفية بيضاء نص أسود */
+            font-size: 14px; font-weight: bold; cursor: pointer;
+            transition: 0.3s; letter-spacing: 2px;
         }
-        .btn-signup:hover { background-color: transparent; color: white; }
+        .btn-signup:hover {
+            background-color: black; color: white; /* عند التمرير يصبح العكس */
+        }
 
-        .footer-link { text-align: center; margin-top: 25px; font-size: 12px; color: var(--text-secondary); }
-        .footer-link a { color: white; text-decoration: underline; }
+        .footer-link { text-align: center; margin-top: 25px; font-size: 10px; color: var(--text-sub); }
+        .footer-link a { color: white; text-decoration: none; border-bottom: 1px solid white; }
     </style>
 </head>
 <body>
+
     <div class="signup-container">
         <div class="logo-header"><img src="wight.jpg" alt="Logo"></div>
-        <h2>Join BlackFlower</h2>
-        <p class="subtitle">PURE DESIGN. NO COMPROMISE.</p>
+        <h2>Registration</h2>
+        <p class="subtitle">BlackFlower Creative Studio</p>
         
         <button class="btn-google" onclick="signUpWithGoogle()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="16">
-            Continue with Google
+            Google Access
         </button>
 
-        <div class="divider">or use email</div>
+        <div class="divider">Email Registry</div>
 
         <form id="signupForm">
             <div class="input-group">
-                <label>Username</label>
+                <label>User Identity</label>
                 <input type="text" id="username" placeholder="NAME" required>
             </div>
             <div class="input-group">
-                <label>Email</label>
+                <label>Email Address</label>
                 <input type="email" id="email" placeholder="EMAIL@DOMAIN.COM" required>
             </div>
             <div class="input-group">
-                <label>Password</label>
+                <label>Security Key</label>
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
-            <button type="submit" id="submitBtn" class="btn-signup">Register Account</button>
+            <button type="submit" id="submitBtn" class="btn-signup">Create Account</button>
         </form>
-        <p class="footer-link">Member? <a href="index.html">Log In</a></p>
+        
+        <p class="footer-link">Member? <a href="index.html">Login</a></p>
     </div>
 
     <script>
@@ -112,13 +124,13 @@
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            btn.innerText = 'PROCESSING...';
+            btn.innerText = 'WAIT...';
             const { error } = await _supabase.auth.signUp({
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value,
                 options: { emailRedirectTo: successURL }
             });
-            if (error) { alert(error.message); btn.innerText = 'REGISTER'; }
+            if (error) { alert(error.message); btn.innerText = 'CREATE ACCOUNT'; }
             else { window.location.href = "success.html"; }
         });
 
