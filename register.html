@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | The BlackFlower</title>
+    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: #0d1117;
             color: white;
             display: flex;
@@ -16,6 +17,7 @@
             min-height: 100vh;
             margin: 0;
         }
+
         .signup-container {
             background-color: #161b22;
             padding: 40px;
@@ -23,33 +25,49 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             width: 100%;
             max-width: 400px;
+            border: 1px solid #30363d;
         }
-        .logo-header { text-align: center; margin-bottom: 20px; }
-        .logo-header img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid #f7931a; }
-        h2 { text-align: center; margin-bottom: 8px; }
+
+        .logo-header { text-align: center; margin-bottom: 25px; }
+        /* استخدام الشعار Verbatim كما طلبت */
+        .logo-header img { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #f7931a; object-fit: cover; }
+
+        h2 { text-align: center; margin-bottom: 8px; font-weight: 800; }
         .highlight { color: #f7931a; }
-        p.subtitle { text-align: center; color: #8b949e; font-size: 14px; margin-bottom: 25px; }
+        p.subtitle { text-align: center; color: #8b949e; font-size: 14px; margin-bottom: 30px; }
+
+        /* أزرار التواصل الاجتماعي */
         .btn-google {
             width: 100%; padding: 12px; border: 1px solid #30363d; border-radius: 8px;
             background-color: #161b22; color: white; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 12px; 
+            font-weight: 600; transition: 0.3s;
         }
-        .btn-google:hover { background-color: #21262d; }
-        .divider { display: flex; align-items: center; text-align: center; margin: 20px 0; color: #484f58; font-size: 12px; }
+        .btn-google:hover { background-color: #21262d; border-color: #8b949e; }
+
+        .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; color: #484f58; font-size: 12px; font-weight: bold; }
         .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #30363d; }
-        .input-group { margin-bottom: 15px; }
+        .divider:not(:empty)::before { margin-right: 1em; }
+        .divider:not(:empty)::after { margin-left: 1em; }
+
+        /* مدخلات البيانات */
+        .input-group { margin-bottom: 18px; }
         .input-group label { display: block; margin-bottom: 8px; color: #c9d1d9; font-size: 13px; }
         .input-group input {
             width: 100%; padding: 12px; border: 1px solid #30363d; border-radius: 8px;
-            background-color: #0d1117; color: white; box-sizing: border-box; outline: none;
+            background-color: #0d1117; color: white; box-sizing: border-box; outline: none; transition: 0.2s;
         }
-        .input-group input:focus { border-color: #f7931a; }
+        .input-group input:focus { border-color: #f7931a; box-shadow: 0 0 0 2px rgba(247, 147, 26, 0.1); }
+
         .btn-signup {
             width: 100%; padding: 14px; border: none; border-radius: 8px;
-            background-color: #f7931a; color: #0d1117; font-size: 16px; font-weight: bold;
-            cursor: pointer; transition: 0.3s;
+            background-color: #f7931a; color: #0d1117; font-size: 16px; font-weight: 800;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase;
         }
-        .footer-link { text-align: center; margin-top: 20px; font-size: 14px; color: #8b949e; }
+        .btn-signup:hover { background-color: #e58510; transform: translateY(-1px); }
+        .btn-signup:disabled { background-color: #484f58; cursor: not-allowed; }
+
+        .footer-link { text-align: center; margin-top: 25px; font-size: 14px; color: #8b949e; }
         .footer-link a { color: #58a6ff; text-decoration: none; }
     </style>
 </head>
@@ -57,75 +75,88 @@
 
 <div class="signup-container">
     <div class="logo-header">
-        <img src="wight.jpg" alt="Logo">
+        <img src="wight.jpg" alt="The BlackFlower Logo">
     </div>
 
     <h2>Join <span class="highlight">BlackFlower</span></h2>
-    <p class="subtitle">Create your professional account</p>
+    <p class="subtitle">Elevate your digital presence today.</p>
 
+    <!-- زر جوجل المحدث لمعالجة خطأ Redirect -->
     <button class="btn-google" onclick="signUpWithGoogle()">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
         Continue with Google
     </button>
 
-    <div class="divider">OR</div>
+    <div class="divider">OR USE EMAIL</div>
 
     <form id="signupForm">
         <div class="input-group">
-            <label>Username</label>
-            <input type="text" id="username" placeholder="Choose a username" required>
+            <label>Full Name</label>
+            <input type="text" id="username" placeholder="e.g. Mohammad Ramzi" required>
         </div>
         <div class="input-group">
-            <label>Email</label>
-            <input type="email" id="email" placeholder="email@example.com" required>
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="name@domain.com" required>
         </div>
         <div class="input-group">
             <label>Password</label>
-            <input type="password" id="password" placeholder="••••••••" required>
+            <input type="password" id="password" placeholder="At least 8 characters" required>
         </div>
         <button type="submit" id="submitBtn" class="btn-signup">Create Account</button>
     </form>
+    
     <p class="footer-link">Already have an account? <a href="index.html">Log In</a></p>
 </div>
 
 <script>
+    // الإعدادات الخاصة بمشروعك في Supabase
     const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // 1. Form Registration
+    // المسار الديناميكي لصفحة النجاح لتجنب خطأ localhost
+    const successRedirectURL = window.location.href.replace('register.html', 'success.html');
+
+    // 1. التسجيل عبر النموذج
     document.getElementById('signupForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const displayName = document.getElementById('username').value;
 
         btn.disabled = true;
-        btn.innerText = 'Processing...';
+        btn.innerText = 'Creating Account...';
 
         const { error } = await _supabase.auth.signUp({
             email: email,
             password: password,
-            options: { emailRedirectTo: window.location.origin + '/success.html' }
+            options: {
+                data: { display_name: displayName },
+                emailRedirectTo: successRedirectURL
+            }
         });
 
         if (error) {
-            alert(error.message);
+            alert('Error: ' + error.message);
             btn.disabled = false;
             btn.innerText = 'Create Account';
         } else {
-            // Redirect to the success page
+            // التوجه لصفحة النجاح المنفصلة
             window.location.href = "success.html";
         }
     });
 
-    // 2. Google Registration
+    // 2. التسجيل عبر جوجل (إصلاح خطأ التوجيه)
     async function signUpWithGoogle() {
         const { error } = await _supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: window.location.origin + '/success.html' }
+            options: {
+                redirectTo: successRedirectURL
+            }
         });
-        if (error) alert(error.message);
+        if (error) alert('Google Auth Error: ' + error.message);
     }
 </script>
 
