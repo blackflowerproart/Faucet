@@ -9,7 +9,6 @@
         :root {
             --bg-color: #050505;
             --primary-accent: #ffffff;
-            --secondary-accent: #1a1a1a;
             --text-main: #f0f0f0;
             --text-dim: #888888;
             --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -19,8 +18,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            /* تم تغيير الخط هنا إلى Times New Roman */
-            font-family: 'Times New Roman', Times, serif;
         }
 
         body {
@@ -35,16 +32,16 @@
         }
 
         .logo-box {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         .main-logo {
-            width: 150px;
-            height: 150px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            filter: grayscale(100%); /* الحفاظ على المظهر المونوكروم */
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            filter: grayscale(100%);
         }
 
         .content {
@@ -53,22 +50,36 @@
             padding: 0 20px;
         }
 
+        /* العنوان بخط تايمز */
         h1 {
+            font-family: 'Times New Roman', Times, serif;
             font-size: 3.5rem;
             font-weight: 800;
-            margin-bottom: 15px;
-            letter-spacing: 4px; /* تباعد الحروف ليعطي طابعاً رسمياً */
-            background: linear-gradient(to bottom, #fff 40%, #888 100%);
+            margin-bottom: 5px;
+            letter-spacing: 3px;
+            background: linear-gradient(to bottom, #fff 50%, #666 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             text-transform: uppercase;
         }
 
+        /* النص الإضافي تحت العنوان بخط تايمز صغير */
+        .pro-art {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 0.9rem;
+            letter-spacing: 6px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 30px;
+            display: block;
+        }
+
         p {
-            font-size: 1.2rem;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.1rem;
             color: var(--text-dim);
             margin-bottom: 45px;
-            font-style: italic; /* الخط التايمز يظهر بجمالية عالية في وضع الإمالة */
+            line-height: 1.6;
         }
 
         .btn-container {
@@ -77,12 +88,14 @@
             justify-content: center;
         }
 
+        /* الأزرار بخط أريال */
         .btn {
-            padding: 16px 35px;
-            font-size: 0.95rem;
-            font-weight: 700;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 15px 40px;
+            font-size: 0.85rem;
+            font-weight: bold;
             text-decoration: none;
-            border-radius: 50px;
+            border-radius: 4px; /* زوايا أكثر حدة لتناسب الخط الرسمي */
             transition: var(--transition);
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -91,24 +104,23 @@
         .btn-login {
             background-color: var(--primary-accent);
             color: #000;
+            border: 1px solid var(--primary-accent);
         }
 
         .btn-login:hover {
             background-color: transparent;
             color: var(--primary-accent);
-            border: 1px solid var(--primary-accent);
         }
 
         .btn-signup {
             background-color: transparent;
             color: var(--primary-accent);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
         .btn-signup:hover {
             border-color: var(--primary-accent);
-            background-color: var(--primary-accent);
-            color: #000;
+            background-color: rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
@@ -120,6 +132,8 @@
 
     <div class="content">
         <h1>THE BLACKFLOWER</h1>
+        <span class="pro-art">Professional Art</span>
+        
         <p>The future of decentralized finance is blooming. Secure your assets and explore the next generation of crypto trading.</p>
         
         <div class="btn-container">
