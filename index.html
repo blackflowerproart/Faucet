@@ -1,11 +1,54 @@
+<?php
+session_start();
+
+// --- إعدادات النظام ---
+$admin_user = "Admin";
+$admin_pass = "123456";
+$settings_file = "settings.json";
+
+// تحميل الإعدادات أو وضع افتراضية
+if (file_exists($settings_file)) {
+    $settings = json_decode(file_get_contents($settings_file), true);
+} else {
+    $settings = ["url" => "https://easyhits4u.com", "title" => "Easy Earnings"];
+}
+
+// تسجيل الدخول
+if (isset($_POST['login'])) {
+    if ($_POST['user'] == $admin_user && $_POST['pass'] == $admin_pass) {
+        $_SESSION['admin_logged_in'] = true;
+        header("Location: index.php");
+        exit;
+    } else {
+        $error = "Access Denied";
+    }
+}
+
+// تسجيل الخروج
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: index.php");
+    exit;
+}
+
+// تحديث الإعدادات من لوحة التحكم
+if (isset($_POST['update_settings']) && isset($_SESSION['admin_logged_in'])) {
+    $new_settings = ["url" => $_POST['site_url'], "title" => $_POST['site_title']];
+    file_put_contents($settings_file, json_encode($new_settings));
+    $settings = $new_settings;
+    $msg = "Settings Updated";
+}
+
+$is_locked = isset($_COOKIE['ad_lock']);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Crypto Ecosystem</title>
+    <title>The Black Flower | Earn</title>
     <style>
-        /* --- CSS STYLES --- */
         :root {
             --bg-color: #050505;
             --primary-accent: #ffffff;
@@ -14,133 +57,119 @@
             --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             background-image: radial-gradient(circle at center, #111 0%, #050505 100%);
-        }
-
-        .logo-box {
-            margin-bottom: 30px;
-        }
-
-        .main-logo {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            filter: grayscale(100%);
-        }
-
-        .content {
-            text-align: center;
-            max-width: 700px;
-            padding: 0 20px;
-        }
-
-        /* العنوان بخط تايمز */
-        h1 {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 5px;
-            letter-spacing: 3px;
-            background: linear-gradient(to bottom, #fff 50%, #666 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
         }
 
-        /* النص الإضافي تحت العنوان بخط تايمز صغير */
-        .pro-art {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 0.9rem;
-            letter-spacing: 6px;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            margin-bottom: 30px;
-            display: block;
-        }
+        .logo-box { margin-bottom: 30px; }
+        .main-logo { width: 120px; height: 120px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.1); filter: grayscale(100%); }
 
-        p {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 1.1rem;
-            color: var(--text-dim);
-            margin-bottom: 45px;
-            line-height: 1.6;
-        }
+        .content { text-align: center; max-width: 600px; padding: 0 20px; }
 
-        .btn-container {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
+        h1 { font-size: 3rem; letter-spacing: 3px; background: linear-gradient(to bottom, #fff 50%, #666 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; margin-bottom: 5px; }
+        .pro-art { font-size: 0.8rem; letter-spacing: 5px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 30px; display: block; }
 
-        /* الأزرار بخط أريال */
-        .btn {
-            font-family: Arial, Helvetica, sans-serif;
-            padding: 15px 40px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            text-decoration: none;
-            border-radius: 4px; /* زوايا أكثر حدة لتناسب الخط الرسمي */
-            transition: var(--transition);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .status-msg { color: #e74c3c; margin-bottom: 20px; letter-spacing: 1px; text-transform: uppercase; font-size: 0.9rem; }
 
-        .btn-login {
-            background-color: var(--primary-accent);
-            color: #000;
-            border: 1px solid var(--primary-accent);
-        }
+        .btn-container { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        
+        .btn { font-family: Arial, sans-serif; padding: 14px 35px; font-size: 0.8rem; font-weight: bold; text-decoration: none; border-radius: 2px; transition: var(--transition); text-transform: uppercase; letter-spacing: 2px; cursor: pointer; display: inline-block; }
+        
+        .btn-primary { background-color: var(--primary-accent); color: #000; border: 1px solid var(--primary-accent); }
+        .btn-primary:hover { background-color: transparent; color: var(--primary-accent); }
+        .btn-outline { background-color: transparent; color: var(--primary-accent); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .btn-outline:hover { border-color: var(--primary-accent); background: rgba(255,255,255,0.05); }
 
-        .btn-login:hover {
-            background-color: transparent;
-            color: var(--primary-accent);
-        }
-
-        .btn-signup {
-            background-color: transparent;
-            color: var(--primary-accent);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-
-        .btn-signup:hover {
-            border-color: var(--primary-accent);
-            background-color: rgba(255, 255, 255, 0.05);
-        }
+        /* Admin & Forms Panel */
+        .admin-panel { margin-top: 50px; width: 100%; max-width: 350px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px; }
+        input { background: #111; border: 1px solid #333; color: white; padding: 12px; width: 100%; margin-bottom: 10px; font-family: Arial; }
+        .timer-text { font-size: 1.5rem; color: var(--primary-accent); margin: 20px 0; }
     </style>
 </head>
 <body>
 
     <div class="logo-box">
-        <img src="wight.jpg" alt="The Black Flower Logo" class="main-logo">
+        <img src="wight.jpg" alt="Logo" class="main-logo">
     </div>
 
     <div class="content">
-        <h1>THE BLACK FLOWER</h1>
-        <span class="pro-art">Professional Art</span>
-        
-        <p>The future of decentralized finance is blooming. Secure your assets and explore the next generation of crypto trading.</p>
-        
-        <div class="btn-container">
-            <a href="#" class="btn btn-login">Login</a>
-            <a href="register.html" class="btn btn-signup">Join Now</a>
+        <h1><?php echo $settings['title']; ?></h1>
+        <span class="pro-art">The Black Flower Ecosystem</span>
+
+        <?php if ($is_locked): ?>
+            <p class="status-msg">Access Restricted: Next blooming in 24h.</p>
+            <div class="btn-container">
+                <a href="#" class="btn btn-outline" style="opacity: 0.5; cursor: not-allowed;">Locked</a>
+            </div>
+        <?php else: ?>
+            <div id="reward-ui">
+                <p style="margin-bottom: 30px; color: var(--text-dim);">Witness the evolution. Stay for 20 seconds to cultivate your reward.</p>
+                <div class="btn-container">
+                    <button id="startBtn" onclick="startAd()" class="btn btn-primary">Start Watching</button>
+                </div>
+            </div>
+            
+            <div id="timer-ui" style="display:none;">
+                <p class="pro-art">Verifying Attention</p>
+                <div class="timer-text"><span id="seconds">20</span>s</div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Admin Login / Panel Area -->
+        <div class="admin-panel">
+            <?php if (!isset($_SESSION['admin_logged_in'])): ?>
+                <!-- زر Login يظهر الفورم عند الحاجة -->
+                <a href="javascript:void(0)" onclick="document.getElementById('login-form').style.display='block'" class="pro-art" style="cursor:pointer; font-size: 0.6rem;">Admin Login</a>
+                <form id="login-form" method="POST" style="display:none; margin-top:15px;">
+                    <input type="text" name="user" placeholder="Username" required>
+                    <input type="password" name="pass" placeholder="Password" required>
+                    <button type="submit" name="login" class="btn btn-outline" style="width:100%; padding: 8px;">Verify</button>
+                    <?php if(isset($error)) echo "<p style='color:red; font-size:0.7rem; margin-top:5px;'>$error</p>"; ?>
+                </form>
+            <?php else: ?>
+                <p class="pro-art" style="color: #fff;">Control Center</p>
+                <form method="POST">
+                    <input type="text" name="site_title" value="<?php echo $settings['title']; ?>" placeholder="Site Title">
+                    <input type="text" name="site_url" value="<?php echo $settings['url']; ?>" placeholder="EasyHits URL">
+                    <button type="submit" name="update_settings" class="btn btn-primary" style="width:100%; font-size:0.7rem;">Update Ecosystem</button>
+                </form>
+                <a href="?logout=1" class="pro-art" style="margin-top:15px; font-size:0.6rem; text-decoration:none;">Terminate Session</a>
+            <?php endif; ?>
         </div>
     </div>
 
+    <script>
+    function startAd() {
+        // فتح الرابط المبرمج في لوحة التحكم
+        window.open("<?php echo $settings['url']; ?>", "_blank");
+        
+        document.getElementById('reward-ui').style.display = 'none';
+        document.getElementById('timer-ui').style.display = 'block';
+        
+        let timeLeft = 20;
+        let countdown = setInterval(function() {
+            timeLeft--;
+            document.getElementById('seconds').innerText = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                // تعيين الكوكي لمدة 24 ساعة
+                document.cookie = "ad_lock=1; max-age=" + (24 * 60 * 60) + "; path=/";
+                alert("Bloom Successful! Reward Cultivated.");
+                location.reload();
+            }
+        }, 1000);
+    }
+    </script>
 </body>
 </html>
