@@ -1,0 +1,136 @@
+<?php
+session_start();
+
+// --- إعدادات لوحة التحكم ---
+$admin_user = "Admin";
+$admin_pass = "123456";
+$settings_file = "settings.json";
+
+// تحميل الإعدادات (الرابط والعنوان)
+if (file_exists($settings_file)) {
+    $settings = json_decode(file_get_contents($settings_file), true);
+} else {
+    $settings = ["url" => "https://example.com", "title" => "إعلان افتراضي"];
+}
+
+// تسجيل الدخول
+if (isset($_POST['login'])) {
+    if ($_POST['user'] == $admin_user && $_POST['pass'] == $admin_pass) {
+        $_SESSION['admin_logged_in'] = true;
+    }
+}
+
+// تسجيل الخروج
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header("Location: index.php");
+}
+
+// تحديث الإعدادات
+if (isset($_POST['update_settings']) && isset($_SESSION['admin_logged_in'])) {
+    $new_settings = ["url" => $_POST['site_url'], "title" => $_POST['site_title']];
+    file_put_contents($settings_file, json_encode($new_settings));
+    $settings = $new_settings;
+    $msg = "تم التحديث بنجاح!";
+}
+
+// فحص هل الإعلان متاح للمستخدم (24 ساعة)
+$is_locked = isset($_COOKIE['ad_lock']);
+?>
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>منصة الربح من المشاهدة</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; text-align: center; padding: 50px; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; min-width: 400px; }
+        .btn { background: #27ae60; color: white; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-size: 18px; text-decoration: none; }
+        .btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .admin-section { margin-top: 50px; border-top: 2px solid #eee; padding-top: 20px; }
+        input { padding: 10px; margin: 10px; width: 80%; border: 1px solid #ddd; border-radius: 5px; }
+        #timer { font-weight: bold; color: #e74c3c; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1><?php echo $settings['title']; ?></h1>
+    
+    <?php if ($is_locked): ?>
+        <div style="color: #e67e22;">
+            <h3>لقد شاهدت الإعلان بالفعل!</h3>
+            <p>يمكنك المحاولة مرة أخرى بعد 24 ساعة.</p>
+        </div>
+    <?php else: ?>
+        <p>شاهد الإعلان لمدة 20 ثانية لتربح النقاط</p>
+        <button id="startBtn" class="btn" onclick="startAd()">بدء مشاهدة الإعلان</button>
+        <div id="adArea" style="display:none; margin-top:20px;">
+            <p id="timer">يرجى الانتظار: <span id="seconds">20</span> ثانية...</p>
+        </div>
+        <div id="rewardArea" style="display:none;">
+            <h3 style="color: #27ae60;">تهانينا! لقد ربحت.</h3>
+            <p>تم قفل الإعلان لمدة 24 ساعة القادمة.</p>
+        </div>
+    <?php endif; ?>
+</div>
+
+<hr>
+
+<!-- لوحة التحكم -->
+<div class="admin-section">
+    <?php if (!isset($_SESSION['admin_logged_in'])): ?>
+        <h3>دخول الإدارة</h3>
+        <form method="POST">
+            <input type="text" name="user" placeholder="اسم المستخدم" required>
+            <input type="password" name="pass" placeholder="كلمة المرور" required>
+            <button type="submit" name="login" class="btn" style="background:#2980b9;">دخول</button>
+        </form>
+    <?php else: ?>
+        <h3>لوحة تحكم المدير (مرحباً Admin)</h3>
+        <form method="POST">
+            <input type="text" name="site_title" placeholder="عنوان الإعلان" value="<?php echo $settings['title']; ?>">
+            <input type="text" name="site_url" placeholder="رابط الموقع (EasyHits)" value="<?php echo $settings['url']; ?>">
+            <button type="submit" name="update_settings" class="btn">حفظ التغييرات</button>
+            <a href="?logout=1" style="color:red; display:block; margin-top:10px;">تسجيل خروج</a>
+        </form>
+        <?php if(isset($msg)) echo "<p style='color:green'>$msg</p>"; ?>
+    <?php endif; ?>
+</div>
+
+<script>
+function startAd() {
+    // فتح رابط الإعلان في نافذة جديدة
+    window.open("<?php echo $settings['url']; ?>", "_blank");
+    
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('adArea').style.display = 'block';
+    
+    let timeLeft = 20;
+    let countdown = setInterval(function() {
+        timeLeft--;
+        document.getElementById('seconds').innerText = timeLeft;
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            completeAd();
+        }
+    }, 1000);
+}
+
+function completeAd() {
+    document.getElementById('adArea').style.display = 'none';
+    document.getElementById('rewardArea').style.display = 'block';
+    
+    // إرسال طلب لتعيين الكوكي (قفل 24 ساعة)
+    document.cookie = "ad_lock=1; max-age=" + (24 * 60 * 60) + "; path=/";
+    
+    // هنا يمكنك إضافة كود Ajax لإرسال الأرباح لقاعدة البيانات الخاصة بموقعك
+    alert("تمت إضافة الأرباح إلى حسابك وقفل الإعلان لمدة 24 ساعة!");
+    location.reload(); 
+}
+</script>
+
+</body>
+</html>
