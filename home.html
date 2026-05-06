@@ -3,82 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display | The Black Flower</title>
+    <title>The Black Flower | Home</title>
     <style>
+        :root {
+            --bg-color: #000;
+            --card-bg: #0a0a0a;
+            --accent: #fff;
+            --border: #222;
+            --success: #00ff00;
+        }
+
         body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #000; color: #fff; padding: 20px; margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: var(--bg-color); color: #fff; padding: 20px; margin: 0;
             display: flex; flex-direction: column; align-items: center;
         }
-        
-        .brand-header { text-align: center; margin-bottom: 40px; margin-top: 20px; position: relative; width: 100%; max-width: 600px; }
-        
-        /* زر Admin Panel */
+
+        /* رأس الصفحة والشعار */
+        .brand-header { 
+            text-align: center; margin-bottom: 30px; margin-top: 20px; 
+            position: relative; width: 100%; max-width: 600px; 
+        }
+
         .btn-admin-link {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: transparent;
-            color: #444; 
-            border: 1px solid #222;
-            padding: 8px 15px;
-            cursor: pointer;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-decoration: none;
-            transition: 0.3s;
+            position: absolute; top: 0; right: 0; background: transparent;
+            color: #444; border: 1px solid #222; padding: 8px 15px;
+            cursor: pointer; font-size: 10px; text-transform: uppercase;
+            letter-spacing: 1px; text-decoration: none; transition: 0.3s;
         }
         .btn-admin-link:hover { border-color: #fff; color: #fff; }
 
-        .logo { width: 140px; height: auto; margin-bottom: 15px; }
+        .logo { 
+            width: 120px; height: auto; margin-bottom: 15px; 
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
+        }
         
         .brand-title { 
             font-family: "Times New Roman", Times, serif;
-            font-size: 32px; letter-spacing: 5px; text-transform: uppercase; margin: 0; 
+            font-size: 28px; letter-spacing: 6px; text-transform: uppercase; margin: 0; 
         }
-        
-        .brand-subtitle { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #888; margin-top: 5px; }
-        
-        .ads-container { width: 100%; max-width: 600px; display: grid; gap: 20px; }
-        .ad-card { background: #0a0a0a; border: 1px solid #222; padding: 25px; border-radius: 2px; }
-        .ad-title { font-size: 18px; margin: 0 0 10px 0; font-family: "Times New Roman", serif; }
-        .btn-watch { width: 100%; padding: 14px; background: #fff; color: #000; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+
+        /* كارت الميزانية */
+        .balance-container {
+            width: 100%; max-width: 600px; background: var(--card-bg);
+            border: 1px solid var(--border); border-radius: 4px;
+            padding: 20px; margin-bottom: 30px; text-align: center;
+            box-sizing: border-box;
+        }
+        .balance-label { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
+        .balance-amount { 
+            font-size: 32px; color: var(--success); font-weight: bold; 
+            margin-top: 10px; font-family: monospace; 
+        }
+        .currency { font-size: 14px; margin-left: 5px; }
+
+        /* حاوية الإعلانات */
+        .ads-grid { 
+            width: 100%; max-width: 600px; display: grid; gap: 15px; 
+        }
+
+        .ad-card { 
+            background: var(--card-bg); border: 1px solid var(--border); 
+            padding: 20px; border-radius: 2px; transition: 0.3s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .ad-card:hover { border-color: #444; background: #111; }
+
+        .ad-info h3 { 
+            margin: 0; font-size: 16px; font-family: "Times New Roman", serif; 
+            letter-spacing: 1px; text-transform: capitalize;
+        }
+        .ad-reward { color: var(--success); font-size: 11px; margin-top: 5px; display: block; }
+
+        .btn-earn { 
+            background: #fff; color: #000; border: none; padding: 10px 20px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
+            font-size: 10px; letter-spacing: 1px; transition: 0.3s;
+        }
+        .btn-earn:hover { background: #00ff00; }
+
+        .no-ads { color: #333; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; margin-top: 50px; }
     </style>
 </head>
 <body>
 
     <div class="brand-header">
-        <!-- التعديل هنا: استخدام ./ للتأكد من البحث في نفس المجلد -->
-        <a href="./AdControlManager.html" class="btn-admin-link">Admin Panel</a>
-        
-        <img src="wight.jpg" alt="The Black Flower Logo" class="logo">
+        <a href="AdControlManager.html" class="btn-admin-link">Admin Panel</a>
+        <img src="wight.jpg" alt="Logo" class="logo">
         <h1 class="brand-title">The Black Flower</h1>
-        <div class="brand-subtitle">Professional Art</div>
     </div>
 
-    <div class="ads-container" id="ads-list"></div>
+    <!-- عرض الميزانية -->
+    <div class="balance-container">
+        <div class="balance-label">Current Balance</div>
+        <div class="balance-amount">
+            <span id="userBalanceDisplay">0.000</span><span class="currency">USD</span>
+        </div>
+    </div>
+
+    <!-- قائمة الإعلانات -->
+    <div class="ads-grid" id="ads-list">
+        <!-- الإعلانات ستظهر هنا برمجياً -->
+    </div>
 
     <script>
-        // كود عرض الإعلانات المستمد من النظام
+        // إعدادات الوقت (24 ساعة)
+        const COOL_DOWN = 24 * 60 * 60 * 1000;
+
+        function updateUI() {
+            // 1. تحديث الميزانية
+            const balance = localStorage.getItem('user_balance') || "0.000";
+            document.getElementById('userBalanceDisplay').innerText = balance;
+
+            // 2. تحديث قائمة الإعلانات
+            renderAds();
+        }
+
         function renderAds() {
             const list = document.getElementById('ads-list');
             const ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
+            const watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
+            const now = Date.now();
+
             list.innerHTML = "";
-            
-            if (ads.length === 0) {
-                list.innerHTML = "<p style='text-align:center; color:#333; text-transform:uppercase; font-size:11px;'>No new art displays for now</p>";
-                return;
-            }
+            let availableAdsCount = 0;
 
             ads.forEach(ad => {
-                const card = document.createElement('div');
-                card.className = 'ad-card';
-                card.innerHTML = `<h3 class="ad-title">${ad.title}</h3><button class="btn-watch">View Artwork</button>`;
-                list.appendChild(card);
+                const lastView = watchHistory[ad.id] || 0;
+                
+                // عرض الإعلان فقط إذا لم يتم مشاهدته في آخر 24 ساعة
+                if (now - lastView >= COOL_DOWN) {
+                    availableAdsCount++;
+                    const card = document.createElement('div');
+                    card.className = 'ad-card';
+                    card.innerHTML = `
+                        <div class="ad-info">
+                            <h3>${ad.title}</h3>
+                            <span class="ad-reward">+ 0.01 Reward</span>
+                        </div>
+                        <button class="btn-earn" onclick="goToViewer('${ad.id}', '${encodeURIComponent(ad.url)}')">
+                            Watch Now
+                        </button>
+                    `;
+                    list.appendChild(card);
+                }
             });
+
+            if (availableAdsCount === 0) {
+                list.innerHTML = '<div class="no-ads">No Ads Available Right Now</div>';
+            }
         }
-        renderAds();
+
+        function goToViewer(id, url) {
+            // الانتقال لصفحة المشاهدة مع تمرير بيانات الإعلان في الرابط
+            window.location.href = `viewer.html?id=${id}&url=${url}`;
+        }
+
+        // تشغيل التحديث عند فتح الصفحة
+        window.onload = updateUI;
     </script>
 </body>
 </html>
