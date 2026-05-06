@@ -5,172 +5,183 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | The Black Flower</title>
     <style>
+        :root {
+            --bg-color: #000;
+            --card-bg: #0a0a0a;
+            --border-color: #222;
+            --accent-color: #fff;
+        }
+
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #000; color: #fff; padding: 20px; margin: 0;
+            background-color: var(--bg-color); color: #fff; padding: 20px; margin: 0;
             display: flex; flex-direction: column; align-items: center;
         }
         
-        .brand-header { text-align: center; margin-bottom: 30px; }
-        .logo { width: 100px; height: auto; margin-bottom: 10px; }
-        .brand-title { 
-            font-family: "Times New Roman", Times, serif;
-            font-size: 24px; letter-spacing: 3px; text-transform: uppercase; margin: 0; 
+        .brand-header { text-align: center; margin-bottom: 30px; position: relative; width: 100%; max-width: 550px; }
+        
+        .btn-home {
+            position: absolute; top: 0; left: 0; background: transparent; color: #fff;
+            border: 1px solid #fff; padding: 8px 15px; cursor: pointer; font-size: 10px;
+            text-transform: uppercase; text-decoration: none; transition: 0.3s;
         }
+        .btn-home:hover { background: #fff; color: #000; }
+
+        .logo { width: 100px; height: auto; margin-bottom: 10px; }
+        .brand-title { font-family: "Times New Roman", serif; font-size: 24px; letter-spacing: 3px; text-transform: uppercase; margin: 0; }
 
         .admin-container {
-            width: 100%;
-            max-width: 500px;
-            background: #0a0a0a;
-            border: 1px solid #222;
-            padding: 30px;
-            border-radius: 8px;
+            width: 100%; max-width: 550px; background: var(--card-bg);
+            border: 1px solid var(--border-color); padding: 30px; border-radius: 8px; box-sizing: border-box;
         }
 
-        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 18px; letter-spacing: 1px; }
+        .budget-status {
+            background: #111; padding: 15px; border-radius: 5px; margin-bottom: 20px;
+            text-align: center; border: 1px dashed #333;
+        }
 
-        label { display: block; margin-top: 15px; font-size: 13px; color: #888; }
+        h2 { border-bottom: 1px solid #333; padding-bottom: 10px; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
+        label { display: block; margin-top: 15px; font-size: 12px; color: #888; }
         
         input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 5px;
-            background: #111;
-            border: 1px solid #333;
-            color: #fff;
-            border-radius: 4px;
-            box-sizing: border-box;
+            width: 100%; padding: 12px; margin-top: 5px; background: #111;
+            border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box;
         }
 
-        input:focus { border-color: #fff; outline: none; }
+        input:focus { border-color: var(--accent-color); outline: none; }
 
-        .btn-add {
-            width: 100%;
-            padding: 15px;
-            background: #fff;
-            color: #000;
-            border: none;
-            margin-top: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .payment-section {
+            margin-top: 25px; padding-top: 20px; border-top: 1px solid #222;
         }
 
-        .btn-add:hover { background: #ccc; }
-
-        /* قائمة الإعلانات الحالية */
-        .current-ads {
-            width: 100%;
-            max-width: 500px;
-            margin-top: 40px;
+        .btn-pay {
+            width: 100%; padding: 15px; background: var(--accent-color); color: #000;
+            border: none; margin-top: 20px; cursor: pointer; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
+        .btn-pay:hover { background: #ccc; }
+
+        .current-ads { width: 100%; max-width: 550px; margin-top: 40px; }
         .ad-item {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            padding: 15px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
         }
 
-        .ad-info h4 { margin: 0; font-size: 14px; }
-        .ad-info p { margin: 5px 0 0; font-size: 11px; color: #555; }
-
-        .btn-delete {
-            background: transparent;
-            color: #ff4444;
-            border: 1px solid #ff4444;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 10px;
-            text-transform: uppercase;
-        }
-
-        .btn-delete:hover { background: #ff4444; color: #fff; }
+        .btn-delete { background: transparent; color: #ff4444; border: 1px solid #ff4444; padding: 5px 10px; cursor: pointer; font-size: 10px; }
     </style>
 </head>
 <body>
 
     <div class="brand-header">
-        <!-- استخدام الشعار من مسار GitHub الخاص بك -->
+        <a href="home" class="btn-home">الرئيسية ←</a>
         <img src="wight.jpg" alt="Logo" class="logo">
-        <h1 class="brand-title">Black Flower Admin</h1>
+        <h1 class="brand-title">Black Flower Ads Manager</h1>
     </div>
 
     <div class="admin-container">
-        <h2>إضافة إعلان جديد</h2>
-        <label>عنوان الإعلان (Art Title)</label>
-        <input type="text" id="adTitle" placeholder="مثال: التصميم المعماري الحديث">
+        <!-- قسم ميزانية الموقع -->
+        <div class="budget-status">
+            <span style="color: #888; font-size: 12px;">ميزانية الموقع الحالية:</span>
+            <div id="siteBudget" style="font-size: 20px; font-weight: bold; margin-top: 5px;">$1,250.00</div>
+        </div>
+
+        <h2>إنشاء إعلان جديد (24h Lock)</h2>
         
-        <label>رابط الوجهة (Target URL)</label>
+        <label>عنوان الإعلان</label>
+        <input type="text" id="adTitle" placeholder="أدخل عنوان الإعلان الفني">
+        
+        <label>رابط الموقع</label>
         <input type="url" id="adUrl" placeholder="https://example.com">
-        
-        <button class="btn-add" onclick="addAd()">حفظ الإعلان ونشره</button>
+
+        <div class="payment-section">
+            <h2>خيار الدفع</h2>
+            <label>هل لديك برومو كود؟ (للدفع المجاني)</label>
+            <input type="text" id="promoCode" placeholder="أدخل الكود هنا">
+            
+            <p style="font-size: 11px; color: #555; margin-top: 10px;">
+                * سيتم خصم مبلغ 10$ من ميزانية الموقع في حال عدم استخدام برومو كود.
+            </p>
+
+            <button class="btn-pay" onclick="processAdCreation()">تأكيد الدفع ونشر الإعلان</button>
+        </div>
     </div>
 
     <div class="current-ads">
         <h2>الإعلانات النشطة</h2>
-        <div id="adsList">
-            <!-- قائمة الإعلانات ستظهر هنا -->
-        </div>
+        <div id="adsList"></div>
     </div>
 
     <script>
-        // دالة لجلب الإعلانات وعرضها في لوحة التحكم
+        const FREE_CODE = "9861003993"; // كود الدفع المجاني
+        let budget = 1250.00; // ميزانية الموقع الافتراضية
+
+        function updateBudgetUI() {
+            document.getElementById('siteBudget').innerText = `$${budget.toFixed(2)}`;
+        }
+
         function displayAds() {
             const adsList = document.getElementById('adsList');
             const ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
-            
             adsList.innerHTML = '';
             
             ads.forEach(ad => {
                 const item = document.createElement('div');
                 item.className = 'ad-item';
                 item.innerHTML = `
-                    <div class="ad-info">
-                        <h4>${ad.title}</h4>
-                        <p>${ad.url}</p>
+                    <div style="text-align: right;">
+                        <h4 style="margin:0;">${ad.title}</h4>
+                        <p style="margin:5px 0 0; font-size:10px; color:#555;">${ad.url}</p>
                     </div>
-                    <button class="btn-delete" onclick="deleteAd('${ad.id}')">حذف</button>
+                    <button class="btn-delete" onclick="deleteAd('${ad.id}')">إزالة</button>
                 `;
                 adsList.appendChild(item);
             });
-
-            if (ads.length === 0) {
-                adsList.innerHTML = '<p style="text-align:center; color:#333; font-size:12px;">لا توجد إعلانات نشطة حالياً</p>';
-            }
         }
 
-        // دالة إضافة إعلان جديد
-        function addAd() {
+        function processAdCreation() {
             const title = document.getElementById('adTitle').value;
             const url = document.getElementById('adUrl').value;
+            const enteredCode = document.getElementById('promoCode').value;
 
-            if (title && url) {
-                const ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
-                const newAd = {
-                    id: 'ad_' + Date.now(), // معرف فريد لكل إعلان
-                    title: title,
-                    url: url
-                };
-                
-                ads.push(newAd);
-                localStorage.setItem('ads_v2', JSON.stringify(ads));
-                
-                // تنظيف الخانات وتحديث القائمة
-                document.getElementById('adTitle').value = '';
-                document.getElementById('adUrl').value = '';
-                displayAds();
-                alert('تمت إضافة الإعلان بنجاح!');
-            } else {
-                alert('يرجى ملء جميع الخانات');
+            if (!title || !url) {
+                alert("يرجى ملء كافة تفاصيل الإعلان.");
+                return;
             }
+
+            // التحقق من الدفع
+            if (enteredCode === FREE_CODE) {
+                alert("تم تفعيل البرومو كود بنجاح. الدفع مجاني.");
+            } else {
+                if (budget >= 10) {
+                    budget -= 10;
+                    updateBudgetUI();
+                    alert("تم خصم 10$ من ميزانية الموقع مقابل نشر الإعلان.");
+                } else {
+                    alert("الميزانية غير كافية لنشر الإعلان.");
+                    return;
+                }
+            }
+
+            // إضافة الإعلان
+            const ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
+            const newAd = {
+                id: 'ad_' + Date.now(),
+                title: title,
+                url: url
+            };
+            
+            ads.push(newAd);
+            localStorage.setItem('ads_v2', JSON.stringify(ads));
+            
+            // إعادة ضبط الخانات
+            document.getElementById('adTitle').value = '';
+            document.getElementById('adUrl').value = '';
+            document.getElementById('promoCode').value = '';
+            
+            displayAds();
         }
 
-        // دالة حذف إعلان
         function deleteAd(id) {
             let ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
             ads = ads.filter(ad => ad.id !== id);
@@ -178,8 +189,8 @@
             displayAds();
         }
 
-        // تحميل القائمة عند فتح الصفحة
         displayAds();
+        updateBudgetUI();
     </script>
 </body>
 </html>
