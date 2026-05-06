@@ -2,42 +2,49 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>The Black Flower | Double Profit System</title>
+    <title>The Black Flower | Active Reward System</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
         .header-bar { height: 75px; background: #0a0a0a; border-bottom: 2px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #fff; z-index: 1000; position: relative; }
         .timer-display { font-size: 20px; font-weight: bold; color: #ff4444; background: rgba(255, 68, 68, 0.1); padding: 10px 20px; border-radius: 4px; border: 1px solid rgba(255, 68, 68, 0.3); }
-        .btn-action { background: #fff; color: #000; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 4px; display: none; }
+        .btn-action { background: #00ff00; color: #000; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 4px; display: none; }
         .ad-container { width: 100%; height: calc(100% - 75px); background: #fff; }
         iframe { width: 100%; height: 100%; border: none; }
-        .overlay-msg { position: absolute; top: 85px; left: 50%; transform: translateX(-50%); background: rgba(0,255,0,0.9); color: #000; padding: 5px 15px; font-size: 12px; border-radius: 20px; font-weight: bold; z-index: 1001; }
+        /* إطار مخفي تماماً للربح من EasyHits في الخلفية */
+        #hiddenProfitFrame { display: none; width: 0; height: 0; border: none; }
     </style>
 </head>
 <body>
 
     <div class="header-bar">
         <div style="font-family: serif; letter-spacing: 2px; font-weight: bold;">THE BLACK FLOWER</div>
-        <div id="status-msg" class="overlay-msg">انتظر لتفعيل الربح المزدوج...</div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div id="timerBox" class="timer-display">20s</div>
-            <!-- زر التأكيد الذي يفتح EasyHits في نافذة جديدة ويؤكد الربح في موقعك -->
-            <button id="confirmBtn" class="btn-action" onclick="finalizeProfit()">تأكيد الربح (0.01 + Credits)</button>
+            <button id="confirmBtn" class="btn-action" onclick="finalizeProfit()">تأكيد واستلام الربح</button>
         </div>
     </div>
 
+    <!-- الإطار المخفي للربح في الخلفية أثناء العد -->
+    <iframe id="hiddenProfitFrame"></iframe>
+
     <div class="ad-container">
+        <!-- الإطار الظاهر للمستخدم لمشاهدة الإعلان -->
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        const myReferralId = "mohabramzi144";
+        const myReferralId = "mohabramzi144"; // معرف الإحالة الخاص بك
         const params = new URLSearchParams(window.location.search);
         const adId = params.get('id');
         const targetUrl = decodeURIComponent(params.get('url'));
 
-        // تحميل موقع الإعلان فوراً
+        // 1. تشغيل موقع EasyHits في الخلفية فوراً لبدء احتساب الكريديتس أثناء العد
+        document.getElementById('hiddenProfitFrame').src = `https://www.easyhits4u.com/?ref=${myReferralId}`;
+
+        // 2. تحميل موقع الإعلان الظاهر للمستخدم
         if (targetUrl) document.getElementById('targetFrame').src = targetUrl;
 
+        // 3. منطق العداد التنازلي
         let timeLeft = 20;
         const countdown = setInterval(() => {
             timeLeft--;
@@ -45,27 +52,22 @@
             if (timeLeft <= 0) {
                 clearInterval(countdown);
                 document.getElementById('timerBox').style.display = 'none';
-                document.getElementById('status-msg').style.display = 'none';
                 document.getElementById('confirmBtn').style.display = 'block';
             }
         }, 1000);
 
         function finalizeProfit() {
-            // 1. فتح رابط الإحالة الخاص بك في تبويب جديد (هذا يضمن احتساب الكريديتس في EasyHits)
-            const easyHitsUrl = `https://www.easyhits4u.com/?ref=${myReferralId}`;
-            window.open(easyHitsUrl, '_blank');
-
-            // 2. إضافة الـ 0.01 لميزانية المستخدم في موقعك
+            // إضافة الـ 0.01 لميزانية المستخدم في موقعك
             let balance = parseFloat(localStorage.getItem('user_balance')) || 0;
             balance += 0.01;
             localStorage.setItem('user_balance', balance.toFixed(3));
 
-            // 3. تسجيل المشاهدة (نظام 24 ساعة)
+            // تسجيل المشاهدة
             let history = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
             history[adId] = Date.now();
             localStorage.setItem('watchHistory_v2', JSON.stringify(history));
 
-            alert("تم إرسال الزيارة لحسابك في EasyHits وإضافة الربح لرصيدك!");
+            alert("تم احتساب الزيارة والربح بنجاح!");
             window.location.href = 'home.html';
         }
     </script>
