@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Black Flower | Verified Profit System</title>
-    <!-- استدعاء مكتبة MTCaptcha -->
     <script src="https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js" async defer></script>
     <style>
         body, html { 
@@ -12,16 +11,10 @@
             overflow: hidden; background: #000; font-family: 'Inter', sans-serif; 
         }
 
-        /* شريط التحكم العلوي */
         .header-bar { 
             height: 75px; background: #000; border-bottom: 1px solid #222; 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 0 30px; color: #fff; z-index: 1000; position: relative; 
-        }
-
-        .brand-logo {
-            font-family: serif; letter-spacing: 3px; font-weight: bold;
-            text-transform: uppercase; font-size: 18px;
         }
 
         .timer-display { 
@@ -30,16 +23,13 @@
             border: 1px solid #333; border-radius: 2px;
         }
 
-        /* زر المطالبة بالمكافأة في الهيدر */
         #confirmBtn { 
             background: #fff; color: #000; border: none; 
             padding: 12px 30px; font-weight: bold; cursor: pointer; 
             text-transform: uppercase; border-radius: 2px; 
             display: none; transition: 0.3s;
         }
-        #confirmBtn:hover { background: #ccc; }
 
-        /* طبقة الكابتشا */
         #captchaOverlay {
             display: none;
             position: fixed; top: 0; left: 0;
@@ -52,26 +42,41 @@
 
         .captcha-box {
             background: #000;
-            padding: 40px;
+            padding: 50px 40px 40px 40px;
             border: 1px solid #333;
-            border-radius: 4px;
+            border-radius: 2px;
+            position: relative;
             text-align: center;
-            max-width: 400px;
+            min-width: 350px;
+        }
+
+        /* زر الإغلاق المربع */
+        .close-btn-square {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            background: #222;
+            color: #fff;
+            border: none;
+            border-bottom: 1px solid #333;
+            border-left: 1px solid #333;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .close-btn-square:hover {
+            background: #ff4d4d; /* لون أحمر هادئ عند التمرير للتنبيه */
+            color: #fff;
         }
 
         .captcha-title {
-            color: #fff; margin-bottom: 20px; font-weight: bold;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-
-        /* زر الإنهاء داخل صندوق الكابتشا */
-        #doneCaptchaBtn {
-            margin-top: 20px;
-            background: #2ecc71; /* لون أخضر للنجاح */
-            color: #fff; border: none;
-            padding: 10px 25px; font-weight: bold;
-            cursor: pointer; display: none; /* يظهر بعد الحل فقط */
-            text-transform: uppercase; width: 100%;
+            color: #fff; margin-bottom: 25px; font-weight: bold;
+            text-transform: uppercase; letter-spacing: 2px; font-size: 14px;
         }
 
         .ad-container { width: 100%; height: calc(100% - 75px); position: relative; background: #fff; }
@@ -91,14 +96,15 @@
 
     <div id="captchaOverlay">
         <div class="captcha-box">
-            <div class="captcha-title">Human Verification</div>
+            <!-- الزر المربع الجديد -->
+            <button class="close-btn-square" onclick="manualClose()">✕</button>
+            
+            <div class="captcha-title">Security Check</div>
             
             <div class="mtcaptcha" 
                  data-sitekey="MTPublic-e0hUm0HwS" 
                  data-theme="basic" 
                  data-callback="onCaptchaSuccess"></div>
-
-            <button id="doneCaptchaBtn" onclick="closeCaptcha()">Confirm & Finish</button>
         </div>
     </div>
 
@@ -107,7 +113,7 @@
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
- <script>
+    <script>
         const params = new URLSearchParams(window.location.search);
         const adId = params.get('id');
         const targetUrl = decodeURIComponent(params.get('url'));
@@ -123,27 +129,23 @@
             
             if (timeLeft <= 0) {
                 clearInterval(countdown);
-                document.getElementById('timerBox').innerText = "Complete Captcha";
-                // إظهار الأوفرلاي
-                var overlay = document.getElementById('captchaOverlay');
-                overlay.style.display = 'flex';
-                // محاولة فرض إعادة تحميل الكابتشا لضمان ظهورها
-                if (typeof mtcaptcha !== 'undefined') { mtcaptcha.render(); }
+                document.getElementById('timerBox').innerText = "Verify Identity";
+                document.getElementById('captchaOverlay').style.display = 'flex';
             }
         }, 1000);
 
-        // --- التعديل الجذري هنا ---
-        // هذه الدالة ستعمل تلقائياً وبشكل فوري عند النجاح
-        function onCaptchaSuccess(validatedToken) {
-            console.log("Captcha solved successfully!");
-            
-            // 1. إغلاق نافذة الكابتشا السوداء فوراً
+        function manualClose() {
             document.getElementById('captchaOverlay').style.display = 'none';
-            
-            // 2. إخفاء العداد العلوي
+            document.getElementById('timerBox').innerText = "Open Verification";
+            document.getElementById('timerBox').style.cursor = "pointer";
+            document.getElementById('timerBox').onclick = function() {
+                document.getElementById('captchaOverlay').style.display = 'flex';
+            };
+        }
+
+        function onCaptchaSuccess(validatedToken) {
+            document.getElementById('captchaOverlay').style.display = 'none';
             document.getElementById('timerBox').style.display = 'none';
-            
-            // 3. إظهار زر المكافأة النهائي في الهيدر
             document.getElementById('confirmBtn').style.display = 'block';
         }
 
@@ -160,7 +162,6 @@
                 alert("Success! 15 BFP tokens added.");
                 window.location.href = 'home.html';
             } catch (e) {
-                console.error("Error finalizing reward:", e);
                 window.location.href = 'home.html';
             }
         }
