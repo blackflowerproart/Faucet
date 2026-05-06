@@ -3,194 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Member Home</title>
+    <title>The Black Flower | Member Dashboard</title>
     <style>
-        /* Black & White Professional Theme */
         body, html { 
-            margin: 0; padding: 0; background-color: #000; color: #fff;
-            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            margin: 0; padding: 0; height: 100%; background-color: #000; color: #fff;
+            font-family: 'Inter', sans-serif; display: flex;
         }
 
-        /* Top Navigation Bar */
-        .header-bar {
-            height: 90px;
+        /* Side Navigation Bar (Left) */
+        .sidebar {
+            width: 280px;
             background: #000;
-            border-bottom: 1px solid #333;
+            border-right: 1px solid #222;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 40px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            flex-direction: column;
+            padding: 40px 20px;
+            position: fixed;
+            height: 100vh;
         }
 
-        .logo-section { display: flex; flex-direction: column; }
-        .logo-text { font-family: "Times New Roman", serif; letter-spacing: 4px; font-size: 20px; font-weight: 700; text-transform: uppercase; }
-        .tagline { font-size: 9px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+        .logo-section { margin-bottom: 50px; }
+        .logo-text { font-family: serif; letter-spacing: 2px; font-size: 18px; font-weight: bold; text-transform: uppercase; }
+        
+        .user-profile { margin-bottom: 40px; padding: 20px; border: 1px solid #111; border-radius: 4px; }
+        .user-name { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+        .user-email { display: block; font-size: 11px; color: #555; overflow: hidden; text-overflow: ellipsis; }
 
-        /* User Dashboard Info */
-        .user-stats {
-            display: flex;
-            align-items: center;
-            gap: 30px;
+        .balance-section { margin-bottom: 40px; background: #fff; color: #000; padding: 20px; border-radius: 2px; }
+        .balance-label { font-size: 10px; text-transform: uppercase; font-weight: bold; opacity: 0.7; }
+        .balance-value { display: block; font-size: 24px; font-weight: 900; margin-top: 5px; }
+
+        .nav-links { display: flex; flex-direction: column; gap: 10px; }
+        .btn-nav {
+            padding: 12px; border: 1px solid #333; background: transparent; color: #fff;
+            text-transform: uppercase; font-size: 11px; cursor: pointer; text-decoration: none; text-align: center;
         }
+        .btn-nav:hover { background: #fff; color: #000; border-color: #fff; }
 
-        .stat-item { text-align: right; }
-        .stat-label { font-size: 10px; color: #666; text-transform: uppercase; display: block; margin-bottom: 2px; }
-        .stat-value { font-size: 14px; font-weight: 600; color: #fff; }
+        /* Main Content Area */
+        .main-content { margin-left: 320px; padding: 60px; width: 100%; }
+        .section-title { font-family: serif; font-size: 28px; letter-spacing: 2px; margin-bottom: 40px; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 20px; }
 
-        .balance-card {
-            background: #fff;
-            color: #000;
-            padding: 8px 18px;
-            border-radius: 2px;
-            text-align: center;
-        }
-        .balance-value { font-size: 18px; font-weight: 900; }
-        .balance-unit { font-size: 10px; font-weight: bold; margin-left: 4px; }
-
-        /* Main Content */
-        .content-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .section-title {
-            font-size: 24px;
-            font-family: "Times New Roman", serif;
-            letter-spacing: 2px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-            text-transform: uppercase;
-        }
-
-        /* Ads Grid */
-        .ads-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        .ad-card {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            padding: 25px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .ad-card:hover {
-            border-color: #fff;
-            background: #111;
-        }
-
-        .ad-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #fff; }
-        .ad-reward { color: #888; font-size: 12px; margin-bottom: 20px; display: block; }
-
-        .btn-view {
-            width: 100%;
-            padding: 12px;
-            background: transparent;
-            color: #fff;
-            border: 1px solid #444;
-            cursor: pointer;
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 1px;
-            transition: 0.3s;
-        }
-
-        .btn-view:hover {
-            background: #fff;
-            color: #000;
-            border-color: #fff;
-        }
-
-        .footer {
-            margin-top: 100px;
-            padding: 40px;
-            text-align: center;
-            border-top: 1px solid #111;
-            font-size: 10px;
-            color: #444;
-            letter-spacing: 2px;
-        }
+        .ads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+        .ad-card { background: #050505; border: 1px solid #111; padding: 30px; transition: 0.3s; }
+        .ad-card:hover { border-color: #444; background: #080808; }
+        .ad-title { font-size: 16px; margin-bottom: 15px; font-weight: 600; }
+        .ad-reward { color: #888; font-size: 12px; margin-bottom: 25px; display: block; }
+        
+        .empty-msg { color: #444; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <header class="header-bar">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
         <div class="logo-section">
             <div class="logo-text">THE BLACK FLOWER</div>
-            <div class="tagline">Pro Art Visualization</div>
         </div>
 
-        <div class="user-stats">
-            <div class="stat-item">
-                <span class="stat-label">User ID</span>
-                <span class="stat-value" id="userName">Mohammad Ramzi</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Network</span>
-                <span class="stat-value">BFP Chain</span>
-            </div>
-            <div class="balance-card">
-                <span class="stat-label" style="color: #666;">Current Balance</span>
-                <span class="balance-value" id="bfpBalance">0.00</span>
-                <span class="balance-unit">BFP</span>
-            </div>
+        <div class="user-profile">
+            <span class="user-name">Mohammad Ramzi</span>
+            <span class="user-email">designer.ramzi@example.com</span>
         </div>
-    </header>
 
-    <main class="content-container">
-        <h2 class="section-title">Available Ads</h2>
-        
+        <div class="balance-section">
+            <span class="balance-label">Total Balance</span>
+            <span class="balance-value" id="bfpDisplay">0.00</span>
+            <span style="font-size: 10px; font-weight: bold;">BFP</span>
+        </div>
+
+        <nav class="nav-links">
+            <a href="AdControlManager.html" class="btn-nav">Admin Dashboard</a>
+            <button onclick="location.reload()" class="btn-nav">Refresh Ads</button>
+        </nav>
+    </aside>
+
+    <!-- Content -->
+    <main class="main-content">
+        <h1 class="section-title">Verified Ads</h1>
         <div class="ads-grid" id="adsContainer">
-            <!-- Ads will be loaded here dynamically -->
+            <!-- Dynamic Ads from LocalStorage -->
         </div>
     </main>
 
-    <footer class="footer">
-        © 2026 THE BLACK FLOWER PRO ART | DESIGNED BY MOHAMMAD RAMZI
-    </footer>
-
     <script>
-        // Load User Data on Page Load
         window.onload = function() {
+            // Load Balance
             const savedBFP = localStorage.getItem('bfp_balance') || "0.00";
-            document.getElementById('bfpBalance').innerText = savedBFP;
-            loadAds();
+            document.getElementById('bfpDisplay').innerText = savedBFP;
+
+            // Load Ads from Controller
+            renderAds();
         };
 
-        function loadAds() {
-            // This would typically come from your database
-            const ads = [
-                { id: "ad1", title: "Modern 3D Visualization", url: "https://example.com/1", reward: "15 BFP" },
-                { id: "ad2", title: "AutoCAD Project Showcase", url: "https://example.com/2", reward: "15 BFP" },
-                { id: "ad3", title: "Interior Design Concepts", url: "https://example.com/3", reward: "15 BFP" }
-            ];
-
+        function renderAds() {
             const container = document.getElementById('adsContainer');
-            container.innerHTML = '';
+            const adsData = JSON.parse(localStorage.getItem('added_ads')) || [];
 
-            ads.forEach(ad => {
+            if (adsData.length === 0) {
+                container.innerHTML = '<p class="empty-msg">No ads available. Please add ads from the Admin Dashboard.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            adsData.forEach((ad, index) => {
                 const card = document.createElement('div');
                 card.className = 'ad-card';
                 card.innerHTML = `
-                    <div class="ad-title">${ad.title}</div>
-                    <span class="ad-reward">Reward: ${ad.reward}</span>
-                    <button class="btn-view" onclick="openAd('${ad.id}', '${encodeURIComponent(ad.url)}')">Watch Now</button>
+                    <div class="ad-title">${ad.title || 'Premium Ad'}</div>
+                    <span class="ad-reward">Reward: 15 BFP</span>
+                    <button class="btn-nav" style="width:100%" onclick="openAd('${index}', '${encodeURIComponent(ad.url)}')">Watch Now</button>
                 `;
                 container.appendChild(card);
             });
         }
 
         function openAd(id, url) {
-            // Navigate to the viewer page with parameters
             window.location.href = `viewer.html?id=${id}&url=${url}`;
         }
     </script>
