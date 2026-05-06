@@ -10,76 +10,108 @@
             --card-bg: #0a0a0a;
             --accent: #fff;
             --border: #222;
+            --danger: #ff4444;
         }
 
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: var(--bg-color); color: #fff; padding: 40px 20px; margin: 0;
             display: flex; flex-direction: column; align-items: center;
         }
 
-        .container { width: 100%; max-width: 500px; background: var(--card-bg); border: 1px solid var(--border); padding: 30px; border-radius: 4px; }
+        .container { 
+            width: 100%; max-width: 500px; background: var(--card-bg); 
+            border: 1px solid var(--border); padding: 30px; border-radius: 8px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
         
         .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { font-family: "Times New Roman", serif; letter-spacing: 2px; text-transform: uppercase; margin: 0; font-size: 24px; }
+        .header h1 { 
+            font-family: "Times New Roman", serif; letter-spacing: 2px; 
+            text-transform: uppercase; margin: 0; font-size: 24px; 
+        }
         
-        .price-tag { background: #111; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 20px; border: 1px dashed #444; color: #00ff00; font-weight: bold; }
+        .price-badge { 
+            background: #111; padding: 12px; border-radius: 4px; 
+            text-align: center; margin-bottom: 25px; border: 1px dashed #333; 
+            color: #00ff00; font-weight: bold; font-size: 14px;
+        }
 
         label { display: block; margin-bottom: 8px; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        
         input { 
             width: 100%; padding: 12px; margin-bottom: 20px; background: #050505; 
-            border: 1px solid #333; color: #fff; border-radius: 2px; box-sizing: border-box;
+            border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box;
+            transition: 0.3s;
         }
-        input:focus { border-color: var(--accent); outline: none; }
+        input:focus { border-color: var(--accent); outline: none; background: #080808; }
 
-        .btn-submit { 
+        .btn-publish { 
             width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; 
             font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
-            transition: 0.3s; margin-bottom: 10px;
+            border-radius: 4px; transition: 0.3s;
         }
-        .btn-submit:hover { background: #ccc; }
+        .btn-publish:hover { background: #ccc; transform: translateY(-2px); }
 
-        .btn-back { display: block; text-align: center; color: #555; text-decoration: none; font-size: 11px; text-transform: uppercase; margin-top: 10px; }
+        .btn-back { 
+            display: block; text-align: center; color: #666; text-decoration: none; 
+            font-size: 11px; text-transform: uppercase; margin-top: 15px; letter-spacing: 1px;
+        }
+        .btn-back:hover { color: #fff; }
 
-        /* قسم إدارة الإعلانات المحذوفة */
-        .manage-section { margin-top: 40px; width: 100%; max-width: 500px; border-top: 1px solid var(--border); padding-top: 20px; }
-        .ad-item { background: #0a0a0a; border: 1px solid var(--border); padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .ad-info { font-size: 13px; }
-        .btn-delete { background: none; border: 1px solid #ff0000; color: #ff0000; padding: 5px 12px; cursor: pointer; font-size: 10px; text-transform: uppercase; }
-        .btn-delete:hover { background: #ff0000; color: #fff; }
+        /* قسم إدارة الإعلانات */
+        .manage-section { 
+            margin-top: 50px; width: 100%; max-width: 500px; 
+            border-top: 1px solid var(--border); padding-top: 30px; 
+        }
+        .manage-title { font-size: 14px; color: #fff; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; text-align: center; }
+        
+        .ad-item { 
+            background: #050505; border: 1px solid var(--border); padding: 15px; 
+            margin-bottom: 12px; display: flex; justify-content: space-between; 
+            align-items: center; border-radius: 4px;
+        }
+        .ad-details strong { display: block; font-size: 14px; margin-bottom: 4px; }
+        .ad-details small { color: #444; font-size: 10px; word-break: break-all; }
+        
+        .btn-delete { 
+            background: transparent; border: 1px solid var(--danger); color: var(--danger); 
+            padding: 6px 12px; cursor: pointer; font-size: 10px; text-transform: uppercase;
+            border-radius: 3px; transition: 0.3s;
+        }
+        .btn-delete:hover { background: var(--danger); color: #fff; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>Ad Control Manager</h1>
-        <p style="font-size: 9px; color: #444; letter-spacing: 3px; margin-top: 5px;">THE BLACK FLOWER PRO ART</p>
+        <h1>Ad Control Center</h1>
+        <p style="font-size: 9px; color: #444; letter-spacing: 3px; margin-top: 8px;">THE BLACK FLOWER PRO ART SYSTEM</p>
     </div>
 
     <div class="container">
-        <div class="price-tag">سعر الإعلان الحالي: 0.01 وحدة</div>
+        <div class="price-badge">تكلفة النشر: 0.01 USD</div>
 
         <label>عنوان الإعلان</label>
-        <input type="text" id="adTitle" placeholder="أدخل اسم الإعلان">
+        <input type="text" id="adTitle" placeholder="مثال: معرض التصميم الثلاثي الأبعاد">
 
-        <label>رابط الإعلان (URL)</label>
+        <label>رابط الموقع (URL)</label>
         <input type="url" id="adUrl" placeholder="https://example.com">
 
-        <label>برومو كود (للإعلان المجاني)</label>
-        <input type="text" id="promoCode" placeholder="أدخل الكود إن وجد">
+        <label>البرومو كود (للنشر المجاني)</label>
+        <input type="text" id="promoCode" placeholder="أدخل كود 9861003993 للمجاني">
 
-        <button class="btn-submit" onclick="publishAd()">نشر الإعلان (24 ساعة)</button>
-        <a href="home.html" class="btn-back">العودة لصفحة HOME</a>
+        <button class="btn-publish" onclick="publishAd()">نشر الإعلان الآن</button>
+        <a href="home.html" class="btn-back">العودة للرئيسية</a>
     </div>
 
     <div class="manage-section">
-        <h2 style="font-size: 12px; color: #555; text-transform: uppercase; margin-bottom: 15px;">إدارة وحذف الإعلانات</h2>
+        <h2 class="manage-title">الإعلانات النشطة</h2>
         <div id="managerList"></div>
     </div>
 
     <script>
-        const FREE_CODE = "9861003993"; // كود الإعلان المجاني
-        const AD_PRICE = 0.01; // سعر الإعلان
+        const FREE_CODE = "9861003993"; // الكود الذي حددته
 
         function publishAd() {
             const title = document.getElementById('adTitle').value;
@@ -87,35 +119,36 @@
             const code = document.getElementById('promoCode').value;
 
             if (!title || !url) {
-                alert("يرجى إدخال كافة البيانات المطلوبة");
+                alert("يرجى تعبئة الحقول الأساسية (العنوان والرابط)");
                 return;
             }
 
-            // التحقق من البرومو كود أو السعر
+            // نظام التحقق من الدفع/الكود
             if (code !== FREE_CODE) {
-                const confirmPay = confirm(`سعر نشر الإعلان هو ${AD_PRICE}. هل تود المتابعة والخصم من الميزانية؟`);
-                if (!confirmPay) return;
+                const confirmPayment = confirm("سيتم احتساب تكلفة 0.01 لنشر هذا الإعلان. هل تود المتابعة؟");
+                if (!confirmPayment) return;
             } else {
-                alert("تم تفعيل الكود المجاني بنجاح!");
+                alert("تم قبول البرومو كود! النشر مجاني.");
             }
 
+            // حفظ الإعلان
             const ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
             const newAd = {
                 id: 'ad_' + Date.now(),
                 title: title,
                 url: url,
-                timestamp: Date.now()
+                createdAt: Date.now()
             };
 
             ads.push(newAd);
             localStorage.setItem('ads_v2', JSON.stringify(ads));
             
-            // تنظيف المدخلات
+            // إعادة تعيين الحقول
             document.getElementById('adTitle').value = '';
             document.getElementById('adUrl').value = '';
             document.getElementById('promoCode').value = '';
             
-            alert("تم نشر الإعلان بنجاح، سيظهر في صفحة Home لمدة 24 ساعة بمجرد مشاهدته.");
+            alert("تم إرسال الإعلان إلى صفحة Home بنجاح!");
             renderManager();
         }
 
@@ -125,35 +158,35 @@
             list.innerHTML = '';
 
             if (ads.length === 0) {
-                list.innerHTML = '<p style="font-size:11px; color:#333; text-align:center;">لا توجد إعلانات نشطة للحذف</p>';
+                list.innerHTML = '<p style="font-size:11px; color:#333; text-align:center;">لا توجد إعلانات منشورة حالياً</p>';
                 return;
             }
 
             ads.forEach(ad => {
-                const item = document.createElement('div');
-                item.className = 'ad-item';
-                item.innerHTML = `
-                    <div class="ad-info">
-                        <strong>${ad.title}</strong><br>
-                        <small style="color:#444">${ad.url}</small>
+                const div = document.createElement('div');
+                div.className = 'ad-item';
+                div.innerHTML = `
+                    <div class="ad-details">
+                        <strong>${ad.title}</strong>
+                        <small>${ad.url}</small>
                     </div>
-                    <button class="btn-delete" onclick="deleteAd('${ad.id}')">حذف الآن</button>
+                    <button class="btn-delete" onclick="deleteAd('${ad.id}')">حذف</button>
                 `;
-                list.appendChild(item);
+                list.appendChild(div);
             });
         }
 
         function deleteAd(id) {
-            if (confirm("هل أنت متأكد من حذف هذا الإعلان نهائياً من صفحة العرض؟")) {
+            if (confirm("هل تريد إزالة هذا الإعلان نهائياً من العرض؟")) {
                 let ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
-                ads = ads.filter(ad => ad.id !== id);
+                ads = ads.filter(item => item.id !== id);
                 localStorage.setItem('ads_v2', JSON.stringify(ads));
                 renderManager();
             }
         }
 
-        // تحديث القائمة عند فتح الصفحة
-        renderManager();
+        // تشغيل العرض عند التحميل
+        window.onload = renderManager;
     </script>
 </body>
 </html>
