@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Premium Ad Viewer</title>
+    <title>The Black Flower | Member Home</title>
     <style>
-        /* Modern Minimalist Black & White Theme */
+        /* Black & White Professional Theme */
         body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: #000; font-family: 'Inter', 'Segoe UI', sans-serif; 
+            margin: 0; padding: 0; background-color: #000; color: #fff;
+            font-family: 'Inter', 'Segoe UI', sans-serif; 
         }
 
         /* Top Navigation Bar */
@@ -20,225 +20,178 @@
             justify-content: space-between;
             align-items: center;
             padding: 0 40px;
-            color: #fff;
+            position: sticky;
+            top: 0;
             z-index: 1000;
-            position: relative;
         }
 
-        .logo-section {
-            display: flex;
-            flex-direction: column;
-        }
+        .logo-section { display: flex; flex-direction: column; }
+        .logo-text { font-family: "Times New Roman", serif; letter-spacing: 4px; font-size: 20px; font-weight: 700; text-transform: uppercase; }
+        .tagline { font-size: 9px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
 
-        .logo-text {
-            font-family: "Times New Roman", serif;
-            letter-spacing: 4px;
-            font-size: 20px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .tagline {
-            font-size: 9px;
-            color: #888;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-top: 4px;
-        }
-
-        /* User Profile Section */
-        .user-info {
+        /* User Dashboard Info */
+        .user-stats {
             display: flex;
             align-items: center;
-            gap: 20px;
-            border-left: 1px solid #333;
-            border-right: 1px solid #333;
-            padding: 0 25px;
-            height: 50%;
+            gap: 30px;
         }
 
-        .user-details {
-            text-align: right;
-        }
+        .stat-item { text-align: right; }
+        .stat-label { font-size: 10px; color: #666; text-transform: uppercase; display: block; margin-bottom: 2px; }
+        .stat-value { font-size: 14px; font-weight: 600; color: #fff; }
 
-        .user-name {
-            font-size: 14px;
-            font-weight: 600;
-            display: block;
-        }
-
-        .user-contact {
-            font-size: 11px;
-            color: #666;
-            display: block;
-        }
-
-        .balance-badge {
+        .balance-card {
             background: #fff;
             color: #000;
-            padding: 4px 12px;
+            padding: 8px 18px;
             border-radius: 2px;
-            font-weight: bold;
-            font-size: 13px;
+            text-align: center;
+        }
+        .balance-value { font-size: 18px; font-weight: 900; }
+        .balance-unit { font-size: 10px; font-weight: bold; margin-left: 4px; }
+
+        /* Main Content */
+        .content-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
         }
 
-        /* Controls Section */
-        .controls {
-            display: flex;
-            align-items: center;
+        .section-title {
+            font-size: 24px;
+            font-family: "Times New Roman", serif;
+            letter-spacing: 2px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        /* Ads Grid */
+        .ads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
         }
 
-        .timer-circle {
-            width: 45px;
-            height: 45px;
-            border: 1px solid #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 15px;
-        }
-
-        .btn-confirm {
-            background-color: #fff;
-            color: #000;
-            border: 1px solid #fff;
-            padding: 10px 25px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            display: none;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .ad-card {
+            background: #0a0a0a;
+            border: 1px solid #222;
+            padding: 25px;
             transition: all 0.3s ease;
-        }
-
-        .btn-confirm:hover {
-            background-color: #000;
-            color: #fff;
-        }
-
-        /* Frames Management */
-        .main-container {
-            width: 100%;
-            height: calc(100% - 90px);
-            background: #fff;
             position: relative;
+            overflow: hidden;
         }
 
-        #targetFrame {
+        .ad-card:hover {
+            border-color: #fff;
+            background: #111;
+        }
+
+        .ad-title { font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #fff; }
+        .ad-reward { color: #888; font-size: 12px; margin-bottom: 20px; display: block; }
+
+        .btn-view {
             width: 100%;
-            height: 100%;
-            border: none;
-            position: absolute;
-            z-index: 2;
+            padding: 12px;
+            background: transparent;
+            color: #fff;
+            border: 1px solid #444;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            transition: 0.3s;
         }
 
-        #ptcFrame {
-            width: 1px;
-            height: 1px;
-            position: absolute;
-            opacity: 0.01;
-            z-index: 1;
+        .btn-view:hover {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        .footer {
+            margin-top: 100px;
+            padding: 40px;
+            text-align: center;
+            border-top: 1px solid #111;
+            font-size: 10px;
+            color: #444;
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
 
-    <div class="header-bar">
-        <!-- Logo -->
+    <header class="header-bar">
         <div class="logo-section">
             <div class="logo-text">THE BLACK FLOWER</div>
             <div class="tagline">Pro Art Visualization</div>
         </div>
 
-        <!-- User Data Display -->
-        <div class="user-info">
-            <div class="user-details">
-                <span class="user-name" id="displayUserName">Mohammad Ramzi</span>
-                <span class="user-contact" id="displayUserContact">designer.ramzi@example.com</span>
+        <div class="user-stats">
+            <div class="stat-item">
+                <span class="stat-label">User ID</span>
+                <span class="stat-value" id="userName">Mohammad Ramzi</span>
             </div>
-            <div class="balance-badge">
-                <span id="bfpBalanceDisplay">0.00</span> BFP
+            <div class="stat-item">
+                <span class="stat-label">Network</span>
+                <span class="stat-value">BFP Chain</span>
+            </div>
+            <div class="balance-card">
+                <span class="stat-label" style="color: #666;">Current Balance</span>
+                <span class="balance-value" id="bfpBalance">0.00</span>
+                <span class="balance-unit">BFP</span>
             </div>
         </div>
-        
-        <!-- Action Controls -->
-        <div class="controls">
-            <div id="timerBox" class="timer-circle">20</div>
-            <button id="confirmBtn" class="btn-confirm" onclick="finalizeTransaction()">Confirm Reward</button>
-        </div>
-    </div>
+    </header>
 
-    <div class="main-container">
-        <!-- Rotate4All Tracking -->
-        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+    <main class="content-container">
+        <h2 class="section-title">Available Ads</h2>
         
-        <!-- Ad Content -->
-        <iframe id="targetFrame" src="about:blank"></iframe>
-    </div>
+        <div class="ads-grid" id="adsContainer">
+            <!-- Ads will be loaded here dynamically -->
+        </div>
+    </main>
+
+    <footer class="footer">
+        © 2026 THE BLACK FLOWER PRO ART | DESIGNED BY MOHAMMAD RAMZI
+    </footer>
 
     <script>
-        // Configuration
-        const REWARD_USD = 0.00005; 
-        const REWARD_BFP = 15;      
-        
-        const params = new URLSearchParams(window.location.search);
-        const adId = params.get('id');
-        const targetUrl = decodeURIComponent(params.get('url'));
-
-        // Load Initial Data
+        // Load User Data on Page Load
         window.onload = function() {
-            // Display current BFP balance
             const savedBFP = localStorage.getItem('bfp_balance') || "0.00";
-            document.getElementById('bfpBalanceDisplay').innerText = savedBFP;
-
-            // Load User Info (Future placeholder logic)
-            // document.getElementById('displayUserName').innerText = localStorage.getItem('username') || "Guest User";
+            document.getElementById('bfpBalance').innerText = savedBFP;
+            loadAds();
         };
 
-        // Load Ad Content
-        if (targetUrl && targetUrl !== 'null') {
-            document.getElementById('targetFrame').src = targetUrl;
+        function loadAds() {
+            // This would typically come from your database
+            const ads = [
+                { id: "ad1", title: "Modern 3D Visualization", url: "https://example.com/1", reward: "15 BFP" },
+                { id: "ad2", title: "AutoCAD Project Showcase", url: "https://example.com/2", reward: "15 BFP" },
+                { id: "ad3", title: "Interior Design Concepts", url: "https://example.com/3", reward: "15 BFP" }
+            ];
+
+            const container = document.getElementById('adsContainer');
+            container.innerHTML = '';
+
+            ads.forEach(ad => {
+                const card = document.createElement('div');
+                card.className = 'ad-card';
+                card.innerHTML = `
+                    <div class="ad-title">${ad.title}</div>
+                    <span class="ad-reward">Reward: ${ad.reward}</span>
+                    <button class="btn-view" onclick="openAd('${ad.id}', '${encodeURIComponent(ad.url)}')">Watch Now</button>
+                `;
+                container.appendChild(card);
+            });
         }
 
-        // Countdown Logic
-        let seconds = 20;
-        const timerBox = document.getElementById('timerBox');
-        const confirmBtn = document.getElementById('confirmBtn');
-
-        const interval = setInterval(() => {
-            seconds--;
-            timerBox.innerText = seconds;
-
-            if (seconds <= 0) {
-                clearInterval(interval);
-                timerBox.style.display = 'none';
-                confirmBtn.style.display = 'block';
-            }
-        }, 1000);
-
-        // Transaction Finalization
-        function finalizeTransaction() {
-            // 1. Update USD Balance
-            let currentBalanceUSD = parseFloat(localStorage.getItem('user_balance')) || 0;
-            currentBalanceUSD += REWARD_USD;
-            localStorage.setItem('user_balance', currentBalanceUSD.toFixed(6));
-
-            // 2. Update BFP Balance
-            let currentBalanceBFP = parseFloat(localStorage.getItem('bfp_balance')) || 0;
-            currentBalanceBFP += REWARD_BFP;
-            localStorage.setItem('bfp_balance', currentBalanceBFP.toFixed(2));
-
-            // 3. Mark as Viewed
-            let watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
-            watchHistory[adId] = Date.now();
-            localStorage.setItem('watchHistory_v2', JSON.stringify(watchHistory));
-
-            alert(`Transaction Complete!\n+ ${REWARD_BFP} BFP earned.`);
-            window.location.href = 'home.html';
+        function openAd(id, url) {
+            // Navigate to the viewer page with parameters
+            window.location.href = `viewer.html?id=${id}&url=${url}`;
         }
     </script>
 </body>
