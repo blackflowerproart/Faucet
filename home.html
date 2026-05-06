@@ -13,7 +13,7 @@
         
         .brand-header { text-align: center; margin-bottom: 40px; margin-top: 20px; position: relative; width: 100%; max-width: 600px; }
         
-        /* الزر المرتبط بصفحة Adcontrol */
+        /* الزر المرتبط بلوحة التحكم الجديدة */
         .btn-admin-link {
             position: absolute;
             top: 0;
@@ -74,18 +74,15 @@
 <body>
 
     <div class="brand-header">
-        <!-- الربط بصفحة Adcontrol المطلوبة -->
-        <a href="Adcontrol" class="btn-admin-link">Admin Panel</a>
+        <!-- تم توجيه الزر لصفحة AdControlManager.html -->
+        <a href="AdControlManager.html" class="btn-admin-link">Admin Panel</a>
         
-        <!-- استخدام شعار wight.jpg -->
         <img src="wight.jpg" alt="The Black Flower Logo" class="logo">
         <h1 class="brand-title">The Black Flower</h1>
         <div class="brand-subtitle">Professional Art</div>
     </div>
 
-    <div class="ads-container" id="ads-list">
-        <!-- الإعلانات المضافة من لوحة التحكم ستظهر هنا -->
-    </div>
+    <div class="ads-container" id="ads-list"></div>
 
     <script>
         const COOL_DOWN = 24 * 60 * 60 * 1000;
