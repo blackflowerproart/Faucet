@@ -2,91 +2,155 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مشاهدة الإعلان | The Black Flower</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, sans-serif; 
+        }
         
-        /* الشريط العلوي */
-        .top-bar {
-            height: 60px;
+        /* شريط التحكم العلوي */
+        .header-bar {
+            height: 70px;
             background: #0a0a0a;
-            border-bottom: 1px solid #222;
+            border-bottom: 2px solid #1a1a1a;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 25px;
+            color: #fff;
+            position: relative;
+            z-index: 100;
+            box-sizing: border-box;
+        }
+
+        .brand-name {
+            font-family: "Times New Roman", serif;
+            letter-spacing: 2px;
+            font-size: 18px;
+            font-weight: bold;
             color: #fff;
         }
 
-        .timer-box { font-size: 18px; font-weight: bold; color: #ff0000; letter-spacing: 1px; }
-        
+        .status-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* تصميم العداد */
+        .timer-display {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            min-width: 120px;
+            text-align: center;
+        }
+
+        /* زر التوكيد */
         .btn-confirm {
             background: #00ff00;
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 25px;
             font-weight: bold;
             cursor: pointer;
-            display: none; /* مخفي حتى ينتهي العداد */
+            display: none; /* مخفي في البداية */
             text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 4px;
+            animation: pulse 1.5s infinite;
         }
 
-        /* الإطار الذي يعرض موقع المعلن */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* منطقة عرض الإعلان */
+        .ad-frame-container {
+            width: 100%;
+            height: calc(100% - 70px);
+            background: #fff;
+        }
+
         iframe {
             width: 100%;
-            height: calc(100% - 60px);
+            height: 100%;
             border: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="logo-text" style="font-family: serif; letter-spacing: 2px;">THE BLACK FLOWER</div>
-        <div id="timer" class="timer-box">انتظر: 20s</div>
-        <button id="confirmBtn" class="btn-confirm" onclick="claimReward()">تأكيد الربح وتدقيق الإعلان</button>
+    <div class="header-bar">
+        <div class="brand-name">THE BLACK FLOWER</div>
+        
+        <div class="status-area">
+            <div id="timerBox" class="timer-display">متبقي: 20s</div>
+            <button id="confirmBtn" class="btn-confirm" onclick="processReward()">تأكيد الحصول على 0.01 USD</button>
+        </div>
     </div>
 
-    <iframe id="adFrame" src=""></div>
+    <div class="ad-frame-container">
+        <iframe id="targetFrame" src="about:blank"></iframe>
+    </div>
 
     <script>
-        // الحصول على البيانات من الرابط
-        const urlParams = new URLSearchParams(window.location.search);
-        const adUrl = urlParams.get('url');
-        const adId = urlParams.get('id');
+        // 1. استخراج البيانات من الرابط (URL Parameters)
+        const params = new URLSearchParams(window.location.search);
+        const adUrl = params.get('url');
+        const adId = params.get('id');
 
+        // 2. تحميل موقع الإعلان فوراً
         if (adUrl) {
-            document.getElementById('adFrame').src = adUrl;
+            document.getElementById('targetFrame').src = decodeURIComponent(adUrl);
+        } else {
+            alert("خطأ: لم يتم العثور على رابط الإعلان");
+            window.location.href = 'home.html';
         }
 
-        let seconds = 20;
-        const timerElement = document.getElementById('timer');
+        // 3. منطق العداد التنازلي
+        let timeLeft = 20;
+        const timerBox = document.getElementById('timerBox');
         const confirmBtn = document.getElementById('confirmBtn');
 
         const countdown = setInterval(() => {
-            seconds--;
-            timerElement.innerText = `انتظر: ${seconds}s`;
+            timeLeft--;
+            timerBox.innerText = `متبقي: ${timeLeft}s`;
 
-            if (seconds <= 0) {
+            if (timeLeft <= 0) {
                 clearInterval(countdown);
-                timerElement.style.display = 'none';
-                confirmBtn.style.display = 'block';
+                timerBox.style.display = 'none'; // إخفاء العداد
+                confirmBtn.style.display = 'block'; // إظهار زر التوكيد
             }
         }, 1000);
 
-        function claimReward() {
-            // تحديث الميزانية في المتصفح
-            let currentBalance = parseFloat(localStorage.getItem('user_balance')) || 0;
-            currentBalance += 0.01;
-            localStorage.setItem('user_balance', currentBalance.toFixed(3));
+        // 4. منطق إضافة الربح والمزامنة
+        function processReward() {
+            try {
+                // تحديث الميزانية في المتصفح
+                let balance = parseFloat(localStorage.getItem('user_balance')) || 0;
+                balance += 0.01;
+                localStorage.setItem('user_balance', balance.toFixed(3));
 
-            // تسجيل أن الإعلان تمت مشاهدته
-            let watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
-            watchHistory[adId] = Date.now();
-            localStorage.setItem('watchHistory_v2', JSON.stringify(watchHistory));
+                // تسجيل المشاهدة لمنع التكرار قبل 24 ساعة
+                let history = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
+                history[adId] = Date.now();
+                localStorage.setItem('watchHistory_v2', JSON.stringify(history));
 
-            alert("مبروك! تم إضافة 0.01 إلى ميزانيتك.");
-            window.location.href = 'home.html'; // العودة للرئيسية
+                alert("تمت العملية بنجاح! تم إضافة 0.01 USD إلى ميزانيتك.");
+                window.location.href = 'home.html';
+            } catch (e) {
+                console.error("حدث خطأ أثناء معالجة الربح", e);
+                window.location.href = 'home.html';
+            }
         }
     </script>
 </body>
