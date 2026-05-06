@@ -1,160 +1,104 @@
-<?php
-/**
- * Blackflower - Verified Profit Viewer
- * كود مدمج للربح من خلال CutWin و Rotate4All
- */
-
-// 1. إعدادات الـ API الخاصة بك
-$api_token = 'c138c7503f102e0f069cb2182bee123745d6bb98';
-
-// 2. جلب البيانات من الرابط (الرابط المستهدف ومعرف الإعلان)
-$ad_id = isset($_GET['id']) ? htmlspecialchars($_GET['id']) : 'default';
-$target_url = isset($_GET['url']) ? $_GET['url'] : 'https://google.com';
-
-// 3. رابط العودة النهائي بعد تخطي الكابتشا في CutWin
-// سيتم توجيه المستخدم لهذا الرابط لإضافة الرصيد في قاعدة بياناتك
-$return_url = "https://your-site.com/verify_reward.php?ad_id=" . $ad_id;
-
-// 4. الاتصال بـ CutWin لتوليد الرابط المختصر
-$api_url = "https://cutwin.com/api?api={$api_token}&url=" . urlencode($return_url);
-
-// محاولة جلب الرابط المختصر
-$response = @file_get_contents($api_url);
-$data = json_decode($response, true);
-$final_short_link = ($data && isset($data['shortenedUrl'])) ? $data['shortenedUrl'] : "#";
-
-?>
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blackflower | Viewer Mode</title>
+    <title>Blackflower | Verified Viewer</title>
     <style>
-        /* التنسيق العام */
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #0b0b0b; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; overflow: hidden; }
         
-        /* شريط التحكم العلوي */
-        .header-bar { 
-            height: 70px; 
-            background: #0a0a0a; 
-            border-bottom: 2px solid #222; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 0 20px; 
-            color: #fff; 
-            position: relative; 
-            z-index: 9999; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-
-        .logo { font-size: 1.2rem; font-weight: bold; color: #00ff00; letter-spacing: 2px; }
-
-        .timer-display { 
-            font-size: 18px; 
-            font-weight: bold; 
-            color: #ff4444; 
-            background: rgba(255, 68, 68, 0.1); 
-            padding: 8px 18px; 
-            border-radius: 5px; 
-            border: 1px solid rgba(255, 68, 68, 0.3);
-            min-width: 60px;
-            text-align: center;
-        }
-
-        /* زر التأكيد */
-        .btn-confirm { 
-            background: #27ae60; 
-            color: #fff; 
-            border: none; 
-            padding: 10px 25px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            text-decoration: none; 
-            border-radius: 4px; 
-            display: none; /* مخفي في البداية */
-            transition: 0.3s;
-            animation: pulse 1.5s infinite;
-        }
-        .btn-confirm:hover { background: #2ecc71; transform: scale(1.05); }
+        .header-bar { height: 80px; background: #111; border-bottom: 2px solid #00ff00; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .logo { font-weight: bold; color: #00ff00; letter-spacing: 2px; font-size: 20px; }
+        
+        .status-container { display: flex; align-items: center; gap: 20px; }
+        .timer-box { font-size: 22px; font-weight: bold; color: #ff4444; background: rgba(255, 68, 68, 0.1); padding: 10px 20px; border-radius: 8px; border: 1px solid #ff4444; }
+        
+        .btn-claim { background: #00ff00; color: #000; border: none; padding: 12px 30px; font-weight: bold; cursor: pointer; text-decoration: none; border-radius: 5px; display: none; animation: pulse 1.5s infinite; }
+        
+        .main-content { height: calc(100vh - 80px); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); }
+        .ad-info { margin-bottom: 30px; }
+        .ad-info h2 { color: #00ff00; margin-bottom: 10px; }
+        
+        #ptcFrame { width: 1px; height: 1px; opacity: 0.01; position: absolute; }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
-        }
-
-        /* حاوية الإعلانات */
-        .ad-main-container { width: 100%; height: calc(100% - 70px); position: relative; }
-        
-        /* إطار الربح الخفي (Rotate4All) */
-        #ptcFrame { 
-            width: 1px; 
-            height: 1px; 
-            border: none; 
-            position: absolute; 
-            bottom: 0; 
-            right: 0; 
-            opacity: 0.01; 
-            z-index: 1; 
-        }
-
-        /* إطار الإعلان الأساسي */
-        #targetFrame { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            z-index: 2; 
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(0, 255, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
         }
     </style>
 </head>
 <body>
 
     <header class="header-bar">
-        <div class="logo">BLACKFLOWER PRO ART</div>
-        
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <div id="timerBox" class="timer-display">20s</div>
-            <!-- زر الربح مربوط بـ CutWin -->
-            <a href="<?php echo $final_short_link; ?>" id="confirmBtn" class="btn-confirm">تأكيد الربح الآن ✅</a>
+        <div class="logo">BLACKFLOWER VIEW SYSTEM</div>
+        <div class="status-container">
+            <div id="timerBox" class="timer-box">جاري التحميل...</div>
+            <a href="#" id="confirmBtn" class="btn-claim">تأكيد الربح من CutWin</a>
         </div>
     </header>
 
-    <main class="ad-main-container">
-        <!-- إطار الترويج المخفي للربح الإضافي -->
-        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+    <main class="main-content">
+        <div class="ad-info">
+            <h2>يتم الآن عرض الإعلان في نافذة منبثقة</h2>
+            <p>يرجى عدم إغلاق هذه الصفحة حتى ينتهي العداد.</p>
+            <p style="color: #888; font-size: 14px;">إذا لم تفتح النافذة، اضغط على "فتح الإعلان يدوياً"</p>
+            <button onclick="openAd()" style="background:#333; color:#eee; border:1px solid #555; padding:8px 15px; cursor:pointer;">فتح الإعلان يدوياً</button>
+        </div>
         
-        <!-- إطار الإعلان الذي يشاهده المستخدم -->
-        <iframe id="targetFrame" src="<?php echo htmlspecialchars($target_url); ?>"></iframe>
+        <!-- إطار Rotate4All المخفي للربح التلقائي -->
+        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
     </main>
 
     <script>
-        let timeLeft = 20; // مدة المشاهدة بالثواني
-        const timerBox = document.getElementById('timerBox');
-        const confirmBtn = document.getElementById('confirmBtn');
+        // إعداداتك
+        const API_TOKEN = 'c138c7503f102e0f069cb2182bee123745d6bb98';
+        const params = new URLSearchParams(window.location.search);
+        const targetUrl = params.get('url') ? decodeURIComponent(params.get('url')) : 'https://google.com';
+        
+        let timeLeft = 20;
+        let adWindow = null;
 
-        // بدء العد التنازلي
-        const countdown = setInterval(() => {
-            timeLeft--;
-            timerBox.innerText = timeLeft + "s";
-            
-            if (timeLeft <= 0) {
-                clearInterval(countdown);
-                timerBox.style.display = 'none';
-                confirmBtn.style.display = 'inline-block';
+        // وظيفة فتح الإعلان في نافذة جديدة (لحل مشكلة عدم الظهور)
+        function openAd() {
+            if (!adWindow || adWindow.closed) {
+                adWindow = window.open(targetUrl, 'AdWindow', 'width=1000,height=700');
             }
-        }, 1000);
+        }
 
-        // منع الضغط على الزر إذا فشل الـ API في جلب الرابط
-        confirmBtn.onclick = function(e) {
-            const link = this.getAttribute('href');
-            if (link === "#" || link === "") {
-                e.preventDefault();
-                alert("خطأ: لم يتم توليد رابط التحقق. يرجى تحديث الصفحة.");
-            }
+        // تشغيل الإعلان تلقائياً عند الدخول
+        window.onload = () => {
+            openAd();
+            startTimer();
         };
-    </script>
 
+        function startTimer() {
+            const countdown = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timerBox').innerText = `انتظر ${timeLeft} ثانية`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    generateShortLink();
+                }
+            }, 1000);
+        }
+
+        // جلب الرابط المختصر باستخدام JavaScript (JSONP أو Fetch)
+        function generateShortLink() {
+            const returnUrl = encodeURIComponent("https://your-site.com/success.html"); 
+            const apiUrl = `https://cutwin.com/api?api=${API_TOKEN}&url=${returnUrl}`;
+
+            // إخفاء العداد وإظهار زر الربح
+            document.getElementById('timerBox').style.display = 'none';
+            const btn = document.getElementById('confirmBtn');
+            btn.style.display = 'inline-block';
+            
+            // تحديث رابط الزر
+            btn.href = apiUrl; 
+            // ملاحظة: CutWin API يفضل طلبه من الخلفية، لكن كملف HTML 
+            // سنقوم بتحويل المستخدم مباشرة للرابط المختصر عبر API
+        }
+    </script>
 </body>
 </html>
