@@ -3,165 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Ad Viewer</title>
+    <title>The Black Flower | Verified Profit System</title>
     <style>
-        /* Black & White Premium Theme */
+        /* نظام الألوان: أسود وأبيض فاخر */
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; 
+            overflow: hidden; background: #000; font-family: 'Inter', sans-serif; 
         }
 
-        /* Header Bar */
-        .header-bar {
-            height: 70px;
-            background: #000;
-            border-bottom: 1px solid #222;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
-            color: #fff;
-            position: relative;
-            z-index: 1000;
+        /* شريط التحكم العلوي */
+        .header-bar { 
+            height: 75px; background: #000; border-bottom: 1px solid #222; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 30px; color: #fff; z-index: 1000; position: relative; 
         }
 
-        .brand-name {
+        .brand-logo {
             font-family: serif;
-            letter-spacing: 2px;
+            letter-spacing: 3px;
+            font-weight: bold;
+            text-transform: uppercase;
             font-size: 18px;
-            font-weight: bold;
-            text-transform: uppercase;
         }
 
-        .timer-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .timer-display { 
+            font-size: 18px; font-weight: bold; color: #fff; 
+            background: #111; padding: 10px 25px; 
+            border: 1px solid #333; border-radius: 2px;
         }
 
-        #countdown {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
+        .btn-action { 
+            background: #fff; color: #000; border: none; 
+            padding: 12px 30px; font-weight: bold; cursor: pointer; 
+            text-transform: uppercase; border-radius: 2px; 
+            display: none; transition: 0.3s;
+        }
+        .btn-action:hover { background: #ccc; }
+
+        /* حاوية الإطارات المزدوجة */
+        .ad-container { width: 100%; height: calc(100% - 75px); position: relative; background: #fff; }
+        
+        /* إطار Rotate4All: الأساسي والنشط في الخلفية لضمان الاحتساب */
+        #ptcFrame { 
+            width: 100%; height: 100%; border: none; 
+            position: absolute; top: 0; left: 0; z-index: 1; 
         }
 
-        .btn-claim {
-            background-color: #fff;
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            font-weight: bold;
-            cursor: pointer;
-            display: none; /* مخفي حتى ينتهي الوقت */
-            text-transform: uppercase;
-            font-size: 12px;
-            transition: 0.3s;
-        }
-
-        .btn-claim:hover {
-            background-color: #ccc;
-        }
-
-        /* Ad Content Area */
-        .ad-container {
-            width: 100%;
-            height: calc(100% - 70px);
-            background: #fff;
-            position: relative;
-        }
-
-        iframe#mainAdFrame {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Invisible Profit Section (Rotate4All) */
-        .hidden-profit {
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            position: absolute;
-            left: -9999px;
+        /* إطار الإعلان الذي يراه المستخدم: فوقه بشفافية 95% لضمان تفاعل النظامين */
+        #targetFrame { 
+            width: 100%; height: 100%; border: none; 
+            position: absolute; top: 0; left: 0; z-index: 2; 
+            opacity: 0.96; background: #fff;
         }
     </style>
 </head>
 <body>
 
-    <!-- Hidden Rotate4All Frame for Auto-Earning -->
-    <div class="hidden-profit">
-        <iframe src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
-    </div>
-
     <div class="header-bar">
-        <div class="brand-name">THE BLACK FLOWER</div>
-        
-        <div class="timer-container">
-            <div id="countdown">20</div>
-            <button id="claimBtn" class="btn-claim" onclick="processReward()">Claim 15 BFP</button>
+        <div class="brand-logo">THE BLACK FLOWER</div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div id="timerBox" class="timer-display">Wait 20s</div>
+            <button id="confirmBtn" class="btn-action" onclick="finalizeAll()">Claim 15 BFP Reward</button>
         </div>
     </div>
 
     <div class="ad-container">
-        <!-- الإعلان الأساسي الذي يشاهده المستخدم -->
-        <iframe id="mainAdFrame" src="about:blank"></iframe>
+        <!-- الرابط الناجح في احتساب الزيارات -->
+        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+        
+        <!-- الإعلان المستهدف من قبل المستخدم -->
+        <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        // الإعدادات
-        const REWARD_AMOUNT = 15;
-        const urlParams = new URLSearchParams(window.location.search);
-        const adId = urlParams.get('id');
-        const targetUrl = decodeURIComponent(urlParams.get('url'));
+        const params = new URLSearchParams(window.location.search);
+        const adId = params.get('id');
+        const targetUrl = decodeURIComponent(params.get('url'));
 
-        // تحميل رابط الإعلان في الإطار الرئيسي
+        // تحميل الإعلان المستهدف في الإطار العلوي
         if (targetUrl && targetUrl !== 'null') {
-            document.getElementById('mainAdFrame').src = targetUrl;
+            document.getElementById('targetFrame').src = targetUrl;
         }
 
-        // منطق العداد التنازلي
         let timeLeft = 20;
-        const countdownEl = document.getElementById('countdown');
-        const claimBtnEl = document.getElementById('claimBtn');
-
-        const timer = setInterval(() => {
+        const countdown = setInterval(() => {
             timeLeft--;
-            countdownEl.innerText = timeLeft;
-
+            document.getElementById('timerBox').innerText = `${timeLeft}s Remaining`;
+            
             if (timeLeft <= 0) {
-                clearInterval(timer);
-                countdownEl.style.display = 'none';
-                claimBtnEl.style.display = 'block';
+                clearInterval(countdown);
+                document.getElementById('timerBox').style.display = 'none';
+                document.getElementById('confirmBtn').style.display = 'block';
             }
         }, 1000);
 
-        // وظيفة إضافة الرصيد
-        function processReward() {
+        function finalizeAll() {
             try {
-                // جلب الرصيد الحالي
+                // 1. تحديث رصيد الـ BFP (إضافة 15)
                 let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
-                
-                // إضافة المكافأة (15 BFP)
-                bfpBalance += REWARD_AMOUNT;
-                
-                // حفظ الرصيد الجديد
+                bfpBalance += 15;
                 localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
 
-                // تسجيل أن المستخدم شاهد هذا الإعلان
-                let history = JSON.parse(localStorage.getItem('watchHistory')) || {};
+                // 2. تحديث سجل المشاهدة (History)
+                let history = JSON.parse(localStorage.getItem('added_ads_history')) || {};
                 history[adId] = Date.now();
-                localStorage.setItem('watchHistory', JSON.stringify(history));
+                localStorage.setItem('added_ads_history', JSON.stringify(history));
 
-                alert(`Great job! ${REWARD_AMOUNT} BFP added to your balance.`);
+                alert("Success! 15 BFP tokens added to your account.");
                 window.location.href = 'home.html';
-            } catch (error) {
-                console.error("Error updating balance:", error);
+            } catch (e) {
+                console.error("Error finalizing reward:", e);
                 window.location.href = 'home.html';
             }
         }
