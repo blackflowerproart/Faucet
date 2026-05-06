@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>The Black Flower | Active Reward System</title>
+    <title>The Black Flower | Rotate4All Integration</title>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
         .header-bar { height: 75px; background: #0a0a0a; border-bottom: 2px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #fff; z-index: 1000; position: relative; }
@@ -10,41 +10,36 @@
         .btn-action { background: #00ff00; color: #000; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 4px; display: none; }
         .ad-container { width: 100%; height: calc(100% - 75px); background: #fff; }
         iframe { width: 100%; height: 100%; border: none; }
-        /* إطار مخفي تماماً للربح من EasyHits في الخلفية */
-        #hiddenProfitFrame { display: none; width: 0; height: 0; border: none; }
+        /* إطار مخفي لربح Rotate4All */
+        #ptcFrame { display: none; width: 0; height: 0; }
     </style>
 </head>
 <body>
 
     <div class="header-bar">
-        <div style="font-family: serif; letter-spacing: 2px; font-weight: bold;">THE BLACK FLOWER</div>
+        <div style="font-family: serif; letter-spacing: 2px; font-weight: bold;">THE BLACK FLOWER PRO ART</div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div id="timerBox" class="timer-display">20s</div>
-            <button id="confirmBtn" class="btn-action" onclick="finalizeProfit()">تأكيد واستلام الربح</button>
+            <button id="confirmBtn" class="btn-action" onclick="finalizeAll()">تأكيد واستلام الربح</button>
         </div>
     </div>
 
-    <!-- الإطار المخفي للربح في الخلفية أثناء العد -->
-    <iframe id="hiddenProfitFrame"></iframe>
+    <!-- الرابط الخاص بك للربح التلقائي -->
+    <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
 
     <div class="ad-container">
-        <!-- الإطار الظاهر للمستخدم لمشاهدة الإعلان -->
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        const myReferralId = "mohabramzi144"; // معرف الإحالة الخاص بك
         const params = new URLSearchParams(window.location.search);
         const adId = params.get('id');
         const targetUrl = decodeURIComponent(params.get('url'));
 
-        // 1. تشغيل موقع EasyHits في الخلفية فوراً لبدء احتساب الكريديتس أثناء العد
-        document.getElementById('hiddenProfitFrame').src = `https://www.easyhits4u.com/?ref=${myReferralId}`;
-
-        // 2. تحميل موقع الإعلان الظاهر للمستخدم
+        // تحميل موقع الإعلان الأصلي
         if (targetUrl) document.getElementById('targetFrame').src = targetUrl;
 
-        // 3. منطق العداد التنازلي
+        // عداد الـ 20 ثانية (بقاء المستخدم يضمن احتساب الزيارة في Rotate4All)
         let timeLeft = 20;
         const countdown = setInterval(() => {
             timeLeft--;
@@ -56,18 +51,18 @@
             }
         }, 1000);
 
-        function finalizeProfit() {
-            // إضافة الـ 0.01 لميزانية المستخدم في موقعك
+        function finalizeAll() {
+            // إضافة الربح الداخلي (0.01)
             let balance = parseFloat(localStorage.getItem('user_balance')) || 0;
             balance += 0.01;
             localStorage.setItem('user_balance', balance.toFixed(3));
 
-            // تسجيل المشاهدة
+            // تسجيل المشاهدة في التاريخ
             let history = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
             history[adId] = Date.now();
             localStorage.setItem('watchHistory_v2', JSON.stringify(history));
 
-            alert("تم احتساب الزيارة والربح بنجاح!");
+            alert("تم احتساب الربح المزدوج بنجاح!");
             window.location.href = 'home.html';
         }
     </script>
