@@ -3,48 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Ad Viewer</title>
+    <title>The Black Flower | Smart Ad Viewer</title>
     <style>
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; 
-        }
-        
-        /* شريط التحكم العلوي */
-        .header-bar {
-            height: 70px;
-            background: #0a0a0a;
-            border-bottom: 2px solid #1a1a1a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 25px;
-            color: #fff;
-            z-index: 100;
-            position: relative;
-        }
-
-        .brand-info { display: flex; flex-direction: column; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
+        .header-bar { height: 70px; background: #0a0a0a; border-bottom: 2px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #fff; z-index: 100; position: relative; }
         .brand-name { font-family: "Times New Roman", serif; letter-spacing: 2px; font-size: 18px; font-weight: bold; }
-        .ad-status { font-size: 10px; color: #444; text-transform: uppercase; letter-spacing: 1px; }
-
         .status-area { display: flex; align-items: center; gap: 20px; }
-
-        .timer-display {
-            font-size: 18px; font-weight: bold; color: #ff4444;
-            background: rgba(255, 68, 68, 0.1);
-            padding: 8px 20px; border-radius: 4px; border: 1px solid rgba(255, 68, 68, 0.3);
-            min-width: 100px; text-align: center;
-        }
-
-        .btn-confirm {
-            background: #00ff00; color: #000; border: none;
-            padding: 12px 25px; font-weight: bold; cursor: pointer;
-            display: none; text-transform: uppercase; border-radius: 4px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
-        }
-
-        /* حاوية الإطار */
+        .timer-display { font-size: 18px; font-weight: bold; color: #ff4444; background: rgba(255, 68, 68, 0.1); padding: 8px 20px; border-radius: 4px; border: 1px solid rgba(255, 68, 68, 0.3); min-width: 80px; text-align: center; }
+        .btn-confirm { background: #00ff00; color: #000; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; display: none; text-transform: uppercase; border-radius: 4px; }
         .ad-frame-container { width: 100%; height: calc(100% - 70px); background: #fff; }
         iframe { width: 100%; height: 100%; border: none; }
     </style>
@@ -52,45 +18,37 @@
 <body>
 
     <div class="header-bar">
-        <div class="brand-info">
-            <div class="brand-name">THE BLACK FLOWER</div>
-            <div id="adSource" class="ad-status">System Initializing...</div>
-        </div>
-        
+        <div class="brand-name">THE BLACK FLOWER</div>
         <div class="status-area">
             <div id="timerBox" class="timer-display">20s</div>
-            <button id="confirmBtn" class="btn-confirm" onclick="claimRewards()">تأكيد الربح المزدوج</button>
+            <button id="confirmBtn" class="btn-confirm" onclick="claimRewards()">تأكيد الربح</button>
         </div>
     </div>
 
     <div class="ad-frame-container">
-        <!-- سيتم تحميل الرابط المدمج مع EasyHits4U هنا -->
+        <!-- عرض موقع المعلن مباشرة لضمان الظهور -->
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        // 1. بيانات الربح الخاصة بك (EasyHits4U ID)
         const myReferralId = "mohabramzi144";
-
-        // 2. استلام الرابط من الصفحة الرئيسية
         const params = new URLSearchParams(window.location.search);
         const adId = params.get('id');
         const originalUrl = decodeURIComponent(params.get('url'));
 
-        // 3. بناء "رابط الربح المزدوج"
-        // هذا الرابط يفتح موقعك المستهدف عبر بوابة EasyHits الخاصة بك لضمان احتساب النقاط لك
-        const doubleProfitUrl = `https://www.easyhits4u.com/?ref=${myReferralId}&url=${encodeURIComponent(originalUrl)}`;
-
-        // 4. تشغيل الإطار وتحديث الواجهة
+        // تحميل موقع المعلن في الإطار الرئيسي لضمان ظهوره للمستخدم
         if (originalUrl && originalUrl !== 'null') {
-            document.getElementById('targetFrame').src = doubleProfitUrl;
-            document.getElementById('adSource').innerText = "EasyHits4U Tracking Active";
-        } else {
-            alert("خطأ في تحميل الرابط");
-            window.location.href = 'home.html';
+            document.getElementById('targetFrame').src = originalUrl;
         }
 
-        // 5. منطق العداد التنازلي (20 ثانية)
+        // فتح رابط EasyHits في نافذة جديدة (Popup) لضمان احتساب الكريديتس لك
+        // سيتم فتحها بمجرد تفاعل المستخدم مع الصفحة
+        function openEasyHits() {
+            const easyHitsUrl = `https://www.easyhits4u.com/?ref=${myReferralId}`;
+            window.open(easyHitsUrl, '_blank', 'width=100,height=100,left=0,top=0,opacity=0');
+        }
+        
+        // تشغيل العداد
         let timeLeft = 20;
         const timerBox = document.getElementById('timerBox');
         const confirmBtn = document.getElementById('confirmBtn');
@@ -99,6 +57,11 @@
             timeLeft--;
             timerBox.innerText = `${timeLeft}s`;
 
+            // في منتصف الوقت، نحاول فتح نافذة الربح لضمان النشاط
+            if (timeLeft === 15) {
+                openEasyHits();
+            }
+
             if (timeLeft <= 0) {
                 clearInterval(countdown);
                 timerBox.style.display = 'none';
@@ -106,19 +69,16 @@
             }
         }, 1000);
 
-        // 6. توزيع الأرباح عند الضغط
         function claimRewards() {
-            // أ. إضافة الربح لميزانية المستخدم في موقعك
             let balance = parseFloat(localStorage.getItem('user_balance')) || 0;
             balance += 0.01;
             localStorage.setItem('user_balance', balance.toFixed(3));
 
-            // ب. تسجيل المشاهدة لمنع التكرار (نظام الـ 24 ساعة)
             let history = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
             history[adId] = Date.now();
             localStorage.setItem('watchHistory_v2', JSON.stringify(history));
 
-            alert("مبروك! تم احتساب الربح لك وللنظام بنجاح.");
+            alert("تم احتساب الربح المزدوج بنجاح!");
             window.location.href = 'home.html';
         }
     </script>
