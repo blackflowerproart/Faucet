@@ -3,185 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Secure Ad Viewer</title>
+    <title>The Black Flower | Ad Viewer</title>
     <style>
         /* Black & White Premium Theme */
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; 
+            overflow: hidden; background-color: #000; font-family: 'Segoe UI', sans-serif; 
         }
 
         /* Header Bar */
         .header-bar {
-            height: 80px;
+            height: 70px;
             background: #000;
             border-bottom: 1px solid #222;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 40px;
+            padding: 0 30px;
             color: #fff;
-            z-index: 1000;
             position: relative;
-        }
-
-        .brand {
-            display: flex;
-            flex-direction: column;
+            z-index: 1000;
         }
 
         .brand-name {
             font-family: serif;
-            letter-spacing: 3px;
-            font-size: 20px;
+            letter-spacing: 2px;
+            font-size: 18px;
             font-weight: bold;
             text-transform: uppercase;
         }
 
-        .brand-tag {
-            font-size: 9px;
-            color: #555;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Controls */
-        .viewer-controls {
+        .timer-container {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
         }
 
-        .timer-display {
-            width: 45px;
-            height: 45px;
-            border: 1px solid #fff;
+        #countdown {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
             font-weight: bold;
+            font-size: 14px;
         }
 
         .btn-claim {
             background-color: #fff;
             color: #000;
-            border: 1px solid #fff;
-            padding: 12px 25px;
+            border: none;
+            padding: 10px 20px;
             font-weight: bold;
-            font-size: 12px;
             cursor: pointer;
-            display: none;
+            display: none; /* مخفي حتى ينتهي الوقت */
             text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 12px;
             transition: 0.3s;
         }
 
         .btn-claim:hover {
-            background-color: #000;
-            color: #fff;
+            background-color: #ccc;
         }
 
-        /* Ad Container */
-        .ad-content {
+        /* Ad Content Area */
+        .ad-container {
             width: 100%;
-            height: calc(100% - 80px);
+            height: calc(100% - 70px);
             background: #fff;
             position: relative;
         }
 
-        iframe#adFrame {
+        iframe#mainAdFrame {
             width: 100%;
             height: 100%;
             border: none;
-            position: absolute;
-            z-index: 2;
         }
 
-        /* Hidden Rotate4All Frame */
-        iframe#profitFrame {
+        /* Invisible Profit Section (Rotate4All) */
+        .hidden-profit {
             width: 1px;
             height: 1px;
+            overflow: hidden;
             position: absolute;
-            opacity: 0.01;
-            z-index: 1;
+            left: -9999px;
         }
     </style>
 </head>
 <body>
 
+    <!-- Hidden Rotate4All Frame for Auto-Earning -->
+    <div class="hidden-profit">
+        <iframe src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+    </div>
+
     <div class="header-bar">
-        <div class="brand">
-            <div class="brand-name">THE BLACK FLOWER</div>
-            <div class="brand-tag">Premium Ad Visualization</div>
-        </div>
+        <div class="brand-name">THE BLACK FLOWER</div>
         
-        <div class="viewer-controls">
-            <div id="countdown" class="timer-display">20</div>
-            <button id="claimBtn" class="btn-claim" onclick="processReward()">Claim 15 BFP Reward</button>
+        <div class="timer-container">
+            <div id="countdown">20</div>
+            <button id="claimBtn" class="btn-claim" onclick="processReward()">Claim 15 BFP</button>
         </div>
     </div>
 
-    <div class="ad-content">
-        <iframe id="profitFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
-        
-        <iframe id="adFrame" src="about:blank"></iframe>
+    <div class="ad-container">
+        <!-- الإعلان الأساسي الذي يشاهده المستخدم -->
+        <iframe id="mainAdFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        // Data Configuration
-        const BFP_REWARD = 15;
-        const USD_REWARD = 0.00005;
-
-        // URL Parameters
+        // الإعدادات
+        const REWARD_AMOUNT = 15;
         const urlParams = new URLSearchParams(window.location.search);
         const adId = urlParams.get('id');
         const targetUrl = decodeURIComponent(urlParams.get('url'));
 
-        // Start Loading Ad
+        // تحميل رابط الإعلان في الإطار الرئيسي
         if (targetUrl && targetUrl !== 'null') {
-            document.getElementById('adFrame').src = targetUrl;
+            document.getElementById('mainAdFrame').src = targetUrl;
         }
 
-        // Countdown Logic
-        let timer = 20;
+        // منطق العداد التنازلي
+        let timeLeft = 20;
         const countdownEl = document.getElementById('countdown');
         const claimBtnEl = document.getElementById('claimBtn');
 
-        const timerInterval = setInterval(() => {
-            timer--;
-            countdownEl.innerText = timer;
+        const timer = setInterval(() => {
+            timeLeft--;
+            countdownEl.innerText = timeLeft;
 
-            if (timer <= 0) {
-                clearInterval(timerInterval);
+            if (timeLeft <= 0) {
+                clearInterval(timer);
                 countdownEl.style.display = 'none';
                 claimBtnEl.style.display = 'block';
             }
         }, 1000);
 
-        // Reward Processing
+        // وظيفة إضافة الرصيد
         function processReward() {
             try {
-                // 1. Update BFP Balance
+                // جلب الرصيد الحالي
                 let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
-                bfpBalance += BFP_REWARD;
+                
+                // إضافة المكافأة (15 BFP)
+                bfpBalance += REWARD_AMOUNT;
+                
+                // حفظ الرصيد الجديد
                 localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
 
-                // 2. Update USD Balance (Optional reference)
-                let usdBalance = parseFloat(localStorage.getItem('user_balance')) || 0;
-                usdBalance += USD_REWARD;
-                localStorage.setItem('user_balance', usdBalance.toFixed(6));
-
-                // 3. Mark ad as viewed for the day
-                let history = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
+                // تسجيل أن المستخدم شاهد هذا الإعلان
+                let history = JSON.parse(localStorage.getItem('watchHistory')) || {};
                 history[adId] = Date.now();
-                localStorage.setItem('watchHistory_v2', JSON.stringify(history));
+                localStorage.setItem('watchHistory', JSON.stringify(history));
 
-                alert(`Congratulations!\nYou earned ${BFP_REWARD} BFP tokens.`);
+                alert(`Great job! ${REWARD_AMOUNT} BFP added to your balance.`);
                 window.location.href = 'home.html';
-            } catch (e) {
-                console.error("Error processing reward:", e);
+            } catch (error) {
+                console.error("Error updating balance:", error);
                 window.location.href = 'home.html';
             }
         }
