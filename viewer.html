@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Black Flower | Verified Profit System</title>
+    <!-- استدعاء مكتبة MTCaptcha -->
+    <script src="https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js" async defer></script>
     <style>
         /* نظام الألوان: أسود وأبيض فاخر */
         body, html { 
@@ -11,25 +13,27 @@
             overflow: hidden; background: #000; font-family: 'Inter', sans-serif; 
         }
 
-        /* شريط التحكم العلوي */
         .header-bar { 
-            height: 75px; background: #000; border-bottom: 1px solid #222; 
+            height: 85px; background: #000; border-bottom: 1px solid #222; 
             display: flex; justify-content: space-between; align-items: center; 
             padding: 0 30px; color: #fff; z-index: 1000; position: relative; 
         }
 
         .brand-logo {
-            font-family: serif;
-            letter-spacing: 3px;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 18px;
+            font-family: serif; letter-spacing: 3px; font-weight: bold;
+            text-transform: uppercase; font-size: 18px;
         }
 
         .timer-display { 
             font-size: 18px; font-weight: bold; color: #fff; 
             background: #111; padding: 10px 25px; 
             border: 1px solid #333; border-radius: 2px;
+        }
+
+        /* حاوية الكابتشا تظهر بعد العداد */
+        #captchaContainer {
+            display: none;
+            margin-right: 15px;
         }
 
         .btn-action { 
@@ -40,21 +44,9 @@
         }
         .btn-action:hover { background: #ccc; }
 
-        /* حاوية الإطارات المزدوجة */
-        .ad-container { width: 100%; height: calc(100% - 75px); position: relative; background: #fff; }
-        
-        /* إطار Rotate4All: الأساسي والنشط في الخلفية لضمان الاحتساب */
-        #ptcFrame { 
-            width: 100%; height: 100%; border: none; 
-            position: absolute; top: 0; left: 0; z-index: 1; 
-        }
-
-        /* إطار الإعلان الذي يراه المستخدم: فوقه بشفافية 95% لضمان تفاعل النظامين */
-        #targetFrame { 
-            width: 100%; height: 100%; border: none; 
-            position: absolute; top: 0; left: 0; z-index: 2; 
-            opacity: 0.96; background: #fff;
-        }
+        .ad-container { width: 100%; height: calc(100% - 85px); position: relative; background: #fff; }
+        #ptcFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+        #targetFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 2; opacity: 0.96; background: #fff; }
     </style>
 </head>
 <body>
@@ -63,15 +55,21 @@
         <div class="brand-logo">THE BLACK FLOWER</div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div id="timerBox" class="timer-display">Wait 20s</div>
+            
+            <!-- حاوية الكابتشا -->
+            <div id="captchaContainer">
+                <div class="mtcaptcha" 
+                     data-sitekey="MTPublic-aBhDByMjz" 
+                     data-theme="basic" 
+                     data-callback="onCaptchaSuccess"></div>
+            </div>
+
             <button id="confirmBtn" class="btn-action" onclick="finalizeAll()">Claim 15 BFP Reward</button>
         </div>
     </div>
 
     <div class="ad-container">
-        <!-- الرابط الناجح في احتساب الزيارات -->
         <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
-        
-        <!-- الإعلان المستهدف من قبل المستخدم -->
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
@@ -80,7 +78,6 @@
         const adId = params.get('id');
         const targetUrl = decodeURIComponent(params.get('url'));
 
-        // تحميل الإعلان المستهدف في الإطار العلوي
         if (targetUrl && targetUrl !== 'null') {
             document.getElementById('targetFrame').src = targetUrl;
         }
@@ -93,18 +90,24 @@
             if (timeLeft <= 0) {
                 clearInterval(countdown);
                 document.getElementById('timerBox').style.display = 'none';
-                document.getElementById('confirmBtn').style.display = 'block';
+                // إظهار الكابتشا بدلاً من العداد
+                document.getElementById('captchaContainer').style.display = 'block';
             }
         }, 1000);
 
+        // هذه الدالة تعمل تلقائياً عند حل الكابتشا بنجاح
+        function onCaptchaSuccess(validatedToken) {
+            // إخفاء الكابتشا وإظهار زر استلام المكافأة
+            document.getElementById('captchaContainer').style.display = 'none';
+            document.getElementById('confirmBtn').style.display = 'block';
+        }
+
         function finalizeAll() {
             try {
-                // 1. تحديث رصيد الـ BFP (إضافة 15)
                 let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
                 bfpBalance += 15;
                 localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
 
-                // 2. تحديث سجل المشاهدة (History)
                 let history = JSON.parse(localStorage.getItem('added_ads_history')) || {};
                 history[adId] = Date.now();
                 localStorage.setItem('added_ads_history', JSON.stringify(history));
