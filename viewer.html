@@ -2,32 +2,33 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>The Black Flower | Rotate4All Integration</title>
+    <title>The Black Flower | Verified Profit System</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: sans-serif; }
         .header-bar { height: 75px; background: #0a0a0a; border-bottom: 2px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #fff; z-index: 1000; position: relative; }
-        .timer-display { font-size: 20px; font-weight: bold; color: #ff4444; background: rgba(255, 68, 68, 0.1); padding: 10px 20px; border-radius: 4px; border: 1px solid rgba(255, 68, 68, 0.3); }
+        .timer-display { font-size: 20px; font-weight: bold; color: #ff4444; background: rgba(255,68,68,0.1); padding: 10px 20px; border-radius: 4px; border: 1px solid rgba(255,68,68,0.3); }
         .btn-action { background: #00ff00; color: #000; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; text-transform: uppercase; border-radius: 4px; display: none; }
-        .ad-container { width: 100%; height: calc(100% - 75px); background: #fff; }
-        iframe { width: 100%; height: 100%; border: none; }
-        /* إطار مخفي لربح Rotate4All */
-        #ptcFrame { display: none; width: 0; height: 0; }
+        .ad-container { width: 100%; height: calc(100% - 75px); position: relative; }
+        
+        /* جعل إطار الربح ظاهراً بشكل ضئيل جداً أو دمج المحتوى */
+        #ptcFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
+        #targetFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 2; opacity: 0.95; }
     </style>
 </head>
 <body>
 
     <div class="header-bar">
-        <div style="font-family: serif; letter-spacing: 2px; font-weight: bold;">THE BLACK FLOWER PRO ART</div>
+        <div style="font-family: serif; letter-spacing: 1px; font-weight: bold;">THE BLACK FLOWER</div>
         <div style="display: flex; gap: 15px; align-items: center;">
             <div id="timerBox" class="timer-display">20s</div>
-            <button id="confirmBtn" class="btn-action" onclick="finalizeAll()">تأكيد واستلام الربح</button>
+            <button id="confirmBtn" class="btn-action" onclick="finalizeAll()">تأكيد الربح المزدوج</button>
         </div>
     </div>
 
-    <!-- الرابط الخاص بك للربح التلقائي -->
-    <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
-
     <div class="ad-container">
+        <!-- إطار Rotate4All ليكون نشطاً في الواجهة -->
+        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+        <!-- إطار الإعلان الأصلي فوقه بشفافية بسيطة لضمان احتساب الطرفين -->
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
@@ -36,10 +37,8 @@
         const adId = params.get('id');
         const targetUrl = decodeURIComponent(params.get('url'));
 
-        // تحميل موقع الإعلان الأصلي
         if (targetUrl) document.getElementById('targetFrame').src = targetUrl;
 
-        // عداد الـ 20 ثانية (بقاء المستخدم يضمن احتساب الزيارة في Rotate4All)
         let timeLeft = 20;
         const countdown = setInterval(() => {
             timeLeft--;
@@ -52,17 +51,15 @@
         }, 1000);
 
         function finalizeAll() {
-            // إضافة الربح الداخلي (0.01)
             let balance = parseFloat(localStorage.getItem('user_balance')) || 0;
             balance += 0.01;
             localStorage.setItem('user_balance', balance.toFixed(3));
-
-            // تسجيل المشاهدة في التاريخ
+            
             let history = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
             history[adId] = Date.now();
             localStorage.setItem('watchHistory_v2', JSON.stringify(history));
 
-            alert("تم احتساب الربح المزدوج بنجاح!");
+            alert("تم تسجيل الزيارة بنجاح!");
             window.location.href = 'home.html';
         }
     </script>
