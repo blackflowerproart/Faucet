@@ -11,9 +11,26 @@
             display: flex; flex-direction: column; align-items: center;
         }
         
-        .brand-header { text-align: center; margin-bottom: 40px; margin-top: 20px; }
+        .brand-header { text-align: center; margin-bottom: 40px; margin-top: 20px; position: relative; width: 100%; max-width: 600px; }
         
-        /* تنسيق شعار wight.jpg المرفوع على GitHub */
+        /* زر لوحة التحكم الجديد */
+        .btn-admin-link {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: transparent;
+            color: #444; /* لون خافت لعدم تشتيت المشاهد */
+            border: 1px solid #222;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .btn-admin-link:hover { border-color: #fff; color: #fff; }
+
         .logo { 
             width: 140px; 
             height: auto; 
@@ -30,7 +47,6 @@
         
         .ads-container { width: 100%; max-width: 600px; display: grid; gap: 20px; }
 
-        /* تصميم الإعلان ليتناسب مع هوية Black Flower Pro Art */
         .ad-card { 
             background: #0a0a0a; 
             border: 1px solid #222; 
@@ -39,10 +55,7 @@
             transition: all 0.3s ease;
         }
         
-        .ad-card:hover {
-            border-color: #fff;
-            background: #111;
-        }
+        .ad-card:hover { border-color: #fff; background: #111; }
 
         .ad-title { font-size: 18px; margin: 0 0 10px 0; letter-spacing: 1px; font-family: "Times New Roman", serif; }
         .ad-url { color: #444; font-size: 11px; text-decoration: none; word-break: break-all; display: block; }
@@ -61,20 +74,20 @@
 <body>
 
     <div class="brand-header">
-        <!-- استخدام مسار الصورة wight.jpg من مجلد GitHub الخاص بك -->
+        <!-- الزر الذي ينقلك إلى لوحة التحكم -->
+        <a href="admin.html" class="btn-admin-link">Admin Panel</a>
+        
         <img src="wight.jpg" alt="The Black Flower Logo" class="logo">
         <h1 class="brand-title">The Black Flower</h1>
         <div class="brand-subtitle">Professional Art</div>
     </div>
 
     <div class="ads-container" id="ads-list">
-        <!-- الإعلانات الجديدة ستظهر هنا بتصميم الصفحة الرئيسية -->
+        <!-- الإعلانات ستظهر هنا -->
     </div>
 
     <script>
         const COOL_DOWN = 24 * 60 * 60 * 1000;
-        
-        // استدعاء الإعلانات من التخزين المحلي
         let ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
         let watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
 
@@ -85,7 +98,6 @@
 
             ads.forEach(ad => {
                 const lastView = watchHistory[ad.id] || 0;
-                
                 if (now - lastView >= COOL_DOWN) {
                     const card = document.createElement('div');
                     card.className = 'ad-card';
