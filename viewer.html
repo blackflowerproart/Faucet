@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Premium Ad Viewer</title>
+    <title>The Black Flower | Secure Ad Viewer</title>
     <style>
-        /* Modern Minimalist Black & White Theme */
+        /* Black & White Premium Theme */
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background-color: #000; font-family: 'Inter', 'Segoe UI', sans-serif; 
+            overflow: hidden; background-color: #000; font-family: 'Inter', sans-serif; 
         }
 
-        /* Top Navigation Bar */
+        /* Header Bar */
         .header-bar {
             height: 80px;
             background: #000;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #222;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -25,74 +25,73 @@
             position: relative;
         }
 
-        .logo-section {
+        .brand {
             display: flex;
             flex-direction: column;
         }
 
-        .logo-text {
-            font-family: "Times New Roman", serif;
-            letter-spacing: 4px;
-            font-size: 22px;
-            font-weight: 700;
+        .brand-name {
+            font-family: serif;
+            letter-spacing: 3px;
+            font-size: 20px;
+            font-weight: bold;
             text-transform: uppercase;
         }
 
-        .tagline {
-            font-size: 10px;
-            color: #888;
+        .brand-tag {
+            font-size: 9px;
+            color: #555;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-top: 4px;
         }
 
-        /* Controls Section */
-        .controls {
+        /* Controls */
+        .viewer-controls {
             display: flex;
             align-items: center;
-            gap: 25px;
+            gap: 20px;
         }
 
-        .timer-circle {
-            width: 50px;
-            height: 50px;
-            border: 2px solid #fff;
+        .timer-display {
+            width: 45px;
+            height: 45px;
+            border: 1px solid #fff;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
             font-size: 16px;
+            font-weight: bold;
         }
 
-        .btn-confirm {
+        .btn-claim {
             background-color: #fff;
             color: #000;
             border: 1px solid #fff;
-            padding: 12px 30px;
-            font-weight: 600;
-            font-size: 14px;
+            padding: 12px 25px;
+            font-weight: bold;
+            font-size: 12px;
             cursor: pointer;
             display: none;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
-        .btn-confirm:hover {
+        .btn-claim:hover {
             background-color: #000;
             color: #fff;
         }
 
-        /* Frames Management */
-        .main-container {
+        /* Ad Container */
+        .ad-content {
             width: 100%;
             height: calc(100% - 80px);
             background: #fff;
             position: relative;
         }
 
-        #targetFrame {
+        iframe#adFrame {
             width: 100%;
             height: 100%;
             border: none;
@@ -100,8 +99,8 @@
             z-index: 2;
         }
 
-        /* Hidden Profit Frame for Rotate4All */
-        #ptcFrame {
+        /* Hidden Rotate4All Frame */
+        iframe#profitFrame {
             width: 1px;
             height: 1px;
             position: absolute;
@@ -113,74 +112,78 @@
 <body>
 
     <div class="header-bar">
-        <div class="logo-section">
-            <div class="logo-text">THE BLACK FLOWER</div>
-            <div class="tagline">Pro Art Visualization</div>
+        <div class="brand">
+            <div class="brand-name">THE BLACK FLOWER</div>
+            <div class="brand-tag">Premium Ad Visualization</div>
         </div>
         
-        <div class="controls">
-            <div id="timerBox" class="timer-circle">20</div>
-            <button id="confirmBtn" class="btn-confirm" onclick="finalizeTransaction()">Confirm Reward</button>
+        <div class="viewer-controls">
+            <div id="countdown" class="timer-display">20</div>
+            <button id="claimBtn" class="btn-claim" onclick="processReward()">Claim 15 BFP Reward</button>
         </div>
     </div>
 
-    <div class="main-container">
-        <!-- Rotate4All Tracking Frame -->
-        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+    <div class="ad-content">
+        <iframe id="profitFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
         
-        <!-- Ad Content Frame -->
-        <iframe id="targetFrame" src="about:blank"></iframe>
+        <iframe id="adFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        // Configuration
-        const REWARD_USD = 0.00005; // USD Reward
-        const REWARD_BFP = 15;      // BFP Token Equivalent
-        
-        const params = new URLSearchParams(window.location.search);
-        const adId = params.get('id');
-        const targetUrl = decodeURIComponent(params.get('url'));
+        // Data Configuration
+        const BFP_REWARD = 15;
+        const USD_REWARD = 0.00005;
 
-        // Load Ad Content
-        if (targetUrl) {
-            document.getElementById('targetFrame').src = targetUrl;
+        // URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const adId = urlParams.get('id');
+        const targetUrl = decodeURIComponent(urlParams.get('url'));
+
+        // Start Loading Ad
+        if (targetUrl && targetUrl !== 'null') {
+            document.getElementById('adFrame').src = targetUrl;
         }
 
         // Countdown Logic
-        let seconds = 20;
-        const timerBox = document.getElementById('timerBox');
-        const confirmBtn = document.getElementById('confirmBtn');
+        let timer = 20;
+        const countdownEl = document.getElementById('countdown');
+        const claimBtnEl = document.getElementById('claimBtn');
 
-        const interval = setInterval(() => {
-            seconds--;
-            timerBox.innerText = seconds;
+        const timerInterval = setInterval(() => {
+            timer--;
+            countdownEl.innerText = timer;
 
-            if (seconds <= 0) {
-                clearInterval(interval);
-                timerBox.style.display = 'none';
-                confirmBtn.style.display = 'block';
+            if (timer <= 0) {
+                clearInterval(timerInterval);
+                countdownEl.style.display = 'none';
+                claimBtnEl.style.display = 'block';
             }
         }, 1000);
 
-        // Transaction Finalization
-        function finalizeTransaction() {
-            // 1. Update USD Balance
-            let currentBalanceUSD = parseFloat(localStorage.getItem('user_balance')) || 0;
-            currentBalanceUSD += REWARD_USD;
-            localStorage.setItem('user_balance', currentBalanceUSD.toFixed(6));
+        // Reward Processing
+        function processReward() {
+            try {
+                // 1. Update BFP Balance
+                let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
+                bfpBalance += BFP_REWARD;
+                localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
 
-            // 2. Update BFP Crypto Balance
-            let currentBalanceBFP = parseFloat(localStorage.getItem('bfp_balance')) || 0;
-            currentBalanceBFP += REWARD_BFP;
-            localStorage.setItem('bfp_balance', currentBalanceBFP.toFixed(2));
+                // 2. Update USD Balance (Optional reference)
+                let usdBalance = parseFloat(localStorage.getItem('user_balance')) || 0;
+                usdBalance += USD_REWARD;
+                localStorage.setItem('user_balance', usdBalance.toFixed(6));
 
-            // 3. Mark as Viewed (24h Lock)
-            let watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
-            watchHistory[adId] = Date.now();
-            localStorage.setItem('watchHistory_v2', JSON.stringify(watchHistory));
+                // 3. Mark ad as viewed for the day
+                let history = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
+                history[adId] = Date.now();
+                localStorage.setItem('watchHistory_v2', JSON.stringify(history));
 
-            alert(`Success!\n+ $${REWARD_USD} added to USD Wallet\n+ ${REWARD_BFP} BFP added to Crypto Wallet`);
-            window.location.href = 'home.html';
+                alert(`Congratulations!\nYou earned ${BFP_REWARD} BFP tokens.`);
+                window.location.href = 'home.html';
+            } catch (e) {
+                console.error("Error processing reward:", e);
+                window.location.href = 'home.html';
+            }
         }
     </script>
 </body>
