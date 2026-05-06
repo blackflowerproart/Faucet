@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مشاهدة الإعلان | The Black Flower</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+        
+        /* الشريط العلوي */
+        .top-bar {
+            height: 60px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: #fff;
+        }
+
+        .timer-box { font-size: 18px; font-weight: bold; color: #ff0000; letter-spacing: 1px; }
+        
+        .btn-confirm {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: none; /* مخفي حتى ينتهي العداد */
+            text-transform: uppercase;
+        }
+
+        /* الإطار الذي يعرض موقع المعلن */
+        iframe {
+            width: 100%;
+            height: calc(100% - 60px);
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="logo-text" style="font-family: serif; letter-spacing: 2px;">THE BLACK FLOWER</div>
+        <div id="timer" class="timer-box">انتظر: 20s</div>
+        <button id="confirmBtn" class="btn-confirm" onclick="claimReward()">تأكيد الربح وتدقيق الإعلان</button>
+    </div>
+
+    <iframe id="adFrame" src=""></div>
+
+    <script>
+        // الحصول على البيانات من الرابط
+        const urlParams = new URLSearchParams(window.location.search);
+        const adUrl = urlParams.get('url');
+        const adId = urlParams.get('id');
+
+        if (adUrl) {
+            document.getElementById('adFrame').src = adUrl;
+        }
+
+        let seconds = 20;
+        const timerElement = document.getElementById('timer');
+        const confirmBtn = document.getElementById('confirmBtn');
+
+        const countdown = setInterval(() => {
+            seconds--;
+            timerElement.innerText = `انتظر: ${seconds}s`;
+
+            if (seconds <= 0) {
+                clearInterval(countdown);
+                timerElement.style.display = 'none';
+                confirmBtn.style.display = 'block';
+            }
+        }, 1000);
+
+        function claimReward() {
+            // تحديث الميزانية في المتصفح
+            let currentBalance = parseFloat(localStorage.getItem('user_balance')) || 0;
+            currentBalance += 0.01;
+            localStorage.setItem('user_balance', currentBalance.toFixed(3));
+
+            // تسجيل أن الإعلان تمت مشاهدته
+            let watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
+            watchHistory[adId] = Date.now();
+            localStorage.setItem('watchHistory_v2', JSON.stringify(watchHistory));
+
+            alert("مبروك! تم إضافة 0.01 إلى ميزانيتك.");
+            window.location.href = 'home.html'; // العودة للرئيسية
+        }
+    </script>
+</body>
+</html>
