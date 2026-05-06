@@ -3,164 +3,243 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Home</title>
+    <title>The Black Flower | Premium Ad Viewer</title>
     <style>
-        :root {
-            --bg-color: #000;
-            --card-bg: #0a0a0a;
-            --accent: #fff;
-            --border: #222;
-            --success: #00ff00;
+        /* Modern Minimalist Black & White Theme */
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            overflow: hidden; background-color: #000; font-family: 'Inter', 'Segoe UI', sans-serif; 
         }
 
-        body { 
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
-            background-color: var(--bg-color); color: #fff; padding: 20px; margin: 0;
-            display: flex; flex-direction: column; align-items: center;
+        /* Top Navigation Bar */
+        .header-bar {
+            height: 90px;
+            background: #000;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            color: #fff;
+            z-index: 1000;
+            position: relative;
         }
 
-        /* رأس الصفحة والشعار */
-        .brand-header { 
-            text-align: center; margin-bottom: 30px; margin-top: 20px; 
-            position: relative; width: 100%; max-width: 600px; 
+        .logo-section {
+            display: flex;
+            flex-direction: column;
         }
 
-        .btn-admin-link {
-            position: absolute; top: 0; right: 0; background: transparent;
-            color: #444; border: 1px solid #222; padding: 8px 15px;
-            cursor: pointer; font-size: 10px; text-transform: uppercase;
-            letter-spacing: 1px; text-decoration: none; transition: 0.3s;
-        }
-        .btn-admin-link:hover { border-color: #fff; color: #fff; }
-
-        .logo { 
-            width: 120px; height: auto; margin-bottom: 15px; 
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
-        }
-        
-        .brand-title { 
-            font-family: "Times New Roman", Times, serif;
-            font-size: 28px; letter-spacing: 6px; text-transform: uppercase; margin: 0; 
+        .logo-text {
+            font-family: "Times New Roman", serif;
+            letter-spacing: 4px;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
-        /* كارت الميزانية */
-        .balance-container {
-            width: 100%; max-width: 600px; background: var(--card-bg);
-            border: 1px solid var(--border); border-radius: 4px;
-            padding: 20px; margin-bottom: 30px; text-align: center;
-            box-sizing: border-box;
-        }
-        .balance-label { font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 2px; }
-        .balance-amount { 
-            font-size: 32px; color: var(--success); font-weight: bold; 
-            margin-top: 10px; font-family: monospace; 
-        }
-        .currency { font-size: 14px; margin-left: 5px; }
-
-        /* حاوية الإعلانات */
-        .ads-grid { 
-            width: 100%; max-width: 600px; display: grid; gap: 15px; 
+        .tagline {
+            font-size: 9px;
+            color: #888;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-top: 4px;
         }
 
-        .ad-card { 
-            background: var(--card-bg); border: 1px solid var(--border); 
-            padding: 20px; border-radius: 2px; transition: 0.3s;
-            display: flex; justify-content: space-between; align-items: center;
+        /* User Profile Section */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-left: 1px solid #333;
+            border-right: 1px solid #333;
+            padding: 0 25px;
+            height: 50%;
         }
-        .ad-card:hover { border-color: #444; background: #111; }
 
-        .ad-info h3 { 
-            margin: 0; font-size: 16px; font-family: "Times New Roman", serif; 
-            letter-spacing: 1px; text-transform: capitalize;
+        .user-details {
+            text-align: right;
         }
-        .ad-reward { color: var(--success); font-size: 11px; margin-top: 5px; display: block; }
 
-        .btn-earn { 
-            background: #fff; color: #000; border: none; padding: 10px 20px;
-            font-weight: bold; cursor: pointer; text-transform: uppercase;
-            font-size: 10px; letter-spacing: 1px; transition: 0.3s;
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
         }
-        .btn-earn:hover { background: #00ff00; }
 
-        .no-ads { color: #333; text-transform: uppercase; font-size: 11px; letter-spacing: 2px; margin-top: 50px; }
+        .user-contact {
+            font-size: 11px;
+            color: #666;
+            display: block;
+        }
+
+        .balance-badge {
+            background: #fff;
+            color: #000;
+            padding: 4px 12px;
+            border-radius: 2px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        /* Controls Section */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .timer-circle {
+            width: 45px;
+            height: 45px;
+            border: 1px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .btn-confirm {
+            background-color: #fff;
+            color: #000;
+            border: 1px solid #fff;
+            padding: 10px 25px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-confirm:hover {
+            background-color: #000;
+            color: #fff;
+        }
+
+        /* Frames Management */
+        .main-container {
+            width: 100%;
+            height: calc(100% - 90px);
+            background: #fff;
+            position: relative;
+        }
+
+        #targetFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: absolute;
+            z-index: 2;
+        }
+
+        #ptcFrame {
+            width: 1px;
+            height: 1px;
+            position: absolute;
+            opacity: 0.01;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
 
-    <div class="brand-header">
-        <a href="AdControlManager.html" class="btn-admin-link">Admin Panel</a>
-        <img src="wight.jpg" alt="Logo" class="logo">
-        <h1 class="brand-title">The Black Flower</h1>
-    </div>
+    <div class="header-bar">
+        <!-- Logo -->
+        <div class="logo-section">
+            <div class="logo-text">THE BLACK FLOWER</div>
+            <div class="tagline">Pro Art Visualization</div>
+        </div>
 
-    <!-- عرض الميزانية -->
-    <div class="balance-container">
-        <div class="balance-label">Current Balance</div>
-        <div class="balance-amount">
-            <span id="userBalanceDisplay">0.000</span><span class="currency">USD</span>
+        <!-- User Data Display -->
+        <div class="user-info">
+            <div class="user-details">
+                <span class="user-name" id="displayUserName">Mohammad Ramzi</span>
+                <span class="user-contact" id="displayUserContact">designer.ramzi@example.com</span>
+            </div>
+            <div class="balance-badge">
+                <span id="bfpBalanceDisplay">0.00</span> BFP
+            </div>
+        </div>
+        
+        <!-- Action Controls -->
+        <div class="controls">
+            <div id="timerBox" class="timer-circle">20</div>
+            <button id="confirmBtn" class="btn-confirm" onclick="finalizeTransaction()">Confirm Reward</button>
         </div>
     </div>
 
-    <!-- قائمة الإعلانات -->
-    <div class="ads-grid" id="ads-list">
-        <!-- الإعلانات ستظهر هنا برمجياً -->
+    <div class="main-container">
+        <!-- Rotate4All Tracking -->
+        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+        
+        <!-- Ad Content -->
+        <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        // إعدادات الوقت (24 ساعة)
-        const COOL_DOWN = 24 * 60 * 60 * 1000;
+        // Configuration
+        const REWARD_USD = 0.00005; 
+        const REWARD_BFP = 15;      
+        
+        const params = new URLSearchParams(window.location.search);
+        const adId = params.get('id');
+        const targetUrl = decodeURIComponent(params.get('url'));
 
-        function updateUI() {
-            // 1. تحديث الميزانية
-            const balance = localStorage.getItem('user_balance') || "0.000";
-            document.getElementById('userBalanceDisplay').innerText = balance;
+        // Load Initial Data
+        window.onload = function() {
+            // Display current BFP balance
+            const savedBFP = localStorage.getItem('bfp_balance') || "0.00";
+            document.getElementById('bfpBalanceDisplay').innerText = savedBFP;
 
-            // 2. تحديث قائمة الإعلانات
-            renderAds();
+            // Load User Info (Future placeholder logic)
+            // document.getElementById('displayUserName').innerText = localStorage.getItem('username') || "Guest User";
+        };
+
+        // Load Ad Content
+        if (targetUrl && targetUrl !== 'null') {
+            document.getElementById('targetFrame').src = targetUrl;
         }
 
-        function renderAds() {
-            const list = document.getElementById('ads-list');
-            const ads = JSON.parse(localStorage.getItem('ads_v2')) || [];
-            const watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
-            const now = Date.now();
+        // Countdown Logic
+        let seconds = 20;
+        const timerBox = document.getElementById('timerBox');
+        const confirmBtn = document.getElementById('confirmBtn');
 
-            list.innerHTML = "";
-            let availableAdsCount = 0;
+        const interval = setInterval(() => {
+            seconds--;
+            timerBox.innerText = seconds;
 
-            ads.forEach(ad => {
-                const lastView = watchHistory[ad.id] || 0;
-                
-                // عرض الإعلان فقط إذا لم يتم مشاهدته في آخر 24 ساعة
-                if (now - lastView >= COOL_DOWN) {
-                    availableAdsCount++;
-                    const card = document.createElement('div');
-                    card.className = 'ad-card';
-                    card.innerHTML = `
-                        <div class="ad-info">
-                            <h3>${ad.title}</h3>
-                            <span class="ad-reward">+ 0.01 Reward</span>
-                        </div>
-                        <button class="btn-earn" onclick="goToViewer('${ad.id}', '${encodeURIComponent(ad.url)}')">
-                            Watch Now
-                        </button>
-                    `;
-                    list.appendChild(card);
-                }
-            });
-
-            if (availableAdsCount === 0) {
-                list.innerHTML = '<div class="no-ads">No Ads Available Right Now</div>';
+            if (seconds <= 0) {
+                clearInterval(interval);
+                timerBox.style.display = 'none';
+                confirmBtn.style.display = 'block';
             }
-        }
+        }, 1000);
 
-        function goToViewer(id, url) {
-            // الانتقال لصفحة المشاهدة مع تمرير بيانات الإعلان في الرابط
-            window.location.href = `viewer.html?id=${id}&url=${url}`;
-        }
+        // Transaction Finalization
+        function finalizeTransaction() {
+            // 1. Update USD Balance
+            let currentBalanceUSD = parseFloat(localStorage.getItem('user_balance')) || 0;
+            currentBalanceUSD += REWARD_USD;
+            localStorage.setItem('user_balance', currentBalanceUSD.toFixed(6));
 
-        // تشغيل التحديث عند فتح الصفحة
-        window.onload = updateUI;
+            // 2. Update BFP Balance
+            let currentBalanceBFP = parseFloat(localStorage.getItem('bfp_balance')) || 0;
+            currentBalanceBFP += REWARD_BFP;
+            localStorage.setItem('bfp_balance', currentBalanceBFP.toFixed(2));
+
+            // 3. Mark as Viewed
+            let watchHistory = JSON.parse(localStorage.getItem('watchHistory_v2')) || {};
+            watchHistory[adId] = Date.now();
+            localStorage.setItem('watchHistory_v2', JSON.stringify(watchHistory));
+
+            alert(`Transaction Complete!\n+ ${REWARD_BFP} BFP earned.`);
+            window.location.href = 'home.html';
+        }
     </script>
 </body>
 </html>
