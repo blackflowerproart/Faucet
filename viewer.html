@@ -8,19 +8,49 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
         
-        #topHeader { height: 70px; background: #000; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; color: #fff; z-index: 1000; position: relative; }
-        .brand-logo { font-family: serif; letter-spacing: 3px; font-weight: bold; text-transform: uppercase; font-size: 16px; }
-        .timer-display { font-size: 16px; font-weight: bold; color: #fff; background: #111; padding: 8px 20px; border: 1px solid #333; border-radius: 2px; }
+        /* شريط التحكم المعدل */
+        #topHeader { 
+            height: 85px; /* تم زيادة الطول قليلاً لاستيعاب السطر الثاني */
+            background: #000; 
+            border-bottom: 1px solid #222; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0 30px; 
+            color: #fff; 
+            z-index: 1000; 
+            position: relative; 
+        }
+
+        /* تنسيق الشعار المزدوج */
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        .brand-logo { 
+            font-family: serif; 
+            letter-spacing: 4px; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            font-size: 18px; 
+        }
+        .sub-logo {
+            font-size: 9px;
+            letter-spacing: 5.5px;
+            text-transform: uppercase;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .timer-display { font-size: 15px; font-weight: bold; color: #fff; background: #111; padding: 10px 25px; border: 1px solid #333; border-radius: 2px; }
 
         #captchaOverlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
         }
 
-        .captcha-box {
-            background: #000; padding: 40px; border: 1px solid #333; border-radius: 2px;
-            text-align: center; min-width: 350px;
-        }
+        .captcha-box { background: #000; padding: 40px; border: 1px solid #333; border-radius: 2px; text-align: center; min-width: 350px; }
 
         #confirmBtn {
             margin-top: 25px; width: 100%; padding: 15px; font-weight: bold;
@@ -28,42 +58,27 @@
             cursor: not-allowed; background: #111; color: #444; transition: 0.3s;
         }
 
-        .ready-to-confirm {
-            background: #fff !important; color: #000 !important;
-            border: 1px solid #fff !important; cursor: pointer !important;
-            box-shadow: 0 0 20px rgba(255,255,255,0.3) !important;
-        }
+        .ready-to-confirm { background: #fff !important; color: #000 !important; border: 1px solid #fff !important; cursor: pointer !important; box-shadow: 0 0 20px rgba(255,255,255,0.3) !important; }
 
-        /* نافذة النجاح المحدثة */
         #successModal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 10000; justify-content: center; align-items: center;
             backdrop-filter: blur(5px);
         }
 
-        .success-box {
-            background: #000; border: 1px solid #fff; padding: 40px; text-align: center;
-            max-width: 450px; border-radius: 2px;
-            animation: fadeInScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .success-box { background: #000; border: 1px solid #fff; padding: 40px; text-align: center; max-width: 450px; border-radius: 2px; animation: fadeInScale 0.5s ease-out; }
 
-        @keyframes fadeInScale {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 
         .success-icon { font-size: 40px; color: #fff; margin-bottom: 20px; }
         .success-title { color: #fff; font-size: 18px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 15px; }
-        .success-text { color: #bbb; line-height: 1.6; margin-bottom: 25px; font-size: 14px; letter-spacing: 0.5px; }
+        .success-text { color: #bbb; line-height: 1.6; margin-bottom: 25px; font-size: 14px; }
         
-        .continue-btn {
-            background: #fff; color: #000; border: none; padding: 12px 50px;
-            font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-            transition: 0.3s;
-        }
+        .continue-btn { background: #fff; color: #000; border: none; padding: 12px 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
         .continue-btn:hover { background: #ccc; letter-spacing: 4px; }
 
-        .ad-container { width: 100%; height: calc(100% - 70px); position: relative; }
+        /* الحاوية */
+        .ad-container { width: 100%; height: calc(100% - 85px); position: relative; }
         #ptcFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
         #targetFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 2; background: #fff; }
     </style>
@@ -71,7 +86,10 @@
 <body>
 
     <div id="topHeader">
-        <div class="brand-logo">THE BLACK FLOWER</div>
+        <div class="logo-container">
+            <div class="brand-logo">THE BLACK FLOWER</div>
+            <div class="sub-logo">PROFESSIONAL ART</div>
+        </div>
         <div id="timerBox" class="timer-display">Wait 20s</div>
     </div>
 
@@ -87,9 +105,7 @@
         <div class="success-box">
             <div class="success-icon">✧</div>
             <div class="success-title">Verified</div>
-            <p class="success-text">
-                Congratulations! 15 BFP Tokens have been successfully credited to your account balance.
-            </p>
+            <p class="success-text">Congratulations! 15 BFP Tokens have been successfully credited to your account balance.</p>
             <button class="continue-btn" onclick="finalizeAllAndClose()">CONTINUE</button>
         </div>
     </div>
@@ -138,7 +154,6 @@
             let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
             bfpBalance += 15;
             localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
-
             let history = JSON.parse(localStorage.getItem('added_ads_history')) || {};
             history[adId] = Date.now();
             localStorage.setItem('added_ads_history', JSON.stringify(history));
