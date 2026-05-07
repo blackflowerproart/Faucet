@@ -173,12 +173,14 @@
                 if (data.user) {
                     // الخطوة 2: إدخال البيانات في جدول blackflowerproart وربطها بالـ user_id
                     const { error: insertError } = await _supabase
-                        .from('blackflowerproart')
-                        .insert([
-                            { 
-                                user_id: data.user.id, // الربط مع UUID
-                                username: name,
-                                balance: 0.00
+    .from('blackflowerproart')
+    .insert([
+        { 
+            user_id: data.user.id,
+            username: name
+            // قمنا بحذف balance من هنا، وسيقوم Supabase بوضعه تلقائياً كـ 0
+        }
+    ]);
                             }
                         ]);
 
