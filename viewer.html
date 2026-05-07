@@ -11,26 +11,30 @@
         .brand-logo { font-family: serif; letter-spacing: 3px; font-weight: bold; text-transform: uppercase; font-size: 16px; }
         .timer-display { font-size: 16px; font-weight: bold; color: #fff; background: #111; padding: 8px 20px; border: 1px solid #333; border-radius: 2px; }
 
+        /* طبقة الكابتشا */
         #captchaOverlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center;
+            background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
         }
 
         .captcha-box {
-            background: #000; padding: 40px; border: 1px solid #333; border-radius: 2px;
-            position: relative; text-align: center; min-width: 350px;
+            background: #000; padding: 30px; border: 1px solid #333; border-radius: 4px;
+            text-align: center; min-width: 350px; display: flex; flex-direction: column; align-items: center;
         }
-
-        /* زر المطالبة - جعلته يظهر بوضوح عند استدعائه */
-        #claimRewardBtn {
-            margin-top: 25px; background: #fff; color: #000; border: none;
-            padding: 15px 30px; font-weight: bold; cursor: pointer;
-            text-transform: uppercase; width: 100%; display: none; 
-            transition: 0.3s; letter-spacing: 1px; box-shadow: 0 0 15px rgba(255,255,255,0.1);
-        }
-        #claimRewardBtn:hover { background: #ccc; }
 
         .captcha-title { color: #fff; margin-bottom: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-size: 13px; }
+
+        /* زر المطالبة - يظهر تحت المربع */
+        #claimRewardBtn {
+            margin-top: 20px; background: #2ecc71; color: #fff; border: none;
+            padding: 15px 40px; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; width: 100%; 
+            display: none; /* مخفي افتراضياً */
+            transition: 0.3s; letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+        }
+        #claimRewardBtn:hover { background: #27ae60; transform: translateY(-2px); }
+
         .ad-container { width: 100%; height: calc(100% - 70px); position: relative; }
         #ptcFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
         #targetFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 2; background: #fff; }
@@ -45,14 +49,14 @@
 
     <div id="captchaOverlay">
         <div class="captcha-box">
-            <div class="captcha-title">Security Verification</div>
+            <div class="captcha-title">Human Verification</div>
             
-            <div class="mtcaptcha" 
+            <div id="mtcaptcha-container" class="mtcaptcha" 
                  data-sitekey="MTPublic-e0hUm0HwS" 
                  data-theme="basic" 
                  data-callback="onCaptchaSuccess"></div>
 
-            <button id="claimRewardBtn" onclick="finalizeAndShowAd()">Confirm & Claim 15 BFP</button>
+            <button id="claimRewardBtn" onclick="finalizeAndShowAd()">✓ Claim 15 BFP Reward</button>
         </div>
     </div>
 
@@ -84,34 +88,42 @@
             }
         }, 1000);
 
-        // هذه الدالة سيتم استدعاؤها بواسطة MTCaptcha عند الحل
+        // الدالة التي يتم استدعاؤها فور حل الكابتشا
         function onCaptchaSuccess(validatedToken) {
-            console.log("Captcha solved!"); // للتأكد في الكونسول
-            var btn = document.getElementById('claimRewardBtn');
-            if(btn) {
-                btn.style.setProperty('display', 'block', 'important');
+            console.log("Captcha success token:", validatedToken);
+            // إظهار الزر فوراً باستخدام JS المباشر
+            const rewardBtn = document.getElementById('claimRewardBtn');
+            if (rewardBtn) {
+                rewardBtn.style.display = 'block';
             }
         }
 
         function finalizeAndShowAd() {
             try {
+                // 1. احتساب الربح
                 let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
                 bfpBalance += 15;
                 localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
 
+                // 2. تحديث السجل
                 let history = JSON.parse(localStorage.getItem('added_ads_history')) || {};
                 history[adId] = Date.now();
                 localStorage.setItem('added_ads_history', JSON.stringify(history));
 
-                // التنفيذ البصري
+                // 3. التنفيذ البصري: إغلاق الكابتشا وإظهار الموقع
                 document.getElementById('captchaOverlay').style.display = 'none';
                 document.getElementById('targetFrame').style.display = 'none';
-                document.getElementById('timerBox').innerText = "Reward Claimed ✓";
+                
+                // تحديث الهيدر
+                document.getElementById('timerBox').innerText = "15 BFP Claimed";
                 document.getElementById('timerBox').style.background = "#2ecc71";
+                document.getElementById('timerBox').style.borderColor = "#2ecc71";
 
-                alert("15 BFP tokens added!");
+                alert("Success! 15 BFP tokens have been added to your balance.");
+
             } catch (e) {
-                console.error("Error:", e);
+                console.error("Finalization error:", e);
+                // في حال حدوث خطأ، نغلق النافذة على الأقل لكي لا يعلق المستخدم
                 document.getElementById('captchaOverlay').style.display = 'none';
             }
         }
