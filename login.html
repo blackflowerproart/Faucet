@@ -30,6 +30,7 @@
             max-width: 400px;
             text-align: center;
             border-radius: 2px;
+            backdrop-filter: blur(10px);
         }
 
         h2 {
@@ -40,6 +41,7 @@
         }
 
         .input-group { margin-bottom: 20px; text-align: left; }
+        label { font-size: 12px; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; }
 
         input {
             width: 100%;
@@ -50,6 +52,7 @@
             font-family: Arial, sans-serif;
             margin-top: 8px;
             outline: none;
+            transition: 0.3s;
         }
 
         input:focus { border-color: var(--primary-accent); }
@@ -68,28 +71,13 @@
             transition: 0.3s;
         }
 
-        .btn-submit:hover { background: #ccc; }
+        .btn-submit:hover { background: #ccc; transform: translateY(-2px); }
 
-        .google-btn {
-            width: 100%;
-            padding: 12px;
-            background: transparent;
-            color: #fff;
-            border: 1px solid #444;
-            margin-top: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            transition: 0.3s;
-        }
-
-        .google-btn:hover { background: rgba(255,255,255,0.05); border-color: #666; }
+        /* رسالة الخطأ */
+        #error-msg { color: #ff4444; font-size: 12px; margin-top: 15px; display: none; }
 
         .footer-links { margin-top: 25px; font-size: 0.8rem; color: var(--text-dim); }
-        .footer-links a { color: #fff; text-decoration: none; }
+        .footer-links a { color: #fff; text-decoration: none; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -99,62 +87,66 @@
         
         <div class="input-group">
             <label>Email Address</label>
-            <input type="email" id="email" placeholder="Enter your email">
+            <input type="email" id="email" placeholder="email@example.com" required>
         </div>
 
         <div class="input-group">
             <label>Password</label>
-            <input type="password" id="password" placeholder="••••••••">
+            <input type="password" id="password" placeholder="••••••••" required>
         </div>
 
-        <button class="btn-submit" onclick="handleLogin()">Sign In</button>
-
-        <div style="margin: 20px 0; color: #333;">OR</div>
-
-        <button class="google-btn" onclick="loginWithGoogle()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
-            Continue with Google
-        </button>
+        <button class="btn-submit" id="signInBtn" onclick="handleLogin()">Sign In</button>
+        
+        <div id="error-msg">Invalid credentials. Please try again.</div>
 
         <div class="footer-links">
-            Don't have an account? <a href="register.html">Join Now</a>
+            New to the ecosystem? <a href="register.html">Create Account</a>
         </div>
     </div>
 
     <script>
-        // إعداد Supabase
-        const SUPABASE_URL = 'https://your-project-id.supabase.co';
+        // إعداد Supabase (استبدل القيم ببياناتك)
+        const SUPABASE_URL = 'https://your-project.id.supabase.co';
         const SUPABASE_KEY = 'your-anon-key';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. تسجيل الدخول بالبريد وكلمة السر
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const btn = document.getElementById('signInBtn');
+            const errorMsg = document.getElementById('error-msg');
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
+            // تغيير حالة الزر أثناء التحميل
+            btn.innerText = "Verifying...";
+            btn.disabled = true;
+            errorMsg.style.display = 'none';
 
-            if (error) {
-                alert(error.message);
-            } else {
-                // الانتقال لصفحة هوم عند النجاح
-                window.location.href = "home.html";
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                if (error) throw error;
+
+                // إذا نجح الدخول:
+                if (data.user) {
+                    // الانتقال لصفحة الهوم
+                    window.location.href = "home.html";
+                }
+
+            } catch (error) {
+                errorMsg.innerText = error.message;
+                errorMsg.style.display = 'block';
+                btn.innerText = "Sign In";
+                btn.disabled = false;
             }
         }
 
-        // 2. تسجيل الدخول عبر Google (Gmail)
-        async function loginWithGoogle() {
-            const { error } = await supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + '/home.html'
-                }
-            });
-            if (error) alert(error.message);
-        }
+        // تسجيل الدخول بالضغط على Enter
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') handleLogin();
+        });
     </script>
 </body>
 </html>
