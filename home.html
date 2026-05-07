@@ -4,29 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Black Flower | Member Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body, html { 
             margin: 0; padding: 0; height: 100%; background-color: #000; color: #fff;
             font-family: 'Inter', sans-serif; display: flex;
         }
 
-        /* Side Navigation Bar (Left) */
+        /* Sidebar Styling */
         .sidebar {
-            width: 280px;
-            background: #000;
-            border-right: 1px solid #222;
-            display: flex;
-            flex-direction: column;
-            padding: 40px 20px;
-            position: fixed;
-            height: 100vh;
+            width: 280px; background: #000; border-right: 1px solid #222;
+            display: flex; flex-direction: column; padding: 40px 20px;
+            position: fixed; height: 100vh;
         }
 
         .logo-section { margin-bottom: 50px; }
         .logo-text { font-family: serif; letter-spacing: 2px; font-size: 18px; font-weight: bold; text-transform: uppercase; }
         
         .user-profile { margin-bottom: 40px; padding: 20px; border: 1px solid #111; border-radius: 4px; }
-        .user-name { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+        .user-name { display: block; font-size: 14px; font-weight: 600; margin-bottom: 5px; text-transform: uppercase; }
         .user-email { display: block; font-size: 11px; color: #555; overflow: hidden; text-overflow: ellipsis; }
 
         .balance-section { margin-bottom: 40px; background: #fff; color: #000; padding: 20px; border-radius: 2px; }
@@ -36,11 +32,13 @@
         .nav-links { display: flex; flex-direction: column; gap: 10px; }
         .btn-nav {
             padding: 12px; border: 1px solid #333; background: transparent; color: #fff;
-            text-transform: uppercase; font-size: 11px; cursor: pointer; text-decoration: none; text-align: center;
+            text-transform: uppercase; font-size: 11px; cursor: pointer; text-decoration: none; text-align: center; transition: 0.3s;
         }
         .btn-nav:hover { background: #fff; color: #000; border-color: #fff; }
+        .btn-logout { border-color: #440000; color: #ff4444; margin-top: 20px; }
+        .btn-logout:hover { background: #ff4444; color: #fff; }
 
-        /* Main Content Area */
+        /* Main Content */
         .main-content { margin-left: 320px; padding: 60px; width: 100%; }
         .section-title { font-family: serif; font-size: 28px; letter-spacing: 2px; margin-bottom: 40px; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 20px; }
 
@@ -55,15 +53,15 @@
 </head>
 <body>
 
-    <!-- Left Sidebar -->
     <aside class="sidebar">
         <div class="logo-section">
             <div class="logo-text">THE BLACK FLOWER</div>
+            <div style="font-size: 8px; letter-spacing: 4px; color: #444;">PROFESSIONAL ART</div>
         </div>
 
         <div class="user-profile">
-            <span class="user-name">Mohammad Ramzi</span>
-            <span class="user-email">designer.ramzi@example.com</span>
+            <span class="user-name" id="displayUserName">Loading...</span>
+            <span class="user-email" id="displayUserEmail">...</span>
         </div>
 
         <div class="balance-section">
@@ -74,34 +72,54 @@
 
         <nav class="nav-links">
             <a href="AdControlManager.html" class="btn-nav">Admin Dashboard</a>
-            <button onclick="location.reload()" class="btn-nav">Refresh Ads</button>
+            <button onclick="renderAds()" class="btn-nav">Refresh Ads</button>
+            <button onclick="handleLogout()" class="btn-nav btn-logout">Logout</button>
         </nav>
     </aside>
 
-    <!-- Content -->
     <main class="main-content">
         <h1 class="section-title">Verified Ads</h1>
         <div class="ads-grid" id="adsContainer">
-            <!-- Dynamic Ads from LocalStorage -->
-        </div>
+            </div>
     </main>
 
     <script>
-        window.onload = function() {
-            // Load Balance
-            const savedBFP = localStorage.getItem('bfp_balance') || "0.00";
+        // 1. إعداد Supabase
+        const SUPABASE_URL = 'https://your-project-id.supabase.co';
+        const SUPABASE_KEY = 'your-anon-key';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        window.onload = async function() {
+            // التحقق من الجلسة
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                // إذا لم يسجل دخوله، نرجعه لصفحة تسجيل الدخول
+                window.location.href = "login.html";
+                return;
+            }
+
+            // 2. عرض بيانات المستخدم المسجل
+            const fullName = user.user_metadata.full_name || user.email.split('@')[0];
+            document.getElementById('displayUserName').innerText = fullName;
+            document.getElementById('displayUserEmail').innerText = user.email;
+
+            // 3. جلب الميزان من قاعدة البيانات (أو LocalStorage مؤقتاً إذا لم تربط جدول البيانات)
+            // ملاحظة: لجعل الميزان "خاص"، يجب حفظه في جدول برقم الـ User ID في Supabase
+            const savedBFP = localStorage.getItem(`bfp_${user.id}`) || "0.00";
             document.getElementById('bfpDisplay').innerText = savedBFP;
 
-            // Load Ads from Controller
+            // 4. تحميل الإعلانات (عامة للجميع)
             renderAds();
         };
 
         function renderAds() {
             const container = document.getElementById('adsContainer');
+            // الإعلانات تؤخذ من القائمة العامة المضافة بواسطة الأدمن
             const adsData = JSON.parse(localStorage.getItem('added_ads')) || [];
 
             if (adsData.length === 0) {
-                container.innerHTML = '<p class="empty-msg">No ads available. Please add ads from the Admin Dashboard.</p>';
+                container.innerHTML = '<p class="empty-msg">No ads available at the moment.</p>';
                 return;
             }
 
@@ -120,6 +138,11 @@
 
         function openAd(id, url) {
             window.location.href = `viewer.html?id=${id}&url=${url}`;
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            window.location.href = "index.html";
         }
     </script>
 </body>
