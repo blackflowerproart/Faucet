@@ -1,169 +1,62 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول | The BlackFlower</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.all.min.js"></script>
+<script>
+    // 1. إعدادات المشروع (تأكد من صحتها)
+    const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
 
-    <style>
-        :root {
-            --bg-color: #050505;
-            --primary-accent: #ffffff;
-            --text-main: #f0f0f0;
-            --text-dim: #888888;
-            --input-bg: #0a0a0a;
+    // 2. التهيئة الفورية (Initialization)
+    // نستخدم اسم ثابت وموحد لتجنب أخطاء التعريف
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // 3. دالة تسجيل الدخول
+    async function handleLogin() {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('loginBtn');
+        const statusMsg = document.getElementById('status-msg');
+
+        // التحقق من أن العميل جاهز
+        if (!supabaseClient) {
+            alert("Supabase is not initialized yet!");
+            return;
         }
 
-        body {
-            margin: 0; padding: 0; height: 100vh;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: 'Times New Roman', Times, serif;
-            display: flex; justify-content: center; align-items: center;
-            background-image: radial-gradient(circle at center, #111 0%, #050505 100%);
+        if (!email || !password) {
+            showStatus("Please enter your email and password.", "error");
+            return;
         }
 
-        .login-card {
-            background: rgba(10, 10, 10, 0.9);
-            padding: 40px;
-            border: 1px solid #222;
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-            border-radius: 8px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
+        btn.innerText = "AUTHENTICATING...";
+        btn.disabled = true;
 
-        h2 { 
-            letter-spacing: 3px; 
-            text-transform: uppercase; 
-            font-size: 1.4rem; 
-            margin-bottom: 30px;
-            color: var(--primary-accent);
-        }
+        try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-        .input-group { margin-bottom: 20px; text-align: right; }
-        label { font-size: 12px; color: var(--text-dim); display: block; margin-bottom: 8px; }
+            if (error) throw error;
 
-        input {
-            width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid #333;
-            color: #fff; outline: none; transition: 0.3s; border-radius: 4px;
-            box-sizing: border-box; text-align: left;
-        }
-
-        input:focus { border-color: var(--primary-accent); }
-
-        .btn-submit {
-            width: 100%; padding: 14px; background: var(--primary-accent); color: #000;
-            border: none; font-weight: bold; text-transform: uppercase;
-            cursor: pointer; margin-top: 10px; transition: 0.3s; border-radius: 4px;
-        }
-
-        .btn-submit:hover { background: #ccc; }
-        .btn-submit:disabled { background: #444; cursor: not-allowed; }
-
-        #status-msg { 
-            margin-top: 15px; font-size: 13px; display: none; padding: 10px; border-radius: 4px;
-        }
-        .error { color: #ff4444; background: rgba(255, 68, 68, 0.1); border: 1px solid #ff4444; }
-        .success { color: #00ff88; background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; }
-
-        .footer { margin-top: 25px; font-size: 0.8rem; color: var(--text-dim); }
-        .footer a { color: #fff; text-decoration: none; }
-    </style>
-</head>
-<body>
-
-    <div class="login-card">
-        <h2>THE BLACK FLOWER</h2>
-        
-        <div class="input-group">
-            <label>البريد الإلكتروني</label>
-            <input type="email" id="email" placeholder="email@example.com" required>
-        </div>
-
-        <div class="input-group">
-            <label>كلمة المرور</label>
-            <input type="password" id="password" placeholder="••••••••" required>
-        </div>
-
-        <button class="btn-submit" id="loginBtn" onclick="handleLogin()">تسجيل الدخول</button>
-        
-        <div id="status-msg"></div>
-
-        <div class="footer">
-            ليس لديك حساب؟ <a href="register.html">سجل الآن</a>
-        </div>
-    </div>
-
-    <script>
-        // --- 1. الإعدادات الأساسية ---
-        const SB_URL = 'https://YOUR_PROJECT_ID.supabase.co'; // استبدله برابط مشروعك
-        const SB_KEY = 'YOUR_ANON_KEY'; // استبدله بمفتاح الـ Anon
-
-        // --- 2. تعريف العميل (هنا تم الإصلاح) ---
-        // نقوم بالتعريف خارج الدوال لضمان وجوده في كل مكان
-        const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
-
-        // --- 3. دالة تسجيل الدخول ---
-        async function handleLogin() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const btn = document.getElementById('loginBtn');
-            const statusMsg = document.getElementById('status-msg');
-
-            // تحقق بسيط من المدخلات
-            if (!email || !password) {
-                showStatus("يرجى إدخال البريد وكلمة المرور", "error");
-                return;
+            if (data.user) {
+                showStatus("Success! Redirecting...", "success");
+                setTimeout(() => {
+                    window.location.href = "home.html";
+                }, 1000);
             }
-
-            // تغيير حالة الزر لمنع الضغط المتكرر
-            btn.innerText = "جاري التحقق...";
-            btn.disabled = true;
-            statusMsg.style.display = 'none';
-
-            try {
-                // محاولة تسجيل الدخول
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) throw error;
-
-                // في حال النجاح
-                if (data.user) {
-                    showStatus("تم تسجيل الدخول بنجاح! جاري التحويل...", "success");
-                    
-                    // ننتظر ثانية واحدة ثم ننتقل لصفحة الهوم
-                    setTimeout(() => {
-                        window.location.href = "home.html";
-                    }, 1000);
-                }
-
-            } catch (err) {
-                // عرض الخطأ للمستخدم (مثلاً: بيانات خاطئة أو إيميل غير مؤكد)
-                showStatus(err.message, "error");
-                btn.innerText = "تسجيل الدخول";
-                btn.disabled = false;
-            }
+        } catch (err) {
+            showStatus(err.message, "error");
+            btn.innerText = "Sign In";
+            btn.disabled = false;
         }
+    }
 
-        // دالة مساعدة لإظهار الرسائل
-        function showStatus(text, type) {
-            const statusMsg = document.getElementById('status-msg');
+    function showStatus(text, type) {
+        const statusMsg = document.getElementById('status-msg');
+        if (statusMsg) {
             statusMsg.innerText = text;
             statusMsg.className = type;
             statusMsg.style.display = 'block';
+        } else {
+            alert(text);
         }
-
-        // دعم تسجيل الدخول عند الضغط على Enter في الكيبورد
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleLogin();
-        });
-    </script>
-</body>
-</html>
+    }
+</script>
