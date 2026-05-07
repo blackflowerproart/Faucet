@@ -62,23 +62,6 @@
             letter-spacing: 3px; 
         }
 
-        .btn-google {
-            width: 100%; padding: 12px; border: 1px solid var(--pure-white);
-            background-color: transparent; color: var(--pure-white); cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            transition: 0.3s; font-size: 11px; text-transform: uppercase;
-        }
-        .btn-google:hover { background-color: var(--pure-white); color: var(--pure-black); }
-        .btn-google img { filter: invert(100%); }
-
-        .divider { 
-            display: flex; align-items: center; margin: 25px 0; 
-            color: #444; font-size: 9px; text-transform: uppercase; letter-spacing: 2px; 
-        }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #333; }
-        .divider:not(:empty)::before { margin-right: 15px; }
-        .divider:not(:empty)::after { margin-left: 15px; }
-
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; margin-bottom: 8px; color: var(--light-gray); font-size: 9px; text-transform: uppercase; }
         .input-group input {
@@ -93,9 +76,10 @@
             background-color: var(--pure-white); color: var(--pure-black);
             font-size: 13px; font-weight: bold; cursor: pointer;
             transition: 0.3s; text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 20px;
         }
         .btn-signup:hover { background-color: var(--pure-black); color: var(--pure-white); }
-        .btn-signup:disabled { background-color: #444; border-color: #444; cursor: not-allowed; }
+        .btn-signup:disabled { background-color: #444; cursor: not-allowed; opacity: 0.5; }
 
         .footer-link { margin-top: 25px; font-size: 10px; color: var(--light-gray); }
         .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid var(--pure-white); }
@@ -111,30 +95,22 @@
             <div class="brand-subtitle">Professional Art</div>
         </div>
         
-        <h2>Join Now</h2>
+        <h2>Create Account</h2>
+
+        <div class="input-group">
+            <label>Name</label>
+            <input type="text" id="username" placeholder="YOUR NAME">
+        </div>
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="EMAIL@EXAMPLE.COM">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
         
-        <button class="btn-google" onclick="signUpWithGoogle()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="14">
-            Continue with Google
-        </button>
-
-        <div class="divider">Or Email</div>
-
-        <form id="signupForm">
-            <div class="input-group">
-                <label>Name</label>
-                <input type="text" id="username" placeholder="YOUR NAME" required>
-            </div>
-            <div class="input-group">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="EMAIL@EXAMPLE.COM" required>
-            </div>
-            <div class="input-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="••••••••" required>
-            </div>
-            <button type="submit" id="submitBtn" class="btn-signup">Create Account</button>
-        </form>
+        <button type="button" id="submitBtn" onclick="handleRegister()" class="btn-signup">Create Account</button>
         
         <div id="status-msg"></div>
 
@@ -142,30 +118,35 @@
     </div>
 
     <script>
-        // 1. إعدادات Supabase
+        // 1. إعدادات Supabase المباشرة
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         
-        // 2. تهيئة العميل فوراً
+        // 2. تهيئة العميل فوراً عند تحميل السكريبت
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const successURL = window.location.href.replace('register.html', 'success.html');
-
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // 3. الدالة الرئيسية (تعمل عند الضغط على الزر)
+        async function handleRegister() {
             const btn = document.getElementById('submitBtn');
             const statusMsg = document.getElementById('status-msg');
             const name = document.getElementById('username').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            // تحديث واجهة المستخدم
+            // التحقق من الحقول
+            if (!name || !email || !password) {
+                alert("All fields are required!");
+                return;
+            }
+
+            // تحديث حالة الزر
             btn.innerText = 'PROCESSING...';
             btn.disabled = true;
             statusMsg.style.display = "none";
 
             try {
                 // المرحلة الأولى: إنشاء الحساب في Auth
+                console.log("Attempting Auth Sign Up...");
                 const { data, error } = await _supabase.auth.signUp({
                     email: email,
                     password: password
@@ -174,27 +155,28 @@
                 if (error) throw error;
 
                 if (data.user) {
-                    // المرحلة الثانية: إضافة السجل لجدول البيانات لربط الـ UUID
-                    // ملاحظة: تأكد من تنفيذ كود SQL لإضافة أعمدة username و balance في Supabase أولاً
+                    console.log("Auth Success. Inserting to Database...");
+                    
+                    // المرحلة الثانية: إضافة البيانات للجدول
                     const { error: insertError } = await _supabase
                         .from('blackflowerproart')
                         .insert([
                             { 
-                                user_id: data.user.id, // الربط الأساسي
+                                user_id: data.user.id,
                                 username: name,
                                 balance: 0.00
                             }
                         ]);
 
                     if (insertError) {
-                        console.warn("Database insert issue:", insertError.message);
-                        // حتى لو فشل إدخال الجدول، الحساب في Auth قد تم إنشاؤه
+                        console.error("Database Insert Error:", insertError.message);
+                        // لا نوقف العملية هنا لأن الحساب أنشئ فعلاً في Auth
                     }
 
                     // عرض رسالة النجاح
                     statusMsg.style.color = "#00ff88";
-                    statusMsg.innerText = "ACCOUNT CREATED. REDIRECTING...";
                     statusMsg.style.display = "block";
+                    statusMsg.innerText = "SUCCESS! REDIRECTING...";
                     
                     setTimeout(() => {
                         window.location.href = "success.html";
@@ -202,20 +184,10 @@
                 }
 
             } catch (err) {
+                console.error("Critical Error:", err.message);
                 alert("Error: " + err.message);
                 btn.innerText = 'CREATE ACCOUNT';
                 btn.disabled = false;
-            }
-        });
-
-        async function signUpWithGoogle() {
-            try {
-                await _supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: { redirectTo: successURL }
-                });
-            } catch (err) {
-                alert(err.message);
             }
         }
     </script>
