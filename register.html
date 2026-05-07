@@ -98,6 +98,9 @@
 
         .footer-link { margin-top: 25px; font-size: 10px; color: var(--light-gray); }
         .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid var(--pure-white); }
+        
+        /* رسالة حالة بسيطة */
+        #status-msg { margin-top: 15px; font-size: 11px; display: none; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -132,26 +135,71 @@
             </div>
             <button type="submit" id="submitBtn" class="btn-signup">Create Account</button>
         </form>
+        
+        <div id="status-msg"></div>
+
         <p class="footer-link">Member? <a href="index.html">Log In</a></p>
     </div>
 
     <script>
+        // إعدادات Supabase
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
         const successURL = window.location.href.replace('register.html', 'success.html');
 
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
+            const statusMsg = document.getElementById('status-msg');
+            const name = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
             btn.innerText = 'PROCESSING...';
-            const { error } = await _supabase.auth.signUp({
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                options: { emailRedirectTo: successURL }
-            });
-            if (error) { alert(error.message); btn.innerText = 'CREATE ACCOUNT'; }
-            else { window.location.href = "success.html"; }
+            btn.disabled = true;
+
+            try {
+                // الخطوة 1: إنشاء الحساب في نظام التوثيق (Auth)
+                const { data, error } = await _supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: { emailRedirectTo: successURL }
+                });
+
+                if (error) throw error;
+
+                if (data.user) {
+                    // الخطوة 2: إدخال البيانات في جدول blackflowerproart وربطها بالـ user_id
+                    const { error: insertError } = await _supabase
+                        .from('blackflowerproart')
+                        .insert([
+                            { 
+                                user_id: data.user.id, // الربط مع UUID
+                                username: name,
+                                balance: 0.00
+                            }
+                        ]);
+
+                    if (insertError) throw insertError;
+
+                    // النجاح
+                    statusMsg.style.color = "#00ff88";
+                    statusMsg.innerText = "ACCOUNT CREATED SUCCESSFULLY.";
+                    statusMsg.style.display = "block";
+                    
+                    setTimeout(() => {
+                        window.location.href = "success.html";
+                    }, 1500);
+                }
+
+            } catch (err) {
+                console.error("Signup Error:", err.message);
+                alert("Error: " + err.message);
+                btn.innerText = 'CREATE ACCOUNT';
+                btn.disabled = false;
+            }
         });
 
         async function signUpWithGoogle() {
