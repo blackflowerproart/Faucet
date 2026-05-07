@@ -7,9 +7,13 @@
     <script src="https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js" defer></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
-        .header-bar { height: 70px; background: #000; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; color: #fff; z-index: 1000; position: relative; }
+        
+        /* شريط التحكم */
+        #topHeader { height: 70px; background: #000; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; color: #fff; z-index: 1000; position: relative; }
+        .brand-logo { font-family: serif; letter-spacing: 3px; font-weight: bold; text-transform: uppercase; font-size: 16px; }
         .timer-display { font-size: 16px; font-weight: bold; color: #fff; background: #111; padding: 8px 20px; border: 1px solid #333; border-radius: 2px; }
 
+        /* طبقة الكابتشا */
         #captchaOverlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
@@ -20,28 +24,31 @@
             text-align: center; min-width: 350px;
         }
 
-        /* تنسيق الزر - افتراضياً "ميت" رمادي */
+        /* زر CONFIRM */
         #confirmBtn {
             margin-top: 25px; width: 100%; padding: 15px; font-weight: bold;
             text-transform: uppercase; letter-spacing: 2px; border: 1px solid #222;
             cursor: not-allowed; background: #111; color: #444; transition: 0.3s;
         }
 
-        /* التنسيق عند التفعيل */
         .ready-to-confirm {
             background: #fff !important; color: #000 !important;
             border: 1px solid #fff !important; cursor: pointer !important;
             box-shadow: 0 0 20px rgba(255,255,255,0.3) !important;
         }
 
+        /* حاوية الإطارات */
         .ad-container { width: 100%; height: calc(100% - 70px); position: relative; }
         #ptcFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
         #targetFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 2; background: #fff; }
+        
+        /* وضع ملء الشاشة للموقع المعلن عنه */
+        .fullscreen-ad { height: 100% !important; top: 0 !important; }
     </style>
 </head>
 <body>
 
-    <div class="header-bar">
+    <div id="topHeader">
         <div class="brand-logo">THE BLACK FLOWER</div>
         <div id="timerBox" class="timer-display">Wait 20s</div>
     </div>
@@ -59,20 +66,18 @@
         </div>
     </div>
 
-    <div class="ad-container">
+    <div id="mainContainer" class="ad-container">
         <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <script>
-        // تعريف الدالة كـ Global لتراها مكتبة الكابتشا حتماً
+        // دالة النجاح العالمية
         window.onCaptchaSuccess = function(token) {
-            console.log("Captcha Solution Detected!");
             var btn = document.getElementById('confirmBtn');
             if (btn) {
                 btn.disabled = false;
                 btn.classList.add('ready-to-confirm');
-                btn.innerText = "CONFIRM";
             }
         };
 
@@ -92,7 +97,7 @@
                 clearInterval(countdown);
                 document.getElementById('captchaOverlay').style.display = 'flex';
                 
-                // خطة احتياطية إضافية: فحص الـ Token يدوياً كل ثانية
+                // فحص احتياطي للـ Token
                 var manualCheck = setInterval(function() {
                     if (window.mtcaptcha && window.mtcaptcha.getVerifiedToken()) {
                         window.onCaptchaSuccess();
@@ -103,7 +108,7 @@
         }, 1000);
 
         function finalizeAndShowAd() {
-            // احتساب الربح
+            // 1. احتساب الربح برمجياً
             let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
             bfpBalance += 15;
             localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
@@ -112,12 +117,16 @@
             history[adId] = Date.now();
             localStorage.setItem('added_ads_history', JSON.stringify(history));
 
-            // الأكشن البصري
-            document.getElementById('captchaOverlay').style.display = 'none';
-            document.getElementById('targetFrame').style.display = 'none';
-            document.getElementById('timerBox').innerText = "15 BFP ADDED";
+            // 2. إخفاء العناصر غير المرغوب فيها
+            document.getElementById('captchaOverlay').style.display = 'none'; // إغلاق الكابتشا
+            document.getElementById('targetFrame').style.display = 'none';   // إخفاء إطار التغطية
+            document.getElementById('topHeader').style.display = 'none';     // إخفاء الهيدر الأسود
             
-            alert("Success! 15 BFP added.");
+            // 3. جعل الإعلان المعلن عنه يملأ الشاشة بالكامل
+            document.getElementById('mainContainer').style.height = '100vh';
+
+            // 4. رسالة النجاح التجارية اللطيفة
+            alert("Congratulations! 15 BFP Tokens have been successfully credited to your account. Enjoy exploring the site!");
         }
     </script>
 </body>
