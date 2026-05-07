@@ -6,78 +6,34 @@
     <title>The Black Flower | Verified Profit System</title>
     <script src="https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js" async defer></script>
     <style>
-        body, html { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            overflow: hidden; background: #000; font-family: 'Inter', sans-serif; 
-        }
-
-        /* شريط التحكم */
-        .header-bar { 
-            height: 70px; background: #000; border-bottom: 1px solid #222; 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 30px; color: #fff; z-index: 1000; position: relative; 
-        }
-
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
+        .header-bar { height: 70px; background: #000; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 30px; color: #fff; z-index: 1000; position: relative; }
         .brand-logo { font-family: serif; letter-spacing: 3px; font-weight: bold; text-transform: uppercase; font-size: 16px; }
+        .timer-display { font-size: 16px; font-weight: bold; color: #fff; background: #111; padding: 8px 20px; border: 1px solid #333; border-radius: 2px; }
 
-        .timer-display { 
-            font-size: 16px; font-weight: bold; color: #fff; 
-            background: #111; padding: 8px 20px; 
-            border: 1px solid #333; border-radius: 2px;
-        }
-
-        /* طبقة الكابتشا */
         #captchaOverlay {
-            display: none;
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center;
         }
 
         .captcha-box {
-            background: #000;
-            padding: 40px;
-            border: 1px solid #333;
-            border-radius: 2px;
-            position: relative;
-            text-align: center;
-            min-width: 350px;
+            background: #000; padding: 40px; border: 1px solid #333; border-radius: 2px;
+            position: relative; text-align: center; min-width: 350px;
         }
 
-        /* زر التأكيد والمطالبة داخل الكابتشا */
+        /* زر المطالبة - جعلته يظهر بوضوح عند استدعائه */
         #claimRewardBtn {
-            margin-top: 25px;
-            background: #fff; /* أبيض فاخر */
-            color: #000;
-            border: none;
-            padding: 15px 30px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            width: 100%;
-            display: none; /* يظهر فقط بعد حل الكابتشا */
-            transition: 0.3s;
-            letter-spacing: 1px;
+            margin-top: 25px; background: #fff; color: #000; border: none;
+            padding: 15px 30px; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; width: 100%; display: none; 
+            transition: 0.3s; letter-spacing: 1px; box-shadow: 0 0 15px rgba(255,255,255,0.1);
         }
         #claimRewardBtn:hover { background: #ccc; }
 
         .captcha-title { color: #fff; margin-bottom: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; font-size: 13px; }
-
-        /* حاوية الإعلانات */
         .ad-container { width: 100%; height: calc(100% - 70px); position: relative; }
-        
-        /* إطار الربح الخاص بك (Rotate4All) - سيبقى في الخلفية */
         #ptcFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
-        
-        /* إطار الإعلان الذي يراه المستخدم - سيختفي عند الضغط على الزر */
-        #targetFrame { 
-            width: 100%; height: 100%; border: none; 
-            position: absolute; top: 0; left: 0; z-index: 2; 
-            background: #fff; transition: opacity 0.5s;
-        }
+        #targetFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 2; background: #fff; }
     </style>
 </head>
 <body>
@@ -102,7 +58,6 @@
 
     <div class="ad-container">
         <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
-        
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
@@ -118,7 +73,9 @@
         let timeLeft = 20;
         const countdown = setInterval(() => {
             timeLeft--;
-            document.getElementById('timerBox').innerText = `${timeLeft}s Remaining`;
+            if(document.getElementById('timerBox')) {
+                document.getElementById('timerBox').innerText = `${timeLeft}s Remaining`;
+            }
             
             if (timeLeft <= 0) {
                 clearInterval(countdown);
@@ -127,40 +84,35 @@
             }
         }, 1000);
 
-        // تفعيل الزر داخل الصندوق بعد نجاح الكابتشا
+        // هذه الدالة سيتم استدعاؤها بواسطة MTCaptcha عند الحل
         function onCaptchaSuccess(validatedToken) {
-            document.getElementById('claimRewardBtn').style.display = 'block';
+            console.log("Captcha solved!"); // للتأكد في الكونسول
+            var btn = document.getElementById('claimRewardBtn');
+            if(btn) {
+                btn.style.setProperty('display', 'block', 'important');
+            }
         }
 
-        // الوظيفة الرئيسية عند الضغط على الزر
         function finalizeAndShowAd() {
             try {
-                // 1. احتساب الـ 15 BFP في الـ LocalStorage
                 let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
                 bfpBalance += 15;
                 localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
 
-                // 2. تحديث التاريخ
                 let history = JSON.parse(localStorage.getItem('added_ads_history')) || {};
                 history[adId] = Date.now();
                 localStorage.setItem('added_ads_history', JSON.stringify(history));
 
-                // 3. إخفاء طبقة الكابتشا
+                // التنفيذ البصري
                 document.getElementById('captchaOverlay').style.display = 'none';
-
-                // 4. إخفاء إطار الإطار العلوي لإظهار الموقع المعلن عنه في الخلفية (أو العكس حسب رغبتك)
-                // سنقوم هنا بإخفاء targetFrame ليتمكن المستخدم من رؤية ptcFrame بوضوح
                 document.getElementById('targetFrame').style.display = 'none';
-
-                // 5. تحديث شريط التحكم العلوي
                 document.getElementById('timerBox').innerText = "Reward Claimed ✓";
                 document.getElementById('timerBox').style.background = "#2ecc71";
 
-                alert("15 BFP tokens added! You can now view the site.");
-
+                alert("15 BFP tokens added!");
             } catch (e) {
                 console.error("Error:", e);
-                alert("Award processed with issues. Check balance.");
+                document.getElementById('captchaOverlay').style.display = 'none';
             }
         }
     </script>
