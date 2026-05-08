@@ -141,9 +141,10 @@
 
                 if (error) throw error;
 
-                if (data.session) {
-                    // الانتقال لصفحة home.html بعد النجاح مباشرة
-                    window.location.replace("home.html");
+               if (data.session) {
+    // الانتقال فوراً لصفحة الهوم
+    window.location.replace("home.html");
+}
                 }
 
             } catch (err) {
