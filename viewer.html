@@ -139,26 +139,41 @@
             document.getElementById('successModal').style.display = 'flex';
         }
 
-        async function finalizeAndBack() {
-            const btn = document.querySelector('#successModal .btn-main');
-            btn.innerText = "SAVING...";
-            btn.disabled = true;
+async function loadGlobalAds(userId) {
+    const adsList = document.getElementById('ads-list');
+    const now = new Date().toISOString();
+    
+    // حساب وقت "قبل 24 ساعة من الآن"
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-            try {
-                const { data: { session } } = await _supabase.auth.getSession();
-                if (session) {
-                    // إضافة الرصيد
-                    const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
-                    await _supabase.from('blackflowerproart').update({ balance: profile.balance + adData.reward }).eq('user_id', session.user.id);
-                    
-                    // تسجيل المشاهدة للتجميد 24 ساعة
-                    await _supabase.from('ad_views').insert([{ user_id: session.user.id, ad_id: adData.id }]);
-                }
-            } catch (e) { console.error(e); }
+    // 1. جلب الإعلانات النشطة فقط
+    const { data: ads } = await _supabase
+        .from('ads')
+        .select('*')
+        .gt('expiry_at', now);
 
-            localStorage.removeItem('active_ad');
-            window.location.href = 'home.html';
-        }
+    // 2. جلب المشاهدات التي تمت في آخر 24 ساعة لهذا المستخدم فقط
+    const { data: views } = await _supabase
+        .from('ad_views')
+        .select('ad_id')
+        .eq('user_id', userId)
+        .gt('viewed_at', twentyFourHoursAgo); // فحص التوقيت
+
+    const viewedIds = views ? views.map(v => v.ad_id) : [];
+
+    // 3. فلترة الإعلانات (إخفاء أي إعلان ID الخاص به موجود في سجل المشاهدات)
+    const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
+
+    // عرض الإعلانات المتبقية فقط...
+    if (availableAds.length > 0) {
+        adsList.innerHTML = '';
+        availableAds.forEach(ad => {
+            // كود إنشاء بطاقة الإعلان هنا...
+        });
+    } else {
+        adsList.innerHTML = '<div class="empty-state">No ads available. Frozen for 24h.</div>';
+    }
+}
     </script>
 </body>
 </html>
