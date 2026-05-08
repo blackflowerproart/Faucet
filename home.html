@@ -216,6 +216,41 @@
         }
 
         window.onload = initDashboard;
+        async function loadGlobalAds(userId) {
+    const adsList = document.getElementById('ads-list');
+    const now = new Date().toISOString();
+    
+    // حساب وقت "قبل 24 ساعة من الآن"
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    // 1. جلب الإعلانات النشطة فقط
+    const { data: ads } = await _supabase
+        .from('ads')
+        .select('*')
+        .gt('expiry_at', now);
+
+    // 2. جلب المشاهدات التي تمت في آخر 24 ساعة لهذا المستخدم فقط
+    const { data: views } = await _supabase
+        .from('ad_views')
+        .select('ad_id')
+        .eq('user_id', userId)
+        .gt('viewed_at', twentyFourHoursAgo); // فحص التوقيت
+
+    const viewedIds = views ? views.map(v => v.ad_id) : [];
+
+    // 3. فلترة الإعلانات (إخفاء أي إعلان ID الخاص به موجود في سجل المشاهدات)
+    const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
+
+    // عرض الإعلانات المتبقية فقط...
+    if (availableAds.length > 0) {
+        adsList.innerHTML = '';
+        availableAds.forEach(ad => {
+            // كود إنشاء بطاقة الإعلان هنا...
+        });
+    } else {
+        adsList.innerHTML = '<div class="empty-state">No ads available. Frozen for 24h.</div>';
+    }
+}
     </script>
 </body>
 </html>
