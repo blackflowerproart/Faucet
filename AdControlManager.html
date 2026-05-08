@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ad Control Manager | The Black Flower</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #000;
@@ -14,9 +15,26 @@
         }
 
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: Arial, sans-serif; 
             background-color: var(--bg-color); color: #fff; padding: 40px 20px; margin: 0;
             display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* تنسيق الشعار والعنوان كما في صفحة هوم */
+        .logo-main {
+            width: 100px; height: 100px; border-radius: 50%;
+            object-fit: cover; border: 1px solid #333; margin-bottom: 15px;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { 
+            font-family: 'Times New Roman', serif; letter-spacing: 2px; 
+            text-transform: uppercase; margin: 0; font-size: 26px; 
+        }
+        .pro-art-sub {
+            font-family: Arial, sans-serif; font-size: 0.7rem;
+            letter-spacing: 4px; color: #888; text-transform: uppercase;
+            margin-top: 5px; display: block;
         }
 
         .container { 
@@ -24,25 +42,20 @@
             border: 1px solid var(--border); padding: 30px; border-radius: 4px; 
         }
         
-        .header { text-align: center; margin-bottom: 30px; }
-        .header h1 { 
-            font-family: serif; letter-spacing: 2px; 
-            text-transform: uppercase; margin: 0; font-size: 22px; 
-        }
-        
-        .price-badge { 
+        .price-info { 
             background: #111; padding: 15px; border-radius: 2px; 
             text-align: center; margin-bottom: 25px; border: 1px dashed #444; 
-            color: #fff; font-weight: bold; font-size: 13px;
+            color: #fff; font-size: 12px; line-height: 1.6;
         }
 
         label { display: block; margin-bottom: 8px; font-size: 10px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
         
-        input { 
+        input, select { 
             width: 100%; padding: 12px; margin-bottom: 20px; background: #000; 
             border: 1px solid #333; color: #fff; border-radius: 2px; box-sizing: border-box;
+            outline: none;
         }
-        input:focus { border-color: var(--accent); outline: none; }
+        input:focus { border-color: var(--accent); }
 
         .btn-publish { 
             width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; 
@@ -56,130 +69,149 @@
             font-size: 10px; text-transform: uppercase; margin-top: 20px;
         }
 
-        .manage-section { margin-top: 40px; width: 100%; max-width: 500px; }
+        /* رسالة التأكيد الاحترافية */
+        #customAlert {
+            display: none; position: fixed; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); background: #000; 
+            border: 2px solid #fff; padding: 30px; z-index: 1000;
+            text-align: center; min-width: 300px; box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        #customAlert h3 { font-family: 'Times New Roman', serif; margin-top: 0; text-transform: uppercase; }
+        #customAlert button { 
+            background: #fff; color: #000; border: none; padding: 10px 20px; 
+            margin-top: 20px; cursor: pointer; font-weight: bold; text-transform: uppercase;
+        }
+
         .ad-item { 
             background: #050505; border: 1px solid var(--border); padding: 15px; 
             margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+            width: 100%; max-width: 500px; margin-top: 10px;
         }
-        .ad-details strong { display: block; font-size: 13px; color: #fff; }
-        .ad-details small { color: #444; font-size: 10px; }
         .btn-delete { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 5px 10px; cursor: pointer; font-size: 9px; }
     </style>
 </head>
 <body>
 
+    <img src="wight.jpg" alt="Logo" class="logo-main">
+
     <div class="header">
         <h1>Ad Control Center</h1>
-        <p style="font-size: 9px; color: #444; letter-spacing: 2px; margin-top: 5px;">THE BLACK FLOWER PRO ART</p>
+        <span class="pro-art-sub">professional art</span>
     </div>
 
     <div class="container">
-        <div class="price-badge">PUBLISHING COST: 50.00 BFP</div>
+        <div class="price-info">
+            20 SECONDS = 100 BFP<br>
+            10 SECONDS = 50 BFP
+        </div>
 
         <label>Ad Title</label>
-        <input type="text" id="adTitle" placeholder="e.g. 3D Architectural Design">
+        <input type="text" id="adTitle">
 
         <label>Target URL</label>
-        <input type="url" id="adUrl" placeholder="https://example.com">
+        <input type="url" id="adUrl">
 
-        <label>Promo Code (For Free Access)</label>
-        <input type="text" id="promoCode" placeholder="Enter '123456789' for free">
+        <label>Duration</label>
+        <select id="adDuration">
+            <option value="50">10 Seconds (50 BFP)</option>
+            <option value="100">20 Seconds (100 BFP)</option>
+        </select>
 
-        <button class="btn-publish" onclick="publishAd()">Publish to Home</button>
+        <label>Promo Code</label>
+        <input type="text" id="promoCode">
+
+        <button class="btn-publish" onclick="processAd()">Publish Ad</button>
         <a href="home.html" class="btn-back">Back to Dashboard</a>
     </div>
 
-    <div class="manage-section">
-        <div id="managerList"></div>
+    <div id="customAlert">
+        <h3 id="alertTitle">Success</h3>
+        <p id="alertMsg">Your ad has been published for free.</p>
+        <button onclick="closeAlert()">Done</button>
     </div>
 
-    <script>
-        const FREE_CODE = "123456789";
-        const AD_COST = 50;
+    <div id="managerList" style="margin-top: 30px; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
 
-        function publishAd() {
+    <script>
+        const SECRET_PROMO = "9861003993";
+        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function processAd() {
             const title = document.getElementById('adTitle').value;
             const url = document.getElementById('adUrl').value;
+            const cost = parseInt(document.getElementById('adDuration').value);
             const code = document.getElementById('promoCode').value;
 
             if (!title || !url) {
-                alert("Please fill in Title and URL.");
+                alert("PLEASE FILL ALL FIELDS");
                 return;
             }
 
-            // Check Payment
-            if (code !== FREE_CODE) {
-                let currentBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
-                
-                if (currentBalance < AD_COST) {
-                    alert("Insufficient Balance. You need 50 BFP or a valid Promo Code.");
-                    return;
-                }
-
-                const confirmPay = confirm(`Spend ${AD_COST} BFP to publish this ad?`);
-                if (!confirmPay) return;
-
-                // Deduct Balance
-                currentBalance -= AD_COST;
-                localStorage.setItem('bfp_balance', currentBalance.toFixed(2));
-            } else {
-                alert("Promo Code accepted! Publishing for free.");
+            // التحقق من البرومو كود السري
+            if (code === SECRET_PROMO) {
+                showSuccessAlert("PROMO CODE ACCEPTED", "YOUR AD HAS BEEN PUBLISHED FOR FREE SUCCESSFULLY.");
+                saveAd(title, url);
+                return;
             }
 
-            // Add to Ads List (Shared with Home)
-            const ads = JSON.parse(localStorage.getItem('added_ads')) || [];
-            const newAd = {
-                id: 'ad_' + Date.now(),
-                title: title,
-                url: url
-            };
+            // إذا لم يوجد برومو كود، يتم الخصم من الرصيد
+            const { data: { session } } = await _supabase.auth.getSession();
+            const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
 
-            ads.push(newAd);
-            localStorage.setItem('added_ads', JSON.stringify(ads));
+            if (profile.balance < cost) {
+                alert("INSUFFICIENT BALANCE. YOU NEED " + cost + " BFP");
+                return;
+            }
+
+            // خصم الرصيد
+            const newBalance = profile.balance - cost;
+            await _supabase.from('blackflowerproart').update({ balance: newBalance }).eq('user_id', session.user.id);
             
-            // Clear inputs
-            document.getElementById('adTitle').value = '';
-            document.getElementById('adUrl').value = '';
-            document.getElementById('promoCode').value = '';
-            
-            alert("Ad published successfully!");
-            renderManager();
+            showSuccessAlert("AD PUBLISHED", "THE COST HAS BEEN DEDUCTED FROM YOUR BALANCE.");
+            saveAd(title, url);
         }
 
-        function renderManager() {
+        function showSuccessAlert(title, msg) {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMsg').innerText = msg;
+            document.getElementById('customAlert').style.display = 'block';
+        }
+
+        function closeAlert() {
+            document.getElementById('customAlert').style.display = 'none';
+            location.reload();
+        }
+
+        function saveAd(title, url) {
+            let ads = JSON.parse(localStorage.getItem('added_ads')) || [];
+            ads.push({ id: Date.now(), title, url });
+            localStorage.setItem('added_ads', JSON.stringify(ads));
+            renderAds();
+        }
+
+        function renderAds() {
             const ads = JSON.parse(localStorage.getItem('added_ads')) || [];
             const list = document.getElementById('managerList');
-            list.innerHTML = '<h2 style="font-size:12px; text-transform:uppercase; color:#333; margin-bottom:15px;">Active Ads</h2>';
-
-            if (ads.length === 0) {
-                list.innerHTML += '<p style="font-size:10px; color:#222; text-align:center;">No ads running.</p>';
-                return;
-            }
-
+            list.innerHTML = ads.length > 0 ? '<h2 style="font-size:12px; text-transform:uppercase;">Your Active Ads</h2>' : '';
             ads.forEach(ad => {
                 const div = document.createElement('div');
                 div.className = 'ad-item';
-                div.innerHTML = `
-                    <div class="ad-details">
-                        <strong>${ad.title}</strong>
-                        <small>${ad.url}</small>
-                    </div>
-                    <button class="btn-delete" onclick="deleteAd('${ad.id}')">Delete</button>
-                `;
+                div.innerHTML = `<div><strong>${ad.title}</strong><small>${ad.url}</small></div>
+                                 <button class="btn-delete" onclick="deleteAd(${ad.id})">Remove</button>`;
                 list.appendChild(div);
             });
         }
 
         function deleteAd(id) {
-            if (confirm("Remove this ad from Home?")) {
-                let ads = JSON.parse(localStorage.getItem('added_ads')) || [];
-                ads = ads.filter(item => item.id !== id);
-                localStorage.setItem('added_ads', JSON.stringify(ads));
-                renderManager();
-            }
+            let ads = JSON.parse(localStorage.getItem('added_ads')) || [];
+            ads = ads.filter(a => a.id !== id);
+            localStorage.setItem('added_ads', JSON.stringify(ads));
+            renderAds();
         }
 
-        window.onload = renderManager;
+        window.onload = renderAds;
     </script>
 </body>
 </html>
