@@ -149,51 +149,65 @@
             loadGlobalAds();
             document.body.style.visibility = "visible";
         }
+async function loadAds() {
+    const adsList = document.getElementById('ads-list');
+    const { data: { session } } = await _supabase.auth.getSession();
 
-        async function loadGlobalAds() {
-            const adsList = document.getElementById('ads-list');
+    // 1. جلب الإعلانات التي لم تنتهِ صلاحيتها بعد
+    const now = new Date().toISOString();
+    const { data: ads } = await _supabase
+        .from('ads')
+        .select('*')
+        .gt('expiry_at', now); 
+
+    // 2. جلب سجل مشاهدات المستخدم الحالي لآخر 24 ساعة
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
+    
+    const { data: views } = await _supabase
+        .from('ad_views')
+        .select('ad_id')
+        .eq('user_id', session.user.id)
+        .gt('viewed_at', oneDayAgo.toISOString());
+
+    const viewedAdIds = views.map(v => v.ad_id);
+
+    if (ads) {
+        adsList.innerHTML = '';
+        ads.forEach(ad => {
+            const isFrozen = viewedAdIds.includes(ad.id);
+            const reward = (ad.duration >= 20) ? 15 : 8;
+
+            const card = document.createElement('div');
+            card.className = `ad-item ${isFrozen ? 'frozen' : ''}`;
             
-            const { data: ads, error } = await _supabase
-                .from('ads')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (ads && ads.length > 0) {
-                adsList.innerHTML = '';
-                ads.forEach(ad => {
-                    // منطق الربح: إذا كان الإعلان 20 ثانية يربح 15، غير ذلك يربح 8
-                    // سنفترض أن الإعلان الذي تكلفته 100 هو 20 ثانية (حسب صفحة النشر)
-                    const isLong = ad.cost >= 100 || ad.duration === 20; 
-                    const reward = isLong ? 15 : 8;
-                    const seconds = isLong ? 20 : 10;
-
-                    const card = document.createElement('div');
-                    card.className = 'ad-item';
-                    card.onclick = () => {
-                        // حفظ بيانات الإعلان مؤقتاً للانتقال لصفحة المشاهدة
-                        localStorage.setItem('active_ad', JSON.stringify({
-                            url: ad.url,
-                            reward: reward,
-                            seconds: seconds,
-                            id: ad.id
-                        }));
-                        window.location.href = 'viewer.html'; // الاسم الصحيح للملف
-                    };
-
-                    card.innerHTML = `
-                        <div class="ad-info">
-                            <b>${ad.title}</b>
-                            <span>Click to earn tokens</span>
-                        </div>
-                        <div class="ad-reward">
-                            <span class="reward-val">+${reward} BFP</span>
-                            <span class="reward-time">${seconds} SEC</span>
-                        </div>
-                    `;
-                    adsList.appendChild(card);
-                });
+            // إذا كان مجمد لا يمكن الضغط عليه
+            if (!isFrozen) {
+                card.onclick = () => {
+                    localStorage.setItem('active_ad', JSON.stringify({
+                        id: ad.id,
+                        url: ad.url,
+                        reward: reward,
+                        seconds: ad.duration
+                    }));
+                    window.location.href = 'viewer.html';
+                };
             }
-        }
+
+            card.innerHTML = `
+                <div class="ad-info">
+                    <b>${ad.title} ${isFrozen ? '<span style="color:orange;">(FROZEN 24H)</span>' : ''}</b>
+                    <span>Expiry: ${new Date(ad.expiry_at).toLocaleDateString()}</span>
+                </div>
+                <div class="ad-reward">
+                    <span class="reward-val">+${reward} BFP</span>
+                    <span class="reward-time">${ad.duration} SEC</span>
+                </div>
+            `;
+            adsList.appendChild(card);
+        });
+    }
+}
 
         async function handleLogout() {
             await _supabase.auth.signOut();
