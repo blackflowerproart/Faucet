@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | The Black Flower</title>
+    <title>Home | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -14,89 +14,121 @@
 
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
             background-color: var(--bg-black);
             color: var(--text-white);
+            font-family: 'Times New Roman', serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            /* إخفاء المحتوى حتى يتم التحقق من المستخدم لمنع الوميض */
-            visibility: hidden; 
+            visibility: hidden; /* مخفي حتى يتم التأكد من هوية المستخدم */
         }
 
-        .container {
+        .welcome-card {
             text-align: center;
-            border: 1px solid #333;
-            padding: 40px;
-            max-width: 500px;
-            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 50px;
+            width: 80%;
+            max-width: 600px;
         }
 
-        h1 { font-family: 'Times New Roman', serif; font-size: 2rem; letter-spacing: 2px; }
-        p { color: var(--accent); margin-bottom: 30px; }
-
-        .btn-logout {
-            padding: 10px 25px;
-            background-color: transparent;
-            color: white;
-            border: 1px solid white;
-            cursor: pointer;
+        /* تنسيق اسم المستخدم */
+        #username-display {
+            font-family: Arial, sans-serif;
+            color: var(--text-white);
+            font-size: 2.5rem;
             text-transform: uppercase;
-            font-size: 0.8rem;
-            transition: 0.3s;
+            letter-spacing: 3px;
+            margin: 20px 0;
+            display: block;
         }
 
-        .btn-logout:hover {
-            background-color: white;
-            color: black;
+        .status-dot {
+            height: 10px;
+            width: 10px;
+            background-color: #00ff00;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .logout-link {
+            margin-top: 30px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--accent);
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Welcome to Your Dashboard</h1>
-        <p id="user-email">Loading user profile...</p>
+    <div class="welcome-card">
+        <p style="letter-spacing: 5px; color: #888;">WELCOME BACK</p>
         
-        <div style="margin-top: 20px;">
-            <p>Your assets and professional art ecosystem are now active.</p>
+        <h1 id="username-display">Loading...</h1>
+        
+        <div>
+            <span class="status-dot"></span>
+            <span style="font-size: 0.9rem; font-family: Arial;">Account Verified</span>
         </div>
 
-        <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
+        <p style="margin-top: 40px; line-height: 1.6;">Your professional art ecosystem is ready.</p>
+        
+        <div onclick="handleLogout()" class="logout-link">SECURE LOGOUT</div>
     </div>
 
     <script>
-        // 1. إعدادات Supabase الخاصة بك
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 2. دالة حماية الصفحة
-        async function protectPage() {
-            // جلب بيانات الجلسة الحالية
-            const { data: { session }, error } = await _supabase.auth.getSession();
+        async function loadUserData() {
+            // 1. التحقق من الجلسة
+            const { data: { session } } = await _supabase.auth.getSession();
 
-            if (error || !session) {
-                // إذا لم يوجد مستخدم مسجل، قم بتحويله فوراً لصفحة الدخول
-                console.log("Access Denied. Redirecting to login...");
+            if (!session) {
+                // إذا لم يسجل دخول، يطرد لصفحة login
                 window.location.replace("login.html");
-            } else {
-                // إذا كان المستخدم موجوداً، أظهر المحتوى واعرض بريده
+                return;
+            }
+
+            const user = session.user;
+
+            try {
+                // 2. جلب اسم المستخدم من جدول البيانات blackflowerproart
+                const { data: profile, error } = await _supabase
+                    .from('blackflowerproart')
+                    .select('username')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (profile && profile.username) {
+                    // عرض الاسم الموجود في قاعدة البيانات
+                    document.getElementById('username-display').innerText = profile.username;
+                } else {
+                    // إذا لم يوجد اسم في الجدول، نعرض الجزء الأول من الإيميل كخيار بديل
+                    document.getElementById('username-display').innerText = user.email.split('@')[0];
+                }
+
+                // إظهار الصفحة بعد انتهاء التحميل
                 document.body.style.visibility = "visible";
-                document.getElementById('user-email').innerText = `Logged in as: ${session.user.email}`;
+
+            } catch (err) {
+                console.error("Error loading profile:", err);
+                window.location.replace("login.html");
             }
         }
 
-        // 3. دالة تسجيل الخروج
         async function handleLogout() {
             await _supabase.auth.signOut();
             window.location.replace("login.html");
         }
 
-        // تشغيل الحماية فور تحميل الصفحة
-        window.onload = protectPage;
+        // تشغيل الوظيفة فور التحميل
+        window.onload = loadUserData;
     </script>
 </body>
 </html>
