@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Viewer | The Black Flower</title>
+    <title>Safe Viewer | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js" defer></script>
     <style>
-        :root { --bg: #000; --dim: #888; }
+        :root { --bg: #000; --accent: #fff; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
         
         #topHeader { 
@@ -20,15 +20,10 @@
         .logo-mini { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #333; }
         .brand-name { font-family: 'Times New Roman', serif; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
 
-        .timer-display { font-size: 14px; font-weight: bold; color: #fff; background: #111; padding: 8px 15px; border: 1px solid #333; min-width: 130px; text-align: center; }
+        .timer-display { font-size: 14px; font-weight: bold; color: #fff; background: #111; padding: 8px 15px; border: 1px solid #333; min-width: 140px; text-align: center; }
 
-        /* تقسيم الشاشة لضمان ظهور رابط Rotate4All بشكل شرعي */
-        .viewport { position: relative; width: 100%; height: calc(100% - 80px); display: flex; flex-direction: column; }
-        
-        /* الإطار العلوي لـ Rotate4All (جعله مرئياً بنسبة بسيطة يضمن احتساب الزيارة) */
-        #r4allFrame { width: 100%; height: 10%; border: none; border-bottom: 1px solid #222; background: #000; }
-        /* الإطار السفلي للإعلان الأصلي */
-        #targetFrame { width: 100%; height: 90%; border: none; background: #fff; }
+        .viewport { width: 100%; height: calc(100% - 80px); }
+        #targetFrame { width: 100%; height: 100%; border: none; background: #fff; }
 
         #captchaOverlay, #successModal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -51,17 +46,16 @@
             <img src="wight.jpg" alt="Logo" class="logo-mini">
             <span class="brand-name">The Black Flower</span>
         </div>
-        <div id="timerBox" class="timer-display">Initialising...</div>
+        <div id="timerBox" class="timer-display">Initializing...</div>
     </div>
 
     <div class="viewport">
-        <iframe id="r4allFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <div id="captchaOverlay">
         <div class="modal-box">
-            <p style="font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom:20px;">VERIFY YOU ARE HUMAN</p>
+            <p style="font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom:20px;">VERIFY HUMANITY</p>
             <div id="mt-container" class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic" data-callback="onCaptchaVerified"></div>
             <button id="confirmBtn" class="btn-main" disabled onclick="handleShowSuccess()">CONFIRM</button>
         </div>
@@ -69,7 +63,7 @@
 
     <div id="successModal">
         <div class="modal-box">
-            <h2 style="letter-spacing: 4px;">SUCCESS</h2>
+            <h2 style="letter-spacing: 4px;">COMPLETED</h2>
             <p id="rewardTxt" style="color: #888; font-size: 12px; margin-bottom:25px;"></p>
             <button id="finalBtn" class="btn-main enabled" onclick="finalizeAll()">CONTINUE</button>
         </div>
@@ -83,18 +77,23 @@
         const adData = JSON.parse(localStorage.getItem('active_ad'));
         if (!adData) window.location.href = 'home.html';
 
+        // --- التعديل الأهم لاحتساب الزيارة ---
+        // فتح رابط Rotate4All في نافذة جديدة لضمان احتساب الزيارة كزيارة حقيقية
+        const ptpUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
+        window.open(ptpUrl, '_blank', 'width=800,height=600');
+
         document.getElementById('targetFrame').src = adData.url;
         let timeLeft = parseInt(adData.seconds);
 
         const countdown = setInterval(() => {
             if (timeLeft > 0) {
-                document.getElementById('timerBox').innerText = `WAIT ${timeLeft} SEC`;
+                document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
                 timeLeft--;
             } else {
                 clearInterval(countdown);
-                document.getElementById('timerBox').innerText = "COMPLETE";
+                document.getElementById('timerBox').innerText = "DONE";
                 document.getElementById('captchaOverlay').style.display = 'flex';
-                // تحديث تلقائي لفحص الكابتشا
+                
                 const check = setInterval(() => {
                     if (window.mtcaptcha && mtcaptcha.getVerifiedToken()) {
                         const btn = document.getElementById('confirmBtn');
@@ -108,25 +107,22 @@
 
         function handleShowSuccess() {
             document.getElementById('captchaOverlay').style.display = 'none';
-            document.getElementById('rewardTxt').innerText = `Rewards: ${adData.reward} BFP`;
+            document.getElementById('rewardTxt').innerText = `Reward: ${adData.reward} BFP`;
             document.getElementById('successModal').style.display = 'flex';
         }
 
         async function finalizeAll() {
             const btn = document.getElementById('finalBtn');
-            btn.innerText = "SYNCHING...";
+            btn.innerText = "SYNCHRONIZING...";
             btn.disabled = true;
 
             try {
                 const { data: { session } } = await _supabase.auth.getSession();
                 if (session) {
                     const userId = session.user.id;
-                    
-                    // 1. تحديث الرصيد
                     const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', userId).single();
                     await _supabase.from('blackflowerproart').update({ balance: (profile?.balance || 0) + adData.reward }).eq('user_id', userId);
 
-                    // 2. تجميد الإعلان لـ 24 ساعة (التسجيل في ad_views)
                     await _supabase.from('ad_views').insert([{ 
                         user_id: userId, 
                         ad_id: adData.id,
