@@ -65,7 +65,7 @@
                 <span class="brand-sub">professional art</span>
             </div>
         </div>
-        <div id="timerBox" class="timer-display">Initializing...</div>
+        <div id="timerBox" class="timer-display">Wait...</div>
     </div>
 
     <div class="viewport">
@@ -165,6 +165,38 @@ const checkCaptchaInterval = setInterval(() => {
             localStorage.removeItem('active_ad');
             window.location.href = 'home.html';
         }
+        // --- كود العداد الزمني (Timer Logic) ---
+
+// 1. جلب بيانات الإعلان من التخزين المحلي
+const adData = JSON.parse(localStorage.getItem('active_ad'));
+const timerBox = document.getElementById('timerBox');
+
+if (adData && adData.seconds) {
+    let timeLeft = parseInt(adData.seconds); // المدة بناءً على الإعلان (10 أو 20 ثانية)
+    
+    // تحديث النص الأولي
+    timerBox.innerText = `${timeLeft}s REMAINING`;
+
+    // 2. تشغيل العداد التنازلي
+    const countdown = setInterval(() => {
+        timeLeft--;
+        
+        if (timeLeft >= 0) {
+            timerBox.innerText = `${timeLeft}s REMAINING`;
+        }
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            timerBox.innerText = "COMPLETED";
+            // إظهار مربع الكابتشا عند الانتهاء
+            document.getElementById('captchaOverlay').style.display = 'flex';
+        }
+    }, 1000);
+} else {
+    // في حال عدم وجود بيانات إعلان
+    timerBox.innerText = "ERROR";
+    window.location.href = 'home.html';
+}
     </script>
 </body>
 </html>
