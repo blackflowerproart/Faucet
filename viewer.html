@@ -138,41 +138,40 @@
             document.getElementById('successModal').style.display = 'flex';
         }
 
-        // الوظيفة النهائية: إضافة المكافأة وتجميد الإعلان
-        async function finalizeAndBack() {
-            const btn = document.getElementById('continueBtn');
-            btn.innerText = "SYNCHRONIZING...";
-            btn.disabled = true;
+    async function finalizeAndBack() {
+    const btn = document.getElementById('continueBtn');
+    btn.innerText = "SAVING...";
+    btn.disabled = true;
 
-            try {
-                const { data: { session } } = await _supabase.auth.getSession();
-                if (session) {
-                    const userId = session.user.id;
+    try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) {
+            const userId = session.user.id;
 
-                    // 1. إضافة المكافأة إلى الرصيد
-                    const { data: profile } = await _supabase.from('blackflowerproart')
-                        .select('balance').eq('user_id', userId).single();
-                    
-                    if (profile) {
-                        await _supabase.from('blackflowerproart')
-                            .update({ balance: profile.balance + adData.reward })
-                            .eq('user_id', userId);
-                    }
-
-                    // 2. تجميد الإعلان (تسجيل المشاهدة في جدول ad_views)
-                    await _supabase.from('ad_views').insert([{ 
-                        user_id: userId, 
-                        ad_id: adData.id 
-                        // سيتم تعبئة viewed_at تلقائياً من قاعدة البيانات
-                    }]);
-                }
-            } catch (e) { 
-                console.error("Sync Error:", e); 
+            // 1. إضافة المكافأة
+            const { data: profile } = await _supabase.from('blackflowerproart')
+                .select('balance').eq('user_id', userId).single();
+            
+            if (profile) {
+                await _supabase.from('blackflowerproart')
+                    .update({ balance: profile.balance + adData.reward })
+                    .eq('user_id', userId);
             }
 
-            localStorage.removeItem('active_ad');
-            window.location.href = 'home.html';
+            // 2. تجميد الإعلان (تسجيل المشاهدة مع توقيت يدوي للتأكيد)
+            await _supabase.from('ad_views').insert([{ 
+                user_id: userId, 
+                ad_id: adData.id,
+                viewed_at: new Date().toISOString() // إرسال التوقيت الحالي بدقة
+            }]);
         }
+    } catch (e) { 
+        console.error("Sync Error:", e); 
+    }
+
+    localStorage.removeItem('active_ad');
+    window.location.href = 'home.html';
+}
     </script>
 </body>
 </html>
