@@ -203,14 +203,15 @@
                 const expiryDate = new Date();
                 expiryDate.setHours(expiryDate.getHours() + (days * 24));
 
-                // إضافة الإعلان
-                const { error } = await _supabase.from('ads').insert([{
-                    title: title,
-                    url: url,
-                    duration: duration,
-                    expiry_at: expiryDate.toISOString(),
-                    user_id: session.user.id,
-                    total_paid: totalCost
+                // داخل دالة processCampaign في صفحة التحكم
+const { error } = await _supabase.from('ads').insert([{
+    title: title,
+    url: url,
+    duration: duration, // تأكد أنه رقم (10 أو 20)
+    expiry_at: expiryDate.toISOString(),
+    user_id: session.user.id,
+    cost: totalCost // إرسال التكلفة أيضاً لضمان الحساب
+}]);
                 }]);
 
                 if (error) throw error;
