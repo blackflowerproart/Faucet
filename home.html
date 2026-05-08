@@ -3,81 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | The Black Flower</title>
+    <title>The Black Flower | Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-black: #000000;
-            --text-white: #ffffff;
-            --accent: #888888;
+            --bg-black: #050505;
+            --card-black: #0a0a0a;
+            --text-white: #f0f0f0;
+            --accent: #ffffff;
+            --dim-gray: #888888;
+            --sidebar-width: 280px;
         }
 
         body {
             margin: 0;
+            font-family: Arial, sans-serif;
             background-color: var(--bg-black);
             color: var(--text-white);
-            font-family: 'Times New Roman', serif;
+            display: flex;
+            min-height: 100vh;
+            visibility: hidden; /* مخفي حتى التحقق من الهوية */
+        }
+
+        /* الشريط الجانبي - Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--card-black);
+            border-right: 1px solid #222;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            padding: 30px 20px;
+            position: fixed;
             height: 100vh;
-            visibility: hidden; /* مخفي حتى يتم التأكد من هوية المستخدم */
         }
 
-        .welcome-card {
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 50px;
-            width: 80%;
-            max-width: 600px;
-        }
-
-        /* تنسيق اسم المستخدم */
-        #username-display {
-            font-family: Arial, sans-serif;
-            color: var(--text-white);
-            font-size: 2.5rem;
+        .brand {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.5rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            margin: 20px 0;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        /* معلومات المستخدم والرصيد */
+        .user-info {
+            border-bottom: 1px solid #222;
+            padding-bottom: 25px;
+            margin-bottom: 25px;
+        }
+
+        .username {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
             display: block;
         }
 
-        .status-dot {
-            height: 10px;
-            width: 10px;
-            background-color: #00ff00;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 10px;
+        .balance-box {
+            background-color: #111;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #333;
         }
 
-        .logout-link {
-            margin-top: 30px;
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 0.8rem;
-            border-bottom: 1px solid var(--accent);
+        .bfp-balance {
+            font-size: 1.4rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .usd-value {
+            font-size: 0.85rem;
+            color: #00ff00;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* أزرار القائمة الجانبية */
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--text-white);
+            padding: 12px 15px;
+            text-align: left;
             cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--accent);
+            color: #000;
+        }
+
+        .withdraw-section { margin-top: 15px; }
+        .min-withdraw { font-size: 0.7rem; color: var(--dim-gray); display: block; margin-top: 5px; }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 50px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .welcome-msg {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        h2 { font-family: 'Times New Roman', serif; font-size: 2.5rem; text-transform: uppercase; }
+
+        .logout-btn {
+            margin-top: auto;
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <div class="welcome-card">
-        <p style="letter-spacing: 5px; color: #888;">WELCOME BACK</p>
+    <div class="sidebar">
+        <div class="brand">The Black Flower</div>
         
-        <h1 id="username-display">Loading...</h1>
-        
-        <div>
-            <span class="status-dot"></span>
-            <span style="font-size: 0.9rem; font-family: Arial;">Account Verified</span>
+        <div class="user-info">
+            <span class="username" id="display-name">Loading...</span>
+            <div class="balance-box">
+                <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Current Balance</span>
+                <span class="bfp-balance"><span id="bfp-val">0</span> BFP</span>
+                <span class="usd-value" id="usd-val">$0.00</span>
+            </div>
         </div>
 
-        <p style="margin-top: 40px; line-height: 1.6;">Your professional art ecosystem is ready.</p>
-        
-        <div onclick="handleLogout()" class="logout-link">SECURE LOGOUT</div>
+        <div class="nav-menu">
+            <div class="withdraw-section">
+                <button class="nav-btn" onclick="handleWithdraw()">Withdraw Assets</button>
+                <span class="min-withdraw">Minimum: 30,000 BFP</span>
+            </div>
+
+            <a href="ADcontrolmaneger.html" class="nav-btn">AD Control Manager</a>
+            <button class="nav-btn" onclick="alert('Task system is being designed...')">Add Tasks</button>
+        </div>
+
+        <div class="logout-btn" onclick="handleLogout()">Secure Logout</div>
+    </div>
+
+    <div class="main-content">
+        <div class="welcome-msg">
+            <h2>Dashboard Active</h2>
+            <p style="color: #888; line-height: 1.6;">Your professional art ecosystem and financial assets are fully synchronized. Use the sidebar to manage your earnings.</p>
+        </div>
     </div>
 
     <script>
@@ -85,40 +177,50 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function loadUserData() {
-            // 1. التحقق من الجلسة
+        // حساب القيمة المالية: 15 BFP = 0.00005 USD
+        function calculateUSD(bfp) {
+            return (bfp / 15) * 0.00005;
+        }
+
+        async function loadDashboard() {
             const { data: { session } } = await _supabase.auth.getSession();
 
             if (!session) {
-                // إذا لم يسجل دخول، يطرد لصفحة login
                 window.location.replace("login.html");
                 return;
             }
 
-            const user = session.user;
-
             try {
-                // 2. جلب اسم المستخدم من جدول البيانات blackflowerproart
+                // جلب البيانات من جدول blackflowerproart
                 const { data: profile, error } = await _supabase
                     .from('blackflowerproart')
-                    .select('username')
-                    .eq('user_id', user.id)
+                    .select('username, balance')
+                    .eq('user_id', session.user.id)
                     .single();
 
-                if (profile && profile.username) {
-                    // عرض الاسم الموجود في قاعدة البيانات
-                    document.getElementById('username-display').innerText = profile.username;
-                } else {
-                    // إذا لم يوجد اسم في الجدول، نعرض الجزء الأول من الإيميل كخيار بديل
-                    document.getElementById('username-display').innerText = user.email.split('@')[0];
+                if (profile) {
+                    const balance = profile.balance || 0;
+                    document.getElementById('display-name').innerText = profile.username;
+                    document.getElementById('bfp-val').innerText = balance.toLocaleString();
+                    
+                    // تحديث القيمة بالدولار (سنتات)
+                    const usdValue = calculateUSD(balance);
+                    document.getElementById('usd-val').innerText = `$${usdValue.toFixed(6)}`;
                 }
 
-                // إظهار الصفحة بعد انتهاء التحميل
                 document.body.style.visibility = "visible";
-
             } catch (err) {
-                console.error("Error loading profile:", err);
+                console.error(err);
                 window.location.replace("login.html");
+            }
+        }
+
+        function handleWithdraw() {
+            const currentBFP = parseInt(document.getElementById('bfp-val').innerText.replace(/,/g, ''));
+            if (currentBFP < 30000) {
+                alert(`Insufficient Balance. Minimum withdrawal is 30,000 BFP.\nYour current balance is ${currentBFP} BFP.`);
+            } else {
+                alert("Withdrawal request initiated. Processing...");
             }
         }
 
@@ -127,8 +229,7 @@
             window.location.replace("login.html");
         }
 
-        // تشغيل الوظيفة فور التحميل
-        window.onload = loadUserData;
+        window.onload = loadDashboard;
     </script>
 </body>
 </html>
