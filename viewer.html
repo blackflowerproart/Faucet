@@ -9,7 +9,6 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
         
-        /* الهيدر العلوي */
         #topHeader { 
             height: 85px; background: #000; border-bottom: 1px solid #222; 
             display: flex; justify-content: space-between; align-items: center; 
@@ -19,64 +18,58 @@
         .brand-logo { font-family: serif; letter-spacing: 4px; font-weight: bold; text-transform: uppercase; font-size: 18px; }
         .timer-display { font-size: 15px; font-weight: bold; color: #fff; background: #111; padding: 10px 25px; border: 1px solid #333; }
 
-        /* الكابتشا */
-        #captchaOverlay {
+        /* حاوية العرض المتداخلة */
+        .viewport { position: relative; width: 100%; height: calc(100% - 85px); }
+
+        /* 1. رابط الربح الخاص بك (Rotate4All) - يملأ الخلفية */
+        #r4allFrame { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            border: none; z-index: 1; 
+        }
+
+        /* 2. إعلان المستخدم - يظهر فوق رابطك بنسبة شفافة بسيطة أو فوقه تماماً */
+        #targetFrame { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            border: none; z-index: 2; background: #fff;
+        }
+
+        /* الكابتشا والنجاح */
+        #captchaOverlay, #successModal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
         }
-        .captcha-box { background: #000; padding: 40px; border: 1px solid #333; text-align: center; }
-        #confirmBtn {
-            margin-top: 25px; width: 100%; padding: 15px; font-weight: bold;
-            text-transform: uppercase; border: 1px solid #222;
-            cursor: not-allowed; background: #111; color: #444;
-        }
-        .ready-to-confirm { background: #fff !important; color: #000 !important; cursor: pointer !important; }
-
-        /* نافذة النجاح */
-        #successModal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); z-index: 10000; justify-content: center; align-items: center;
-        }
-        .success-box { background: #000; border: 1px solid #fff; padding: 40px; text-align: center; color: #fff; }
-        .continue-btn { background: #fff; color: #000; border: none; padding: 12px 50px; font-weight: bold; cursor: pointer; }
-
-        /* حاويات العرض */
-        .ad-container { width: 100%; height: calc(100% - 85px); position: relative; }
-        
-        /* إطار الإعلان الذي يشاهده المستخدم */
-        #targetFrame { width: 100%; height: 100%; border: none; background: #fff; position: absolute; z-index: 5; }
-        
-        /* إطار Rotate4All المخفي لاحتساب الزيارة تلقائياً */
-        #r4allFrame { width: 1px; height: 1px; opacity: 0.01; position: absolute; bottom: 0; right: 0; z-index: 1; }
+        .modal-box { background: #000; padding: 40px; border: 1px solid #333; text-align: center; color: #fff; }
+        .btn-main { background: #fff; color: #000; border: none; padding: 12px 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
+        #confirmBtn:disabled { background: #111; color: #444; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
     <div id="topHeader">
         <div class="brand-logo">THE BLACK FLOWER</div>
-        <div id="timerBox" class="timer-display">Loading Ad...</div>
+        <div id="timerBox" class="timer-display">Loading...</div>
+    </div>
+
+    <div class="viewport">
+        <iframe id="r4allFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+        
+        <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <div id="captchaOverlay">
-        <div class="captcha-box">
-            <div style="color:#fff; margin-bottom:20px; font-size:11px; letter-spacing:2px;">HUMAN VERIFICATION</div>
+        <div class="modal-box">
+            <div style="margin-bottom:20px; font-size:11px; letter-spacing:2px;">VERIFY TO EARN</div>
             <div class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic" data-callback="onCaptchaSuccess"></div>
-            <button id="confirmBtn" disabled onclick="showSuccess()">CONFIRM</button>
+            <button id="confirmBtn" class="btn-main" disabled onclick="showSuccess()">CONFIRM</button>
         </div>
     </div>
 
     <div id="successModal">
-        <div class="success-box">
+        <div class="modal-box">
             <h2>VERIFIED</h2>
-            <p id="rewardTxt">Reward is being processed...</p>
-            <button class="continue-btn" onclick="finalizeAndBack()">CONTINUE</button>
+            <p id="rewardTxt"></p>
+            <button class="btn-main" onclick="finalizeAndBack()">CONTINUE</button>
         </div>
-    </div>
-
-    <div class="ad-container">
-        <iframe id="targetFrame" src="about:blank"></iframe>
-        
-        <iframe id="r4allFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
     </div>
 
     <script>
@@ -93,7 +86,6 @@
         window.onCaptchaSuccess = function() {
             const btn = document.getElementById('confirmBtn');
             btn.disabled = false;
-            btn.classList.add('ready-to-confirm');
         };
 
         const timer = setInterval(() => {
