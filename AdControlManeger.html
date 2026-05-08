@@ -11,6 +11,7 @@
             --card-black: #0a0a0a;
             --accent: #ffffff;
             --dim-gray: #888888;
+            --success: #00ff00;
         }
 
         body {
@@ -27,7 +28,7 @@
 
         .manager-container {
             width: 100%;
-            max-width: 480px;
+            max-width: 450px;
             background: var(--card-black);
             padding: 40px;
             border: 1px solid #222;
@@ -66,7 +67,7 @@
             align-items: center;
         }
 
-        .price-display b { color: #00ff00; font-size: 1.2rem; }
+        .price-display b { color: var(--success); font-size: 1.2rem; }
 
         .promo-section {
             margin-top: 10px;
@@ -85,9 +86,12 @@
             text-transform: uppercase;
             cursor: pointer;
             margin-top: 10px;
+            transition: 0.3s;
         }
 
         .submit-btn:hover { background: #ccc; }
+        .submit-btn:disabled { background: #444; cursor: not-allowed; }
+        
         .back-link { display: block; margin-top: 20px; color: var(--dim-gray); text-decoration: none; font-size: 11px; letter-spacing: 1px; }
     </style>
 </head>
@@ -100,17 +104,17 @@
 
         <div class="input-group">
             <label>Campaign Title</label>
-            <input type="text" id="adTitle" placeholder="My Campaign Name">
+            <input type="text" id="adTitle" placeholder="Enter ad title...">
         </div>
 
         <div class="input-group">
-            <label>Website URL</label>
+            <label>Target URL</label>
             <input type="url" id="adUrl" placeholder="https://example.com">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <div class="input-group">
-                <label>View Duration</label>
+                <label>Duration</label>
                 <select id="durationType" onchange="calculatePrice()">
                     <option value="10">10 Seconds</option>
                     <option value="20">20 Seconds</option>
@@ -127,19 +131,19 @@
         </div>
 
         <div class="price-display">
-            <span style="font-size: 11px; letter-spacing: 1px;">TOTAL COST:</span>
+            <span style="font-size: 11px; letter-spacing: 1px;">ESTIMATED COST:</span>
             <span><b id="totalCostDisplay">50</b> BFP</span>
         </div>
 
         <div class="promo-section">
             <div class="input-group">
-                <label>Promo Code (Optional)</label>
-                <input type="text" id="promoCode" placeholder="Enter code for free ad" oninput="calculatePrice()">
+                <label>Promo Code</label>
+                <input type="text" id="promoCode" placeholder="Enter code for FREE ad" oninput="calculatePrice()">
             </div>
         </div>
 
         <button class="submit-btn" id="launchBtn" onclick="processCampaign()">Launch Campaign</button>
-        <a href="home.html" class="back-link">← BACK TO HUB</a>
+        <a href="home.html" class="back-link">← CANCEL & RETURN</a>
     </div>
 
     <script>
@@ -157,45 +161,41 @@
             let dailyPrice = (duration === "20") ? 100 : 50;
             let total = dailyPrice * days;
 
-            // إذا كان الكود صحيحاً، السعر يصبح 0
             if (promoInput === FREE_CODE) {
-                total = 0;
-                document.getElementById('totalCostDisplay').style.color = "#00ff00";
                 document.getElementById('totalCostDisplay').innerText = "FREE";
+                return 0;
             } else {
-                document.getElementById('totalCostDisplay').style.color = "#00ff00";
                 document.getElementById('totalCostDisplay').innerText = total;
+                return total;
             }
-            return total;
         }
 
         async function processCampaign() {
             const btn = document.getElementById('launchBtn');
-            const title = document.getElementById('adTitle').value;
-            const url = document.getElementById('adUrl').value;
+            const title = document.getElementById('adTitle').value.trim();
+            const url = document.getElementById('adUrl').value.trim();
             const duration = parseInt(document.getElementById('durationType').value);
             const days = parseInt(document.getElementById('adDays').value);
             const promoInput = document.getElementById('promoCode').value.trim();
             const totalCost = calculatePrice();
 
-            if (!title || !url) { alert("Please complete all fields"); return; }
+            if (!title || !url) { alert("Please fill all fields"); return; }
 
             btn.disabled = true;
-            btn.innerText = "Launching...";
+            btn.innerText = "Processing...";
 
             try {
                 const { data: { session } } = await _supabase.auth.getSession();
-                if (!session) throw new Error("Please log in");
+                if (!session) throw new Error("Authentication required");
 
-                // التحقق من الرصيد فقط إذا لم يتم استخدام البرومو كود
+                // التحقق من الرصيد والخصم (فقط إذا لم يكن مجانياً)
                 if (promoInput !== FREE_CODE) {
                     const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
                     if (profile.balance < totalCost) {
-                        alert("Insufficient Balance");
+                        alert("Insufficient BFP Balance");
                         btn.disabled = false; btn.innerText = "Launch Campaign";
                         return;
                     }
-                    // خصم الرصيد
                     await _supabase.from('blackflowerproart').update({ balance: profile.balance - totalCost }).eq('user_id', session.user.id);
                 }
 
@@ -203,24 +203,23 @@
                 const expiryDate = new Date();
                 expiryDate.setHours(expiryDate.getHours() + (days * 24));
 
-                // داخل دالة processCampaign في صفحة التحكم
-const { error } = await _supabase.from('ads').insert([{
-    title: title,
-    url: url,
-    duration: duration, // تأكد أنه رقم (10 أو 20)
-    expiry_at: expiryDate.toISOString(),
-    user_id: session.user.id,
-    cost: totalCost // إرسال التكلفة أيضاً لضمان الحساب
-}]);
+                // إضافة الإعلان مع كافة الخصائص لضمان ظهورها في الهوم
+                const { error } = await _supabase.from('ads').insert([{
+                    title: title,
+                    url: url,
+                    duration: duration,
+                    expiry_at: expiryDate.toISOString(),
+                    user_id: session.user.id,
+                    cost: totalCost // حفظ التكلفة المدفوعة
                 }]);
 
                 if (error) throw error;
 
-                alert(promoInput === FREE_CODE ? "Free Campaign Launched!" : "Campaign Launched Successfully!");
+                alert("Campaign successfully launched!");
                 window.location.href = 'home.html';
 
             } catch (err) {
-                alert(err.message);
+                alert("Error: " + err.message);
                 btn.disabled = false;
                 btn.innerText = "Launch Campaign";
             }
