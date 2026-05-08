@@ -3,128 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Control Manager | The Black Flower</title>
+    <title>Create Ad Campaign | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-black: #050505;
-            --card-gray: #0f0f0f;
-            --accent: #ffffff;
-            --text-dim: #888;
-        }
-
-        body {
-            background-color: var(--bg-black);
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .manager-container {
-            width: 100%;
-            max-width: 500px;
-            background: var(--card-gray);
-            padding: 40px;
-            border: 1px solid #222;
-            border-radius: 4px;
-        }
-
-        h2 {
-            font-family: serif;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-
-        .input-group { margin-bottom: 20px; }
-        label { display: block; font-size: 11px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; }
-        
-        input, select {
-            width: 100%;
-            padding: 12px;
-            background: #000;
-            border: 1px solid #333;
-            color: #fff;
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus { border-color: var(--accent); }
-
-        .price-display {
-            background: #111;
-            padding: 15px;
-            border-left: 3px solid var(--accent);
-            margin: 20px 0;
-        }
-
-        .price-display span { display: block; font-size: 12px; color: var(--text-dim); }
-        .price-display b { font-size: 18px; color: #00ff00; }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: #fff;
-            color: #000;
-            border: none;
-            font-weight: bold;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .submit-btn:hover { background: #ccc; }
-        .back-link { display: block; text-align: center; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 12px; }
+        :root { --bg: #050505; --card: #0f0f0f; --accent: #ffffff; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .box { width: 100%; max-width: 450px; background: var(--card); padding: 30px; border: 1px solid #222; border-radius: 8px; }
+        h2 { text-align: center; letter-spacing: 3px; text-transform: uppercase; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .field { margin-bottom: 20px; }
+        label { display: block; font-size: 10px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: #fff; border-radius: 4px; box-sizing: border-box; }
+        .price-box { background: #111; padding: 15px; border-left: 3px solid #fff; margin: 20px 0; }
+        .btn { width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn:disabled { background: #444; cursor: not-allowed; }
     </style>
 </head>
 <body>
-
-    <div class="manager-container">
-        <h2>Ad Campaign</h2>
-        
-        <div class="input-group">
+    <div class="box">
+        <h2>Launch Campaign</h2>
+        <div class="field">
             <label>Ad Title</label>
-            <input type="text" id="adTitle" placeholder="e.g. My Website Promotion">
+            <input type="text" id="adTitle" placeholder="Enter title...">
         </div>
-
-        <div class="input-group">
+        <div class="field">
             <label>Target URL</label>
-            <input type="url" id="adUrl" placeholder="https://example.com">
+            <input type="url" id="adUrl" placeholder="https://...">
         </div>
-
-        <div class="input-group">
-            <label>Ad Duration (Seconds)</label>
-            <select id="durationType" onchange="calculatePrice()">
+        <div class="field">
+            <label>Ad Duration</label>
+            <select id="durationType" onchange="calc()">
                 <option value="10">10 Seconds (50 BFP/Day)</option>
                 <option value="20">20 Seconds (100 BFP/Day)</option>
             </select>
         </div>
-
-        <div class="input-group">
-            <label>Campaign Duration (Days)</label>
-            <select id="adDays" onchange="calculatePrice()">
-                <option value="1">24 Hours (Minimum)</option>
+        <div class="field">
+            <label>Campaign Period</label>
+            <select id="adDays" onchange="calc()">
+                <option value="1">1 Day (24H)</option>
                 <option value="7">1 Week</option>
                 <option value="30">1 Month</option>
             </select>
         </div>
-
-        <div class="price-display">
-            <span>Total Cost</span>
-            <b id="totalCostDisplay">50</b> BFP
-        </div>
-
-        <button class="submit-btn" onclick="processCampaign()">Launch Ad</button>
-        <a href="home.html" class="back-link">Return to Dashboard</a>
+        <div class="price-box">Total Cost: <b id="total">50</b> BFP</div>
+        <button class="btn" id="launchBtn" onclick="launch()">Launch Now</button>
     </div>
 
     <script>
@@ -132,73 +53,41 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function calculatePrice() {
-            const duration = document.getElementById('durationType').value;
-            const days = document.getElementById('adDays').value;
-            const dailyPrice = (duration === "20") ? 100 : 50;
-            const total = dailyPrice * days;
-            document.getElementById('totalCostDisplay').innerText = total;
+        function calc() {
+            const p = document.getElementById('durationType').value == "20" ? 100 : 50;
+            const d = document.getElementById('adDays').value;
+            const total = p * d;
+            document.getElementById('total').innerText = total;
             return total;
         }
 
-        async function processCampaign() {
+        async function launch() {
+            const btn = document.getElementById('launchBtn');
             const title = document.getElementById('adTitle').value;
             const url = document.getElementById('adUrl').value;
-            const duration = parseInt(document.getElementById('durationType').value);
-            const days = parseInt(document.getElementById('adDays').value);
-            const totalCost = calculatePrice();
+            if(!title || !url) return alert("Fill all fields");
 
-            if (!title || !url) {
-                alert("Please fill all fields");
-                return;
+            btn.disabled = true; btn.innerText = "Processing...";
+            
+            const { data: { session } } = await _supabase.auth.getSession();
+            const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
+            const cost = calc();
+
+            if(profile.balance < cost) {
+                alert("Insufficient Balance");
+                btn.disabled = false; return;
             }
 
-            try {
-                // 1. التحقق من رصيد المستخدم
-                const { data: { session } } = await _supabase.auth.getSession();
-                if (!session) { alert("Please login first"); return; }
+            const expiry = new Date();
+            expiry.setHours(expiry.getHours() + (document.getElementById('adDays').value * 24));
 
-                const { data: profile } = await _supabase
-                    .from('blackflowerproart')
-                    .select('balance')
-                    .eq('user_id', session.user.id)
-                    .single();
+            await _supabase.from('blackflowerproart').update({ balance: profile.balance - cost }).eq('user_id', session.user.id);
+            await _supabase.from('ads').insert([{
+                title, url, duration: parseInt(document.getElementById('durationType').value),
+                expiry_at: expiry.toISOString(), user_id: session.user.id
+            }]);
 
-                if (profile.balance < totalCost) {
-                    alert("Insufficient balance!");
-                    return;
-                }
-
-                // 2. حساب تاريخ الانتهاء
-                const expiryDate = new Date();
-                expiryDate.setHours(expiryDate.getHours() + (days * 24));
-
-                // 3. خصم الرصيد
-                await _supabase
-                    .from('blackflowerproart')
-                    .update({ balance: profile.balance - totalCost })
-                    .eq('user_id', session.user.id);
-
-                // 4. إدراج الإعلان في جدول ads
-                const { error } = await _supabase.from('ads').insert([{
-                    title: title,
-                    url: url,
-                    duration: duration,
-                    expiry_at: expiryDate.toISOString(),
-                    user_id: session.user.id,
-                    daily_price: (duration === 20) ? 100 : 50,
-                    total_paid: totalCost
-                }]);
-
-                if (error) throw error;
-
-                alert("Ad Campaign Launched Successfully!");
-                window.location.href = 'home.html';
-
-            } catch (err) {
-                console.error(err);
-                alert("Error launching campaign. Check console.");
-            }
+            alert("Campaign Active!"); window.location.href='home.html';
         }
     </script>
 </body>
