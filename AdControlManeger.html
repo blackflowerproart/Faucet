@@ -186,17 +186,23 @@
 async function saveAd(title, url) {
     const { data: { session } } = await _supabase.auth.getSession();
     
-    // إرسال البيانات لقاعدة البيانات ليراها الجميع
     const { error } = await _supabase
-        .from('ads') // تأكد من إنشاء جدول بهذا الاسم في سوبابيس
+        .from('ads')
         .insert([
             { 
                 title: title, 
                 url: url, 
-                user_id: session.user.id,
-                created_at: new Date() 
+                user_id: session.user.id
+                // لاحظ أننا لم نضع created_at لأن سوبابيس سيضعه تلقائياً
             }
         ]);
+
+    if (error) {
+        alert("Error saving: " + error.message);
+    } else {
+        renderAds(); // تحديث القائمة أسفل الصفحة
+    }
+}
 
     if (error) {
         console.error("Error saving ad:", error);
