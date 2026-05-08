@@ -109,15 +109,18 @@
 
         .btn-logout:hover { background-color: var(--danger); color: white; }
 
-        /* المحتوى الرئيسي */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 50px;
-            width: calc(100% - var(--sidebar-width));
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-sizing: border-box;
+        <div class="main-content">
+    <div id="ad-space" class="ad-container">
+        <a id="ad-link" href="#" target="_blank" style="color: white; text-decoration: none; font-weight: bold;">
+            LOADING ADS...
+        </a>
+    </div>
+
+    <div id="dashboard-info" style="text-align: center; margin-top: 20px;">
+        <h2 style="font-family: 'Times New Roman', serif; font-size: 2.5rem; letter-spacing: 3px;">DASHBOARD ACTIVE</h2>
+        <p style="color: #666; max-width: 500px; line-height: 1.6;">Welcome to your professional workspace.</p>
+    </div>
+</div>
         }
 
         .ad-container {
