@@ -25,7 +25,7 @@
             justify-content: center;
             align-items: center;
             background-image: radial-gradient(circle at center, #111 0%, #050505 100%);
-            font-family: 'Times New Roman', Times, serif;
+            font-family: 'Inter', 'Times New Roman', serif;
         }
 
         .logo-box { margin-bottom: 30px; }
@@ -56,13 +56,11 @@
         .btn-container { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
 
         .btn {
-            font-family: Arial, Helvetica, sans-serif;
-            padding: 15px 30px; font-size: 0.8rem; font-weight: bold;
+            padding: 15px 35px; font-size: 0.8rem; font-weight: bold;
             text-decoration: none; border-radius: 4px; transition: var(--transition);
-            text-transform: uppercase; letter-spacing: 1px; min-width: 140px; text-align: center;
+            text-transform: uppercase; letter-spacing: 2px; min-width: 160px; text-align: center;
         }
 
-        /* زر Login / الاسم */
         .btn-login {
             background-color: var(--primary-accent);
             color: #000;
@@ -74,7 +72,6 @@
             color: var(--primary-accent);
         }
 
-        /* زر Join Now */
         .btn-signup {
             background-color: transparent;
             color: var(--primary-accent);
@@ -83,63 +80,90 @@
 
         .btn-signup:hover {
             border-color: var(--primary-accent);
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.1);
         }
+
+        /* حالة التحميل البسيطة لمنع الوميض */
+        #auth-status { opacity: 0; transition: opacity 0.5s ease; }
     </style>
 </head>
 <body>
 
     <div class="logo-box">
-        <img src="wight.jpg" alt="The BlackFlower Logo" class="main-logo">
+        <img src="wight.jpg" alt="Logo" class="main-logo">
     </div>
 
-    <div class="content">
+    <div class="content" id="auth-status">
         <h1>THE BLACKFLOWER</h1>
         <span class="pro-art">Professional Art</span>
         
-        <p id="welcome-text">The future of decentralized finance is blooming. Secure your assets and explore the next generation of crypto trading.</p>
+        <p id="welcome-text">Access the most exclusive decentralized crypto ecosystem. Security and professional art combined.</p>
         
-       <div class="btn-container">
-    <a href="login.html" id="login-btn" class="btn btn-login">Login</a>
-    <a href="register.html" class="btn btn-signup">Join Now</a>
-</div>
+        <div class="btn-container">
+            <a href="login.html" id="main-btn" class="btn btn-login">Login</a>
+            <a href="register.html" id="alt-btn" class="btn btn-signup">Join Now</a>
+        </div>
     </div>
 
     <script>
-        // إعدادات Supabase (ضع بياناتك هنا)
-        const SUPABASE_URL = 'https://your-project-id.supabase.co';
-        const SUPABASE_KEY = 'your-anon-key';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // إعدادات Supabase الثابتة
+        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function checkSession() {
-            const loginBtn = document.getElementById('login-btn');
+        async function initApp() {
+            const mainBtn = document.getElementById('main-btn');
+            const altBtn = document.getElementById('alt-btn');
             const welcomeText = document.getElementById('welcome-text');
+            const contentDiv = document.getElementById('auth-status');
 
-            // جلب المستخدم الحالي من Supabase
-            const { data: { user } } = await supabase.auth.getUser();
+            try {
+                // 1. التحقق هل يوجد جلسة نشطة للمستخدم
+                const { data: { session } } = await _supabase.auth.getSession();
 
-            if (user) {
-                // إذا كان المستخدم مسجلاً:
-                // 1. استخراج الاسم من Metadata أو الإيميل
-                const userName = user.user_metadata.full_name || user.email.split('@')[0];
-                
-                // 2. تغيير نص الزر إلى اسم المستخدم
-                loginBtn.innerText = userName;
-                
-                // 3. تغيير وجهة الزر إلى صفحة home.html
-                loginBtn.href = "home.html";
-                
-                // 4. تحديث رسالة الترحيب (اختياري لزيادة الأناقة)
-                welcomeText.innerText = `Welcome back, ${userName}. Your professional art ecosystem is ready.`;
-            } else {
-                // إذا لم يكن مسجلاً، نتأكد أن الزر يعود لحالته الأصلية
-                loginBtn.innerText = "Login";
-                loginBtn.href = "login.html";
+                if (session && session.user) {
+                    // المستخدم مسجل دخول بالفعل
+                    const user = session.user;
+                    
+                    // جلب اليوزر نيم من جدول بياناتك
+                    const { data: profile } = await _supabase
+                        .from('blackflowerproart')
+                        .select('username')
+                        .eq('user_id', user.id)
+                        .single();
+
+                    const name = profile ? profile.username : user.email.split('@')[0];
+                    
+                    // تحويل الواجهة لحالة "المستخدم المسجل"
+                    mainBtn.innerText = `GO TO DASHBOARD (${name.toUpperCase()})`;
+                    mainBtn.href = "home.html";
+                    
+                    altBtn.innerText = "LOGOUT";
+                    altBtn.href = "#";
+                    altBtn.onclick = async (e) => {
+                        e.preventDefault();
+                        await _supabase.auth.signOut();
+                        window.location.reload();
+                    };
+
+                    welcomeText.innerText = `Welcome back, ${name}. Your secure ecosystem is ready for action.`;
+                } else {
+                    // المستخدم غير مسجل دخول
+                    mainBtn.innerText = "LOGIN";
+                    mainBtn.href = "login.html";
+                    
+                    altBtn.innerText = "JOIN NOW";
+                    altBtn.href = "register.html";
+                }
+            } catch (err) {
+                console.log("Error initializing:", err);
+            } finally {
+                // إظهار المحتوى بعد الفحص لمنع القفز في التصميم
+                contentDiv.style.opacity = "1";
             }
         }
 
-        // تشغيل الوظيفة فور تحميل الصفحة
-        window.onload = checkSession;
+        window.onload = initApp;
     </script>
 </body>
 </html>
