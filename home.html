@@ -23,7 +23,7 @@
             display: flex; min-height: 100vh; visibility: hidden;
         }
 
-        /* القائمة الجانبية */
+        /* Sidebar */
         .sidebar {
             width: var(--sidebar-width); background-color: var(--card-black);
             border-right: 1px solid #222; display: flex; flex-direction: column;
@@ -33,7 +33,7 @@
 
         .logo-small { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; display: block; border: 1px solid #333; object-fit: cover; }
         .brand { font-family: 'Times New Roman', serif; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin: 0; }
-        .pro-art-sub { font-family: Arial, sans-serif; font-size: 0.6rem; letter-spacing: 3px; color: var(--dim-gray); text-transform: uppercase; text-align: center; margin-bottom: 30px; display: block; }
+        .pro-art-sub { font-size: 0.6rem; letter-spacing: 3px; color: var(--dim-gray); text-transform: uppercase; text-align: center; margin-bottom: 30px; display: block; }
         
         .balance-box { background-color: #111; padding: 15px; border-radius: 4px; border: 1px solid #333; margin-bottom: 25px; }
         
@@ -42,7 +42,7 @@
         .nav-btn:hover { background-color: var(--accent); color: #000; }
         .btn-logout { border: 1px solid var(--danger); color: var(--danger); margin-top: auto; }
 
-        /* المحتوى الرئيسي */
+        /* Main Content */
         .main-content {
             margin-left: var(--sidebar-width); padding: 40px;
             width: calc(100% - var(--sidebar-width)); box-sizing: border-box;
@@ -67,11 +67,11 @@
         .reward-val { display: block; color: var(--success); font-weight: bold; font-size: 1.1rem; }
         .reward-time { font-size: 0.7rem; color: #555; text-transform: uppercase; }
 
-        .empty-state { color: #333; text-align: center; padding: 40px; font-style: italic; border: 1px dashed #222; }
+        .empty-state { color: #444; text-align: center; padding: 40px; font-style: italic; border: 1px dashed #222; }
 
         @media (max-width: 900px) {
-            .main-content { grid-template-columns: 1fr; }
-            .section-header { grid-column: span 1; }
+            .main-content { grid-template-columns: 1fr; margin-left: 0; width: 100%; }
+            .sidebar { display: none; } /* يفضل إضافة قائمة متجاوبة لاحقاً */
         }
     </style>
 </head>
@@ -88,7 +88,7 @@
         </div>
 
         <div class="nav-menu">
-            <button class="nav-btn" onclick="window.location.href='AdControlManeger.html'">ADD AD</button>
+            <button class="nav-btn" onclick="window.location.href='AdControlManeger.html'">CREATE AD</button>
             <button class="nav-btn" onclick="alert('Min withdrawal: 30,000 BFP')">Withdraw</button>
             <button class="nav-btn btn-logout" onclick="handleLogout()">Logout</button>
         </div>
@@ -102,7 +102,7 @@
         <div class="column">
             <span class="column-title">Paid To Click</span>
             <div id="ads-list" class="ad-grid">
-                <div class="empty-state">Checking for ads...</div>
+                <div class="empty-state">Loading ads...</div>
             </div>
         </div>
 
@@ -111,15 +111,14 @@
             <div id="tasks-list" class="ad-grid">
                 <div class="ad-item" style="cursor: default; opacity: 0.7;">
                     <div class="ad-info">
-                        <b>Welcome Bonus</b>
-                        <span>Daily check-in reward</span>
+                        <b>Daily Check-in</b>
+                        <span>Login reward</span>
                     </div>
                     <div class="ad-reward">
                         <span class="reward-val">+5 BFP</span>
-                        <span class="reward-time">Daily</span>
+                        <span class="reward-time">24H</span>
                     </div>
                 </div>
-                <div class="empty-state" style="border:none;">Tasks update every 24h</div>
             </div>
         </div>
     </div>
@@ -130,78 +129,89 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function initDashboard() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (!session) { window.location.replace("login.html"); return; }
+            try {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (!session) { window.location.replace("login.html"); return; }
 
-            // 1. جلب بيانات المستخدم المحدثة (الاسم والرصيد)
-            const { data: profile } = await _supabase
-                .from('blackflowerproart')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
+                // جلب البروفايل
+                const { data: profile, error: profErr } = await _supabase
+                    .from('blackflowerproart')
+                    .select('*')
+                    .eq('user_id', session.user.id)
+                    .single();
 
-            if (profile) {
-                document.getElementById('user-name').innerText = profile.username.toUpperCase();
-                document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+                if (profile) {
+                    document.getElementById('user-name').innerText = profile.username.toUpperCase();
+                    document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+                }
+
+                await loadGlobalAds(session.user.id);
+                document.body.style.visibility = "visible";
+
+            } catch (err) {
+                console.error("Initialization Error:", err);
             }
-
-            // 2. تشغيل جلب الإعلانات مع نظام التجميد
-            loadGlobalAds(session.user.id);
-            document.body.style.visibility = "visible";
         }
 
-       async function loadGlobalAds(userId) {
-    const adsList = document.getElementById('ads-list');
-    const now = new Date().toISOString();
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+        async function loadGlobalAds(userId) {
+            const adsList = document.getElementById('ads-list');
+            const now = new Date().toISOString();
+            const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    // 1. جلب الإعلانات
-    const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
-    
-    // 2. جلب المشاهدات للتجميد
-    const { data: views } = await _supabase.from('ad_views').select('ad_id').eq('user_id', userId).gt('viewed_at', twentyFourHoursAgo);
-    const viewedIds = views ? views.map(v => v.ad_id) : [];
+            // 1. جلب الإعلانات النشطة (التي لم تنتهِ صلاحيتها)
+            const { data: ads, error: adsErr } = await _supabase
+                .from('ads')
+                .select('*')
+                .gt('expiry_at', now);
 
-    // 3. الفلترة
-    const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
+            if (adsErr) { console.error("Ads Fetch Error:", adsErr); return; }
 
-    if (availableAds.length > 0) {
-        adsList.innerHTML = '';
-        availableAds.forEach(ad => {
-            // --- تحديد خصائص الربح ديناميكياً ---
-            // إذا كان الإعلان 20 ثانية ربحه 15، وإذا كان 10 ثواني ربحه 8
-            const adDuration = ad.duration || 10; 
-            const adReward = (adDuration >= 20) ? 15 : 8;
+            // 2. جلب سجل المشاهدات للتجميد (آخر 24 ساعة)
+            const { data: views, error: viewsErr } = await _supabase
+                .from('ad_views')
+                .select('ad_id')
+                .eq('user_id', userId)
+                .gt('viewed_at', twentyFourHoursAgo);
 
-            const card = document.createElement('div');
-            card.className = 'ad-item';
-            card.onclick = () => {
-                // حفظ الخصائص لنقلها لصفحة المشاهدة
-                localStorage.setItem('active_ad', JSON.stringify({
-                    id: ad.id,
-                    url: ad.url,
-                    reward: adReward,
-                    seconds: adDuration
-                }));
-                window.location.href = 'viewer.html';
-            };
+            const viewedIds = views ? views.map(v => v.ad_id) : [];
 
-            card.innerHTML = `
-                <div class="ad-info">
-                    <b>${ad.title}</b>
-                    <span>Click to earn tokens</span>
-                </div>
-                <div class="ad-reward">
-                    <span class="reward-val">+${adReward} BFP</span>
-                    <span class="reward-time">${adDuration} SEC</span>
-                </div>
-            `;
-            adsList.appendChild(card);
-        });
-    } else {
-        adsList.innerHTML = '<div class="empty-state">No ads available right now.</div>';
-    }
-}
+            // 3. الفلترة
+            const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
+
+            if (availableAds.length > 0) {
+                adsList.innerHTML = '';
+                availableAds.forEach(ad => {
+                    const duration = ad.duration || 10;
+                    const reward = (duration >= 20) ? 15 : 8;
+
+                    const card = document.createElement('div');
+                    card.className = 'ad-item';
+                    card.onclick = () => {
+                        localStorage.setItem('active_ad', JSON.stringify({
+                            id: ad.id,
+                            url: ad.url,
+                            reward: reward,
+                            seconds: duration
+                        }));
+                        window.location.href = 'viewer.html';
+                    };
+
+                    card.innerHTML = `
+                        <div class="ad-info">
+                            <b>${ad.title}</b>
+                            <span>Earn ${reward} BFP tokens</span>
+                        </div>
+                        <div class="ad-reward">
+                            <span class="reward-val">+${reward} BFP</span>
+                            <span class="reward-time">${duration} SEC</span>
+                        </div>
+                    `;
+                    adsList.appendChild(card);
+                });
+            } else {
+                adsList.innerHTML = '<div class="empty-state">No ads available right now.<br><small>Ads are frozen for 24h after viewing.</small></div>';
+            }
+        }
 
         async function handleLogout() {
             await _supabase.auth.signOut();
@@ -209,41 +219,6 @@
         }
 
         window.onload = initDashboard;
-        async function loadGlobalAds(userId) {
-    const adsList = document.getElementById('ads-list');
-    const now = new Date().toISOString();
-    
-    // حساب وقت "قبل 24 ساعة من الآن"
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-    // 1. جلب الإعلانات النشطة فقط
-    const { data: ads } = await _supabase
-        .from('ads')
-        .select('*')
-        .gt('expiry_at', now);
-
-    // 2. جلب المشاهدات التي تمت في آخر 24 ساعة لهذا المستخدم فقط
-    const { data: views } = await _supabase
-        .from('ad_views')
-        .select('ad_id')
-        .eq('user_id', userId)
-        .gt('viewed_at', twentyFourHoursAgo); // فحص التوقيت
-
-    const viewedIds = views ? views.map(v => v.ad_id) : [];
-
-    // 3. فلترة الإعلانات (إخفاء أي إعلان ID الخاص به موجود في سجل المشاهدات)
-    const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
-
-    // عرض الإعلانات المتبقية فقط...
-    if (availableAds.length > 0) {
-        adsList.innerHTML = '';
-        availableAds.forEach(ad => {
-            // كود إنشاء بطاقة الإعلان هنا...
-        });
-    } else {
-        adsList.innerHTML = '<div class="empty-state">No ads available. Frozen for 24h.</div>';
-    }
-}
     </script>
 </body>
 </html>
