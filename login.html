@@ -3,20 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In | The Black Flower</title>
+    <title>Log In | BlackFlower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --pure-black: #000000;
             --pure-white: #ffffff;
             --light-gray: #888888;
-            --error-red: #ff4444;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--pure-black);
-            color: var(--text-white);
+            color: var(--pure-white);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -47,7 +46,6 @@
             font-size: 24px;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: white;
         }
 
         h2 { 
@@ -76,10 +74,10 @@
         }
         .btn-login:hover { background-color: var(--pure-black); color: var(--pure-white); }
         
+        #status-msg { margin-top: 15px; font-size: 11px; color: #ff4444; display: none; }
+        
         .footer-link { margin-top: 25px; font-size: 11px; color: var(--light-gray); }
         .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid white; }
-        
-        #status-msg { margin-top: 15px; font-size: 11px; color: var(--error-red); display: none; }
     </style>
 </head>
 <body>
@@ -111,30 +109,19 @@
     </div>
 
     <script>
-        // إعدادات Supabase
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         
-        // التحقق من تحميل المكتبة
-        let _supabase;
-        try {
-            _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } catch (e) {
-            console.error("Supabase library not loaded!");
-        }
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const loginForm = document.getElementById('loginForm');
-        
-        // ربط الحدث بالفورم لضمان استجابة الزر 100%
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // منع إعادة تحميل الصفحة
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
             const btn = document.getElementById('loginBtn');
             const statusMsg = document.getElementById('status-msg');
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            // إعادة ضبط الحالة
             statusMsg.style.display = "none";
             btn.innerText = 'VERIFYING...';
             btn.disabled = true;
@@ -148,13 +135,11 @@
                 if (error) throw error;
 
                 if (data.session) {
-                    console.log("Login Success");
-                    // التوجيه لصفحة الهوم
-                    window.location.replace("home.html");
+                    // نجاح! الانتقال لصفحة الهوم التي تظهر في صورتك
+                    window.location.href = "home.html";
                 }
 
             } catch (err) {
-                console.error("Login Error:", err.message);
                 statusMsg.innerText = err.message.toUpperCase();
                 statusMsg.style.display = "block";
                 btn.innerText = 'SIGN IN';
