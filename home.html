@@ -3,280 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home | BlackFlower</title>
+    <title>Dashboard | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --pure-black: #000000;
-            --pure-white: #ffffff;
-            --light-gray: #888888;
-            --accent-red: #ff4444;
-            --sidebar-width: 250px;
+            --bg-black: #000000;
+            --text-white: #ffffff;
+            --accent: #888888;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--pure-black);
-            color: var(--pure-white);
             margin: 0;
-            display: flex;
-        }
-
-        /* الشريط الجانبي */
-        .sidebar {
-            width: var(--sidebar-width);
-            height: 100vh;
-            background-color: #0a0a0a;
-            border-right: 1px solid #222;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            position: fixed;
-        }
-
-        .logo {
-            font-weight: bold;
-            letter-spacing: 3px;
-            font-size: 18px;
-            margin-bottom: 40px;
-            text-align: center;
-            border-bottom: 1px solid #222;
-            padding-bottom: 15px;
-        }
-
-        .user-section {
-            margin-bottom: 30px;
-        }
-
-        .user-name {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--light-gray);
-        }
-
-        #display-username {
-            font-size: 18px;
-            color: var(--pure-white);
-            margin-top: 5px;
-            display: block;
-        }
-
-        /* قائمة الأقسام */
-        .nav-menu {
-            flex-grow: 1;
-        }
-
-        .nav-item {
-            padding: 15px 0;
-            border-bottom: 1px solid #111;
-            cursor: pointer;
-            transition: 0.3s;
-            display: block;
-            text-decoration: none;
-            color: var(--light-gray);
-            font-size: 14px;
-        }
-
-        .nav-item:hover {
-            color: var(--pure-white);
-            padding-left: 10px;
-        }
-
-        .nav-item.active {
-            color: var(--pure-white);
-            font-weight: bold;
-        }
-
-        /* المحتوى الرئيسي */
-        .main-content {
-            margin-left: var(--sidebar-width);
-            flex-grow: 1;
-            padding: 50px;
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-white);
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
+            /* إخفاء المحتوى حتى يتم التحقق من المستخدم لمنع الوميض */
+            visibility: hidden; 
         }
 
-        /* صندوق الرصيد */
-        .balance-card {
+        .container {
             text-align: center;
-            border: 1px solid var(--pure-white);
+            border: 1px solid #333;
             padding: 40px;
-            min-width: 350px;
-            background: rgba(255,255,255,0.02);
+            max-width: 500px;
+            width: 90%;
         }
 
-        .balance-label {
-            font-size: 10px;
-            color: var(--light-gray);
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
+        h1 { font-family: 'Times New Roman', serif; font-size: 2rem; letter-spacing: 2px; }
+        p { color: var(--accent); margin-bottom: 30px; }
 
-        .balance-bfp {
-            font-size: 48px;
-            margin: 10px 0;
-            font-family: 'Times New Roman', serif;
-        }
-
-        .balance-cents {
-            font-size: 16px;
-            color: #44ff44; /* لون أخضر خفيف للسنتات */
-            margin-bottom: 20px;
-        }
-
-        /* الأزرار */
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
+        .btn-logout {
+            padding: 10px 25px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid white;
             cursor: pointer;
-            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 12px;
+            font-size: 0.8rem;
             transition: 0.3s;
-            text-align: center;
-            text-decoration: none;
         }
 
-        .btn-white { background-color: var(--pure-white); color: var(--pure-black); }
-        .btn-white:hover { background-color: #ccc; }
-
-        .btn-outline { 
-            background: transparent; 
-            color: var(--pure-white); 
-            border: 1px solid var(--pure-white); 
-        }
-        .btn-outline:hover { background: var(--pure-white); color: var(--pure-black); }
-
-        .logout-btn {
-            margin-top: auto;
-            color: var(--accent-red);
-            border: 1px solid var(--accent-red);
-            background: transparent;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        #loading-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
+        .btn-logout:hover {
+            background-color: white;
+            color: black;
         }
     </style>
 </head>
 <body>
 
-<div id="loading-screen">LOADING...</div>
-
-<div class="sidebar">
-    <div class="logo">BLACKFLOWER</div>
-    
-    <div class="user-section">
-        <span class="user-name">Welcome,</span>
-        <span id="display-username">GUEST</span>
-    </div>
-
-    <div class="nav-menu">
-        <div class="balance-label" style="margin-bottom: 10px;">Sections</div>
-        <a href="#" class="nav-item">👁 View Ads</a>
-        <a href="#" class="nav-item">📋 Tasks</a>
-        <a href="ADcontrolmaneger.html" class="nav-item">⚙️ Ad Management</a>
-    </div>
-
-    <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
-</div>
-
-<div class="main-content">
-    <div class="balance-card">
-        <div class="balance-label">Total Balance</div>
-        <div class="balance-bfp"><span id="display-bfp">0</span> BFP</div>
-        <div class="balance-cents">≈ $<span id="display-cents">0.00000</span></div>
+    <div class="container">
+        <h1>Welcome to Your Dashboard</h1>
+        <p id="user-email">Loading user profile...</p>
         
-        <div class="button-group">
-            <button class="btn btn-white" onclick="handleWithdraw()">Withdraw Profits</button>
-            <button class="btn btn-outline" onclick="location.href='ADcontrolmaneger.html'">Add Advertisement</button>
-            <button class="btn btn-outline" onclick="alert('Tasks page coming soon!')">Add New Task</button>
+        <div style="margin-top: 20px;">
+            <p>Your assets and professional art ecosystem are now active.</p>
         </div>
-        <p style="font-size: 9px; color: var(--light-gray); margin-top: 15px;">
-            Min. Withdraw: 30,000 BFP
-        </p>
+
+        <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
     </div>
-</div>
 
-<script>
-    const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // استخدم مفتاحك الكامل هنا
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script>
+        // 1. إعدادات Supabase الخاصة بك
+        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let currentBFP = 0;
+        // 2. دالة حماية الصفحة
+        async function protectPage() {
+            // جلب بيانات الجلسة الحالية
+            const { data: { session }, error } = await _supabase.auth.getSession();
 
-    async function loadUserData() {
-        try {
-            const { data: { user } } = await _supabase.auth.getUser();
-
-            if (!user) {
-                window.location.href = "login.html";
-                return;
+            if (error || !session) {
+                // إذا لم يوجد مستخدم مسجل، قم بتحويله فوراً لصفحة الدخول
+                console.log("Access Denied. Redirecting to login...");
+                window.location.replace("login.html");
+            } else {
+                // إذا كان المستخدم موجوداً، أظهر المحتوى واعرض بريده
+                document.body.style.visibility = "visible";
+                document.getElementById('user-email').innerText = `Logged in as: ${session.user.email}`;
             }
-
-            const { data, error } = await _supabase
-                .from('blackflowerproart')
-                .select('username, balance')
-                .eq('user_id', user.id)
-                .single();
-
-            if (error) throw error;
-
-            if (data) {
-                currentBFP = parseFloat(data.balance || 0);
-                document.getElementById('display-username').innerText = data.username;
-                
-                // عرض الرصيد بـ BFP
-                document.getElementById('display-bfp').innerText = currentBFP.toLocaleString();
-                
-                // حساب السنتات: (BFP / 15) * 0.00005
-                const centsValue = (currentBFP / 15) * 0.00005;
-                document.getElementById('display-cents').innerText = centsValue.toFixed(5);
-            }
-
-        } catch (err) {
-            console.error("Error loading data:", err.message);
-        } finally {
-            document.getElementById('loading-screen').style.display = 'none';
         }
-    }
 
-    function handleWithdraw() {
-        const MIN_LIMIT = 30000;
-        if (currentBFP < MIN_LIMIT) {
-            alert(`الحد الأدنى للسحب هو ${MIN_LIMIT} BFP. رصيدك الحالي غير كافٍ.`);
-        } else {
-            // هنا تضع كود توجيه لصفحة السحب أو فتح نافذة السحب
-            alert("طلب السحب متاح! جاري التوجيه...");
+        // 3. دالة تسجيل الخروج
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            window.location.replace("login.html");
         }
-    }
 
-    async function handleLogout() {
-        await _supabase.auth.signOut();
-        window.location.href = "login.html";
-    }
-
-    window.onload = loadUserData;
-</script>
-
+        // تشغيل الحماية فور تحميل الصفحة
+        window.onload = protectPage;
+    </script>
 </body>
 </html>
