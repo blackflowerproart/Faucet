@@ -97,16 +97,18 @@
         
         <h2>Authentication</h2>
 
-        <div class="input-group">
-            <label>Email Address</label>
-            <input type="email" id="email" placeholder="EMAIL@EXAMPLE.COM">
-        </div>
-        <div class="input-group">
-            <label>Password</label>
-            <input type="password" id="password" placeholder="••••••••">
-        </div>
-        
-        <button type="button" id="loginBtn" onclick="handleLogin()" class="btn-login">Sign In</button>
+        <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="EMAIL@EXAMPLE.COM" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            
+            <button type="submit" id="loginBtn" class="btn-login">Sign In</button>
+        </form>
         
         <div id="status-msg"></div>
 
@@ -118,29 +120,26 @@
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         
-        // 2. تهيئة العميل فوراً
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 3. دالة تسجيل الدخول المباشرة
         async function handleLogin() {
             const btn = document.getElementById('loginBtn');
             const statusMsg = document.getElementById('status-msg');
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            // التحقق من الحقول
             if (!email || !password) {
-                showError("Please enter your credentials.");
+                showError("Please fill in all fields.");
                 return;
             }
 
-            // تحديث حالة الزر
+            // تحديث واجهة المستخدم
             btn.innerText = 'AUTHENTICATING...';
             btn.disabled = true;
             statusMsg.style.display = "none";
 
             try {
-                // تنفيذ عملية تسجيل الدخول
+                // محاولة تسجيل الدخول
                 const { data, error } = await _supabase.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -148,17 +147,30 @@
 
                 if (error) throw error;
 
-                if (data.user) {
-                    // تحويل المستخدم لصفحة الـ Home عند النجاح
-                    window.location.href = "home.html";
+                if (data.session) {
+                    // تم تسجيل الدخول بنجاح
+                    btn.innerText = 'SUCCESS! REDIRECTING...';
+                    btn.style.backgroundColor = "#44ff44";
+                    
+                    // التوجيه لصفحة الـ home
+                    setTimeout(() => {
+                        window.location.replace("home.html");
+                    }, 500);
                 }
 
             } catch (err) {
                 console.error("Login Error:", err.message);
-                showError(err.message);
+                showError(translateError(err.message));
                 btn.innerText = 'SIGN IN';
                 btn.disabled = false;
             }
+        }
+
+        // تحويل أخطاء Supabase الشائعة لرسائل مفهومة
+        function translateError(msg) {
+            if (msg.includes("Invalid login credentials")) return "الايميل أو كلمة المرور غير صحيحة";
+            if (msg.includes("Email not confirmed")) return "يرجى تأكيد حسابك من البريد الإلكتروني";
+            return msg;
         }
 
         function showError(text) {
