@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Black Flower | Verified Profit System</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js" defer></script>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: 'Inter', sans-serif; }
         
-        /* شريط التحكم المعدل */
         #topHeader { 
-            height: 85px; /* تم زيادة الطول قليلاً لاستيعاب السطر الثاني */
+            height: 85px; 
             background: #000; 
             border-bottom: 1px solid #222; 
             display: flex; 
@@ -22,26 +22,9 @@
             position: relative; 
         }
 
-        /* تنسيق الشعار المزدوج */
-        .logo-container {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.2;
-        }
-        .brand-logo { 
-            font-family: serif; 
-            letter-spacing: 4px; 
-            font-weight: bold; 
-            text-transform: uppercase; 
-            font-size: 18px; 
-        }
-        .sub-logo {
-            font-size: 9px;
-            letter-spacing: 5.5px;
-            text-transform: uppercase;
-            color: #666;
-            margin-top: 2px;
-        }
+        .logo-container { display: flex; flex-direction: column; line-height: 1.2; }
+        .brand-logo { font-family: serif; letter-spacing: 4px; font-weight: bold; text-transform: uppercase; font-size: 18px; }
+        .sub-logo { font-size: 9px; letter-spacing: 5.5px; text-transform: uppercase; color: #666; margin-top: 2px; }
 
         .timer-display { font-size: 15px; font-weight: bold; color: #fff; background: #111; padding: 10px 25px; border: 1px solid #333; border-radius: 2px; }
 
@@ -66,21 +49,14 @@
             backdrop-filter: blur(5px);
         }
 
-        .success-box { background: #000; border: 1px solid #fff; padding: 40px; text-align: center; max-width: 450px; border-radius: 2px; animation: fadeInScale 0.5s ease-out; }
-
-        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-
+        .success-box { background: #000; border: 1px solid #fff; padding: 40px; text-align: center; max-width: 450px; border-radius: 2px; }
         .success-icon { font-size: 40px; color: #fff; margin-bottom: 20px; }
         .success-title { color: #fff; font-size: 18px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 15px; }
         .success-text { color: #bbb; line-height: 1.6; margin-bottom: 25px; font-size: 14px; }
-        
-        .continue-btn { background: #fff; color: #000; border: none; padding: 12px 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; }
-        .continue-btn:hover { background: #ccc; letter-spacing: 4px; }
+        .continue-btn { background: #fff; color: #000; border: none; padding: 12px 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
 
-        /* الحاوية */
         .ad-container { width: 100%; height: calc(100% - 85px); position: relative; }
-        #ptcFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 1; }
-        #targetFrame { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; z-index: 2; background: #fff; }
+        #targetFrame { width: 100%; height: 100%; border: none; background: #fff; }
     </style>
 </head>
 <body>
@@ -90,7 +66,7 @@
             <div class="brand-logo">THE BLACK FLOWER</div>
             <div class="sub-logo">PROFESSIONAL ART</div>
         </div>
-        <div id="timerBox" class="timer-display">Wait 20s</div>
+        <div id="timerBox" class="timer-display">Initializing...</div>
     </div>
 
     <div id="captchaOverlay">
@@ -105,37 +81,48 @@
         <div class="success-box">
             <div class="success-icon">✧</div>
             <div class="success-title">Verified</div>
-            <p class="success-text">Congratulations! 15 BFP Tokens have been successfully credited to your account balance.</p>
-            <button class="continue-btn" onclick="finalizeAllAndClose()">CONTINUE</button>
+            <p id="rewardText" class="success-text">Loading reward details...</p>
+            <button class="continue-btn" onclick="finalizeAndRedirect()">CONTINUE</button>
         </div>
     </div>
 
-    <div id="mainContainer" class="ad-container">
-        <iframe id="ptcFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+    <div class="ad-container">
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <script>
+        // إعداد Supabase
+        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // جلب بيانات الإعلان من localStorage
+        const activeAd = JSON.parse(localStorage.getItem('active_ad'));
+
+        if (!activeAd) {
+            alert("No active ad found. Returning to home.");
+            window.location.href = 'home.html';
+        }
+
+        // إعداد الإطار والعداد
+        document.getElementById('targetFrame').src = activeAd.url;
+        let timeLeft = activeAd.seconds;
+        document.getElementById('timerBox').innerText = `Wait ${timeLeft}s`;
+
         window.onCaptchaSuccess = function(token) {
             var btn = document.getElementById('confirmBtn');
-            if (btn) {
-                btn.disabled = false;
-                btn.classList.add('ready-to-confirm');
-            }
+            btn.disabled = false;
+            btn.classList.add('ready-to-confirm');
         };
 
-        const params = new URLSearchParams(window.location.search);
-        const adId = params.get('id');
-        const targetUrl = decodeURIComponent(params.get('url'));
-        if (targetUrl && targetUrl !== 'null') { document.getElementById('targetFrame').src = targetUrl; }
-
-        let timeLeft = 20;
         const countdown = setInterval(() => {
             timeLeft--;
-            if(document.getElementById('timerBox')) document.getElementById('timerBox').innerText = `${timeLeft}s Remaining`;
+            document.getElementById('timerBox').innerText = `${timeLeft}s Remaining`;
+            
             if (timeLeft <= 0) {
                 clearInterval(countdown);
                 document.getElementById('captchaOverlay').style.display = 'flex';
+                // فحص يدوي للكابتشا احتياطاً
                 var manualCheck = setInterval(function() {
                     if (window.mtcaptcha && window.mtcaptcha.getVerifiedToken()) {
                         window.onCaptchaSuccess();
@@ -147,21 +134,34 @@
 
         function showSuccessMessage() {
             document.getElementById('captchaOverlay').style.display = 'none';
+            document.getElementById('rewardText').innerText = `Congratulations! ${activeAd.reward} BFP Tokens have been successfully credited to your account balance.`;
             document.getElementById('successModal').style.display = 'flex';
         }
 
-        function finalizeAllAndClose() {
-            let bfpBalance = parseFloat(localStorage.getItem('bfp_balance')) || 0;
-            bfpBalance += 15;
-            localStorage.setItem('bfp_balance', bfpBalance.toFixed(2));
-            let history = JSON.parse(localStorage.getItem('added_ads_history')) || {};
-            history[adId] = Date.now();
-            localStorage.setItem('added_ads_history', JSON.stringify(history));
+        async function finalizeAndRedirect() {
+            try {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (session) {
+                    // جلب الرصيد الحالي
+                    const { data: profile } = await _supabase
+                        .from('blackflowerproart')
+                        .select('balance')
+                        .eq('user_id', session.user.id)
+                        .single();
 
-            document.getElementById('successModal').style.display = 'none';
-            document.getElementById('targetFrame').style.display = 'none';
-            document.getElementById('topHeader').style.display = 'none';
-            document.getElementById('mainContainer').style.height = '100vh';
+                    // تحديث الرصيد في قاعدة البيانات
+                    const newBalance = profile.balance + activeAd.reward;
+                    await _supabase
+                        .from('blackflowerproart')
+                        .update({ balance: newBalance })
+                        .eq('user_id', session.user.id);
+                }
+            } catch (err) {
+                console.error("Error updating balance:", err);
+            }
+
+            // العودة لصفحة هوم بعد الانتهاء
+            window.location.href = 'home.html';
         }
     </script>
 </body>
