@@ -139,6 +139,26 @@
             localStorage.removeItem('active_ad');
             window.location.href = 'home.html';
         }
+        async function finalizeAndBack() {
+    try {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (session) {
+            // 1. إضافة الربح للمستخدم (كما فعلنا سابقاً)
+            const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
+            await _supabase.from('blackflowerproart').update({ balance: profile.balance + adData.finalReward }).eq('user_id', session.user.id);
+
+            // 2. تسجيل المشاهدة في جدول جديد (ad_views) لتفعيل التجميد
+            await _supabase.from('ad_views').insert([{
+                user_id: session.user.id,
+                ad_id: adData.id,
+                viewed_at: new Date().toISOString()
+            }]);
+        }
+    } catch (e) {
+        console.error("Error updating system");
+    }
+    window.location.href = 'home.html';
+}
     </script>
 </body>
 </html>
