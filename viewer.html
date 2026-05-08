@@ -2,35 +2,90 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Viewing Ad</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ad Viewer | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://service.mtcaptcha.com/mtcv1/client/mtcaptcha.min.js" defer></script>
     <style>
-        body, html { margin:0; padding:0; height:100%; overflow:hidden; background:#000; font-family:Arial; }
-        #header { height:70px; background:#000; border-bottom:1px solid #222; display:flex; justify-content:space-between; align-items:center; padding:0 20px; color:#fff; }
-        #overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:999; justify-content:center; align-items:center; }
-        .box { background:#000; padding:30px; border:1px solid #333; text-align:center; }
-        .btn { background:#fff; color:#000; border:none; padding:12px 40px; font-weight:bold; cursor:pointer; margin-top:20px; }
-        .btn:disabled { background:#222; color:#555; }
+        :root {
+            --bg-black: #000;
+            --card-black: #0a0a0a;
+            --accent: #ffffff;
+            --dim-gray: #888888;
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
+        
+        /* الهيدر الجديد الذي يحتوي على الشعار والعنوان */
+        #topHeader { 
+            height: 85px; background: #000; border-bottom: 1px solid #222; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 30px; color: #fff; z-index: 1000; position: relative; 
+        }
+
+        .brand-section { display: flex; align-items: center; gap: 15px; }
+        .logo-mini { width: 50px; height: 50px; border-radius: 50%; border: 1px solid #333; object-fit: cover; }
+        .brand-text { display: flex; flex-direction: column; }
+        .brand-name { font-family: 'Times New Roman', serif; letter-spacing: 3px; text-transform: uppercase; font-size: 14px; margin: 0; }
+        .brand-sub { font-size: 8px; letter-spacing: 3px; color: var(--dim-gray); text-transform: uppercase; }
+
+        .timer-display { font-size: 14px; font-weight: bold; color: #fff; background: #111; padding: 8px 20px; border: 1px solid #333; letter-spacing: 1px; }
+
+        .viewport { position: relative; width: 100%; height: calc(100% - 85px); }
+        #r4allFrame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1; opacity: 0.01; }
+        #targetFrame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 2; background: #fff; }
+
+        /* تراكيب المودال (الكابتشا والنجاح) */
+        #captchaOverlay, #successModal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
+        }
+        .modal-box { background: #000; padding: 40px; border: 1px solid #333; text-align: center; color: #fff; min-width: 320px; }
+        
+        .btn-main { 
+            background: #111; color: #444; border: 1px solid #222; 
+            padding: 14px 50px; font-weight: bold; text-transform: uppercase; 
+            margin-top: 25px; cursor: not-allowed; transition: 0.3s; width: 100%; letter-spacing: 2px;
+        }
+
+        /* الزر عندما يتفعل */
+        .btn-main.enabled { 
+            background: #fff; color: #000; border: 1px solid #fff; 
+            cursor: pointer; box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body>
-    <div id="header">
-        <div style="letter-spacing:2px">THE BLACK FLOWER</div>
-        <div id="timer" style="background:#111; padding:10px 20px; border:1px solid #333">Wait...</div>
-    </div>
-    
-    <iframe id="r4all" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk" style="position:absolute; width:100%; height:100%; z-index:1; opacity:0.01"></iframe>
-    <iframe id="adFrame" style="width:100%; height:calc(100% - 70px); border:none; position:relative; z-index:2"></iframe>
 
-    <div id="overlay">
-        <div class="box" id="captchaBox">
-            <div class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-callback="onVerify"></div>
-            <button class="btn" id="confirmBtn" disabled onclick="showSuccess()">CONFIRM</button>
+    <div id="topHeader">
+        <div class="brand-section">
+            <img src="wight.jpg" alt="Logo" class="logo-mini">
+            <div class="brand-text">
+                <span class="brand-name">The Black Flower</span>
+                <span class="brand-sub">professional art</span>
+            </div>
         </div>
-        <div class="box" id="successBox" style="display:none">
-            <h2 id="msg"></h2>
-            <button class="btn" onclick="finish()">CONTINUE</button>
+        <div id="timerBox" class="timer-display">Initializing...</div>
+    </div>
+
+    <div class="viewport">
+        <iframe id="r4allFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
+        <iframe id="targetFrame" src="about:blank"></iframe>
+    </div>
+
+    <div id="captchaOverlay">
+        <div class="modal-box">
+            <div style="margin-bottom:20px; font-size:10px; letter-spacing:3px; color:#888;">HUMAN VERIFICATION</div>
+            <div class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic" data-callback="onCaptchaVerified"></div>
+            <button id="confirmBtn" class="btn-main" disabled onclick="handleConfirmClick()">CONFIRM</button>
+        </div>
+    </div>
+
+    <div id="successModal">
+        <div class="modal-box">
+            <h2 style="letter-spacing: 5px; color: #fff; margin-bottom:10px;">SUCCESS</h2>
+            <p id="rewardTxt" style="color: #888; font-size: 13px; margin-bottom: 25px;"></p>
+            <button class="btn-main enabled" onclick="finalizeAndBack()">CONTINUE</button>
         </div>
     </div>
 
@@ -38,36 +93,69 @@
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        const ad = JSON.parse(localStorage.getItem('active_ad'));
-        if(!ad) window.location.href='home.html';
 
-        document.getElementById('adFrame').src = ad.url;
-        let timeLeft = ad.seconds;
+        const adData = JSON.parse(localStorage.getItem('active_ad'));
+        if (!adData) window.location.href = 'home.html';
 
-        const clock = setInterval(() => {
+        document.getElementById('targetFrame').src = adData.url;
+        let timeLeft = adData.seconds;
+
+        // دالة يتم استدعاؤها تلقائياً عند ظهور علامة الصح
+        window.onCaptchaVerified = function(token) {
+            const btn = document.getElementById('confirmBtn');
+            btn.disabled = false;
+            btn.classList.add('enabled');
+        };
+
+        // العداد الزمني للإعلان
+        const timer = setInterval(() => {
             timeLeft--;
-            document.getElementById('timer').innerText = timeLeft + "s Remaining";
-            if(timeLeft <= 0) { clearInterval(clock); document.getElementById('overlay').style.display='flex'; }
+            document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                document.getElementById('captchaOverlay').style.display = 'flex';
+            }
         }, 1000);
 
-        window.onVerify = () => { const b = document.getElementById('confirmBtn'); b.disabled = false; b.style.background = "#fff"; };
-
-        function showSuccess() {
-            document.getElementById('captchaBox').style.display='none';
-            document.getElementById('successBox').style.display='block';
-            document.getElementById('msg').innerText = `Earned ${ad.reward} BFP!`;
+        // عند ضغط زر التأكيد (بعد التفعيل)
+        function handleConfirmClick() {
+            // إغلاق مربع الكابتشا وإظهار رسالة النجاح
+            document.getElementById('captchaOverlay').style.display = 'none';
+            document.getElementById('rewardTxt').innerText = `You have earned ${adData.reward} BFP for this visit.`;
+            document.getElementById('successModal').style.display = 'flex';
         }
 
-        async function finish() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            const { data: prof } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
-            
-            await _supabase.from('blackflowerproart').update({ balance: prof.balance + ad.reward }).eq('user_id', session.user.id);
-            await _supabase.from('ad_views').insert([{ user_id: session.user.id, ad_id: ad.id }]);
-            
+        // الحفظ النهائي في قاعدة البيانات (تجميد الإعلان + إضافة الرصيد)
+        async function finalizeAndBack() {
+            const btn = document.querySelector('#successModal .btn-main');
+            btn.innerText = "SYNCHRONIZING...";
+            btn.disabled = true;
+
+            try {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (session) {
+                    // 1. تحديث الرصيد في جدول blackflowerproart
+                    const { data: profile } = await _supabase.from('blackflowerproart')
+                        .select('balance').eq('user_id', session.user.id).single();
+                    
+                    if (profile) {
+                        await _supabase.from('blackflowerproart')
+                            .update({ balance: profile.balance + adData.reward })
+                            .eq('user_id', session.user.id);
+                    }
+
+                    // 2. تسجيل المشاهدة في جدول ad_views (للتجميد لمدة 24 ساعة)
+                    await _supabase.from('ad_views').insert([{
+                        user_id: session.user.id,
+                        ad_id: adData.id
+                    }]);
+                }
+            } catch (e) {
+                console.error("Sync Error:", e);
+            }
+
             localStorage.removeItem('active_ad');
-            window.location.href='home.html';
+            window.location.href = 'home.html';
         }
     </script>
 </body>
