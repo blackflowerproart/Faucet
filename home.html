@@ -13,6 +13,7 @@
             --accent: #ffffff;
             --dim-gray: #888888;
             --sidebar-width: 280px;
+            --danger: #ff4444;
         }
 
         body {
@@ -22,10 +23,10 @@
             color: var(--text-white);
             display: flex;
             min-height: 100vh;
-            visibility: hidden; /* مخفي حتى التحقق من الهوية */
+            visibility: hidden;
         }
 
-        /* الشريط الجانبي - Sidebar */
+        /* Sidebar Styling */
         .sidebar {
             width: var(--sidebar-width);
             background-color: var(--card-black);
@@ -35,29 +36,36 @@
             padding: 30px 20px;
             position: fixed;
             height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .logo-small {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: block;
+            border: 1px solid #333;
+            object-fit: cover;
         }
 
         .brand {
             font-family: 'Times New Roman', serif;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             text-transform: uppercase;
             letter-spacing: 2px;
-            margin-bottom: 40px;
             text-align: center;
+            margin: 0;
         }
 
-        /* معلومات المستخدم والرصيد */
-        .user-info {
-            border-bottom: 1px solid #222;
-            padding-bottom: 25px;
-            margin-bottom: 25px;
-        }
-
-        .username {
-            font-weight: bold;
+        .pro-art-sub {
+            font-family: Arial, sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            color: var(--dim-gray);
             text-transform: uppercase;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
+            text-align: center;
+            margin-bottom: 30px;
             display: block;
         }
 
@@ -66,26 +74,14 @@
             padding: 15px;
             border-radius: 4px;
             border: 1px solid #333;
+            margin-bottom: 25px;
         }
 
-        .bfp-balance {
-            font-size: 1.4rem;
-            font-weight: bold;
-            display: block;
-        }
-
-        .usd-value {
-            font-size: 0.85rem;
-            color: #00ff00;
-            margin-top: 5px;
-            display: block;
-        }
-
-        /* أزرار القائمة الجانبية */
-        .nav-menu {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .nav-menu { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            flex-grow: 1; /* لجعل القائمة تأخذ المساحة المتاحة */
         }
 
         .nav-btn {
@@ -97,21 +93,25 @@
             cursor: pointer;
             text-transform: uppercase;
             font-size: 0.8rem;
-            letter-spacing: 1px;
             transition: 0.3s;
             text-decoration: none;
             display: block;
         }
 
-        .nav-btn:hover {
-            background-color: var(--accent);
-            color: #000;
+        .nav-btn:hover { background-color: var(--accent); color: #000; }
+
+        /* زر تسجيل الخروج المخصص */
+        .btn-logout {
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            margin-top: 20px;
         }
 
-        .withdraw-section { margin-top: 15px; }
-        .min-withdraw { font-size: 0.7rem; color: var(--dim-gray); display: block; margin-top: 5px; }
+        .btn-logout:hover {
+            background-color: var(--danger);
+            color: white;
+        }
 
-        /* المحتوى الرئيسي */
         .main-content {
             margin-left: var(--sidebar-width);
             padding: 50px;
@@ -121,54 +121,53 @@
             align-items: center;
         }
 
-        .welcome-msg {
-            text-align: center;
-            max-width: 600px;
-        }
-
-        h2 { font-family: 'Times New Roman', serif; font-size: 2.5rem; text-transform: uppercase; }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #ff4444;
-            cursor: pointer;
-            font-size: 0.8rem;
+        .ad-container {
+            width: 100%;
+            max-width: 728px;
+            height: 90px;
+            background: #000;
+            border: 1px dashed #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 40px 0;
+            color: var(--dim-gray);
+            font-family: Arial, sans-serif;
             text-transform: uppercase;
-            text-decoration: underline;
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <div class="brand">The Black Flower</div>
+        <img src="wight.jpg" alt="Logo" class="logo-small">
+        <h1 class="brand">The Black Flower</h1>
+        <span class="pro-art-sub">professional art</span>
         
-        <div class="user-info">
-            <span class="username" id="display-name">Loading...</span>
-            <div class="balance-box">
-                <span style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Current Balance</span>
-                <span class="bfp-balance"><span id="bfp-val">0</span> BFP</span>
-                <span class="usd-value" id="usd-val">$0.00</span>
-            </div>
+        <div class="balance-box">
+            <span id="display-name" style="display:block; margin-bottom:10px; font-weight:bold;">LOADING...</span>
+            <span style="font-size: 1.2rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
+            <span id="usd-val" style="display:block; color:#00ff00; font-size:0.8rem;">$0.00</span>
         </div>
 
         <div class="nav-menu">
-            <div class="withdraw-section">
-                <button class="nav-btn" onclick="handleWithdraw()">Withdraw Assets</button>
-                <span class="min-withdraw">Minimum: 30,000 BFP</span>
-            </div>
-
-            <a href="ADcontrolmaneger.html" class="nav-btn">AD Control Manager</a>
-            <button class="nav-btn" onclick="alert('Task system is being designed...')">Add Tasks</button>
+            <button class="nav-btn" onclick="handleWithdraw()">Withdraw</button>
+            <a href="ADcontrolmaneger.html" class="nav-btn">add AD</a>
+            <button class="nav-btn" onclick="alert('Tasks coming soon...')">Add Tasks</button>
+            
+            <button class="nav-btn btn-logout" onclick="handleLogout()">Logout</button>
         </div>
-
-        <div class="logout-btn" onclick="handleLogout()">Secure Logout</div>
     </div>
 
     <div class="main-content">
-        <div class="welcome-msg">
-            <h2>Dashboard Active</h2>
-            <p style="color: #888; line-height: 1.6;">Your professional art ecosystem and financial assets are fully synchronized. Use the sidebar to manage your earnings.</p>
+        <div id="ad-space" class="ad-container">
+            empty
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <h2 style="font-family: 'Times New Roman', serif;">DASHBOARD ACTIVE</h2>
+            <p style="color: #666; font-family: Arial;">Manage your professional crypto assets and ads from here.</p>
         </div>
     </div>
 
@@ -177,59 +176,48 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // حساب القيمة المالية: 15 BFP = 0.00005 USD
-        function calculateUSD(bfp) {
-            return (bfp / 15) * 0.00005;
-        }
-
-        async function loadDashboard() {
+        async function initDashboard() {
             const { data: { session } } = await _supabase.auth.getSession();
-
-            if (!session) {
-                window.location.replace("login.html");
-                return;
-            }
+            if (!session) { window.location.replace("login.html"); return; }
 
             try {
-                // جلب البيانات من جدول blackflowerproart
-                const { data: profile, error } = await _supabase
+                const { data: profile } = await _supabase
                     .from('blackflowerproart')
                     .select('username, balance')
                     .eq('user_id', session.user.id)
                     .single();
 
                 if (profile) {
-                    const balance = profile.balance || 0;
-                    document.getElementById('display-name').innerText = profile.username;
-                    document.getElementById('bfp-val').innerText = balance.toLocaleString();
-                    
-                    // تحديث القيمة بالدولار (سنتات)
-                    const usdValue = calculateUSD(balance);
-                    document.getElementById('usd-val').innerText = `$${usdValue.toFixed(6)}`;
+                    document.getElementById('display-name').innerText = profile.username.toUpperCase();
+                    document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+                    document.getElementById('usd-val').innerText = `$${((profile.balance / 15) * 0.00005).toFixed(6)}`;
+                }
+
+                const adSpace = document.getElementById('ad-space');
+                if (adSpace.innerHTML.trim() === "" || adSpace.innerHTML.includes("empty")) {
+                    adSpace.innerText = "empty";
                 }
 
                 document.body.style.visibility = "visible";
             } catch (err) {
-                console.error(err);
+                window.location.replace("login.html");
+            }
+        }
+
+        async function handleLogout() {
+            const { error } = await _supabase.auth.signOut();
+            if (error) {
+                alert("Error logging out");
+            } else {
                 window.location.replace("login.html");
             }
         }
 
         function handleWithdraw() {
-            const currentBFP = parseInt(document.getElementById('bfp-val').innerText.replace(/,/g, ''));
-            if (currentBFP < 30000) {
-                alert(`Insufficient Balance. Minimum withdrawal is 30,000 BFP.\nYour current balance is ${currentBFP} BFP.`);
-            } else {
-                alert("Withdrawal request initiated. Processing...");
-            }
+            alert("Minimum withdrawal is 30,000 BFP.");
         }
 
-        async function handleLogout() {
-            await _supabase.auth.signOut();
-            window.location.replace("login.html");
-        }
-
-        window.onload = loadDashboard;
+        window.onload = initDashboard;
     </script>
 </body>
 </html>
