@@ -73,13 +73,13 @@
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
-    <div id="captchaOverlay">
-        <div class="modal-box">
-            <div style="margin-bottom:20px; font-size:10px; letter-spacing:3px; color:#888;">HUMAN VERIFICATION</div>
-            <div class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic" data-callback="onCaptchaVerified"></div>
-            <button id="confirmBtn" class="btn-main" disabled onclick="handleConfirmClick()">CONFIRM</button>
-        </div>
+<div id="captchaOverlay">
+    <div class="modal-box">
+        <div style="margin-bottom:20px; font-size:10px; letter-spacing:3px; color:#888;">HUMAN VERIFICATION</div>
+        <div id="mtcaptcha-container" class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic" data-callback="onCaptchaVerified"></div>
+        <button id="confirmBtn" class="btn-main" disabled onclick="handleConfirmClick()">CONFIRM</button>
     </div>
+</div>
 
     <div id="successModal">
         <div class="modal-box">
@@ -100,22 +100,30 @@
         document.getElementById('targetFrame').src = adData.url;
         let timeLeft = adData.seconds;
 
-        // دالة يتم استدعاؤها تلقائياً عند ظهور علامة الصح
-        window.onCaptchaVerified = function(token) {
-            const btn = document.getElementById('confirmBtn');
-            btn.disabled = false;
-            btn.classList.add('enabled');
-        };
+  // دالة يتم استدعاؤها يدوياً وتلقائياً للتأكد من تفعيل الزر
+window.onCaptchaVerified = function(token) {
+    console.log("Captcha Verified!"); // للتأكد في وحدة التحكم
+    const btn = document.getElementById('confirmBtn');
+    
+    if (token) {
+        btn.disabled = false;
+        btn.classList.add('enabled');
+        btn.style.background = "#fff"; // تغيير اللون يدوياً للتأكيد
+        btn.style.color = "#000";
+        btn.style.cursor = "pointer";
+    }
+};
 
-        // العداد الزمني للإعلان
-        const timer = setInterval(() => {
-            timeLeft--;
-            document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                document.getElementById('captchaOverlay').style.display = 'flex';
-            }
-        }, 1000);
+// إضافة فحص احتياطي كل ثانية بمجرد ظهور المودال
+const checkCaptchaInterval = setInterval(() => {
+    if (document.getElementById('captchaOverlay').style.display === 'flex') {
+        // إذا كانت الكابتشا قد تم حلها بنجاح (علامة الصح ظهرت)
+        if (window.mtcaptcha && mtcaptcha.getVerifiedToken()) {
+            onCaptchaVerified(mtcaptcha.getVerifiedToken());
+            clearInterval(checkCaptchaInterval); // إيقاف الفحص عند النجاح
+        }
+    }
+}, 1000);
 
         // عند ضغط زر التأكيد (بعد التفعيل)
         function handleConfirmClick() {
