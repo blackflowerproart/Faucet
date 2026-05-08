@@ -3,167 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The BlackFlower | Crypto Ecosystem</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>The Black Flower | Home</title>
     <style>
         :root {
-            --bg-color: #050505;
-            --primary-accent: #ffffff;
-            --text-main: #f0f0f0;
-            --text-dim: #888888;
-            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --accent-gray: #888888;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
+            margin: 0;
+            padding: 0;
             background-color: var(--bg-color);
-            color: var(--text-main);
+            color: var(--text-color);
             height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-image: radial-gradient(circle at center, #111 0%, #050505 100%);
-            font-family: 'Inter', sans-serif;
+            text-align: center;
         }
 
-        .logo-box { margin-bottom: 30px; }
-        .main-logo {
-            width: 140px; height: 140px; border-radius: 50%;
-            object-fit: cover; border: 1px solid rgba(255, 255, 255, 0.2);
-            filter: grayscale(100%);
+        /* تنسيق شعار الصورة */
+        .logo {
+            width: 150px;
+            height: auto;
+            margin-bottom: 20px;
+            /* إضافة لمسة احترافية للصورة */
+            border-radius: 50%; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .content { text-align: center; max-width: 700px; padding: 0 20px; }
-
+        /* العنوان بخط التايمز */
         h1 {
-            font-size: 3.5rem; font-weight: 800; margin-bottom: 5px; letter-spacing: 3px;
-            background: linear-gradient(to bottom, #fff 50%, #666 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 3.5rem;
+            margin: 0;
+            letter-spacing: 2px;
             text-transform: uppercase;
         }
 
-        .pro-art {
-            font-size: 0.9rem; letter-spacing: 6px; color: var(--text-dim);
-            text-transform: uppercase; margin-bottom: 30px; display: block;
+        /* النص الفرعي بخط أريال */
+        .subtitle {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 1rem;
+            color: var(--accent-gray);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-top: 5px;
+            margin-bottom: 50px;
         }
 
-        p {
-            font-size: 1.1rem; color: var(--text-dim); margin-bottom: 45px; line-height: 1.6;
+        /* حاوية الأزرار */
+        .button-container {
+            display: flex;
+            gap: 20px;
         }
 
-        .btn-container { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-
+        /* التنسيق المشترك للأزرار */
         .btn {
-            padding: 15px 35px; font-size: 0.8rem; font-weight: bold;
-            text-decoration: none; border-radius: 4px; transition: var(--transition);
-            text-transform: uppercase; letter-spacing: 2px; min-width: 160px; text-align: center;
-            cursor: pointer;
+            text-decoration: none;
+            padding: 15px 40px;
+            font-family: Arial, sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            min-width: 150px;
         }
 
-        /* زر Login */
+        /* زر Login باللون الأبيض */
         .btn-login {
-            background-color: var(--primary-accent);
-            color: #000;
-            border: 1px solid var(--primary-accent);
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: 1px solid var(--text-color);
         }
 
         .btn-login:hover {
             background-color: transparent;
-            color: var(--primary-accent);
+            color: var(--text-color);
         }
 
-        /* زر Start Earning */
+        /* زر Start Earning شفاف بإطار */
         .btn-earning {
             background-color: transparent;
-            color: var(--primary-accent);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: var(--text-color);
+            border: 1px solid var(--text-color);
         }
 
         .btn-earning:hover {
-            border-color: var(--primary-accent);
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: var(--text-color);
+            color: var(--bg-color);
         }
 
-        #auth-status { opacity: 0; transition: opacity 0.5s ease; }
+        /* تأثير إضافي للخلفية لجعلها أقل جموداً */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            z-index: -1;
+        }
     </style>
 </head>
 <body>
 
-    <div class="logo-box">
-        <img src="wight.jpg" alt="Logo" class="main-logo">
+    <img src="wight.jepg" alt="The Black Flower Logo" class="logo">
+
+    <h1>The Black Flower</h1>
+    
+    <div class="subtitle">professional art</div>
+
+    <div class="button-container">
+        <a href="login.html" class="btn btn-login">Login</a>
+        <a href="register.html" class="btn btn-earning">Start Earning</a>
     </div>
 
-    <div class="content" id="auth-status">
-        <h1>THE BLACKFLOWER</h1>
-        <span class="pro-art">Professional Art</span>
-        
-        <p id="welcome-text">The future of decentralized finance is blooming. Secure your assets and explore the next generation of crypto trading.</p>
-        
-        <div class="btn-container">
-            <a href="login.html" id="main-btn" class="btn btn-login">Login</a>
-            
-            <a href="register.html" id="alt-btn" class="btn btn-earning">Start Earning</a>
-        </div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // استخدم مفتاحك الكامل هنا
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        async function initApp() {
-            const mainBtn = document.getElementById('main-btn');
-            const altBtn = document.getElementById('alt-btn');
-            const welcomeText = document.getElementById('welcome-text');
-            const contentDiv = document.getElementById('auth-status');
-
-            try {
-                // التحقق من وجود جلسة نشطة
-                const { data: { session } } = await _supabase.auth.getSession();
-
-                if (session && session.user) {
-                    const user = session.user;
-                    
-                    // جلب اسم المستخدم من قاعدة البيانات
-                    const { data: profile } = await _supabase
-                        .from('blackflowerproart')
-                        .select('username')
-                        .eq('user_id', user.id)
-                        .single();
-
-                    const name = profile ? profile.username : user.email.split('@')[0];
-                    
-                    // تحديث الأزرار في حالة تسجيل الدخول مسبقاً
-                    mainBtn.innerText = `GO TO DASHBOARD`;
-                    mainBtn.href = "home.html";
-                    
-                    altBtn.innerText = "LOGOUT";
-                    altBtn.href = "#";
-                    altBtn.onclick = async (e) => {
-                        e.preventDefault();
-                        await _supabase.auth.signOut();
-                        window.location.reload();
-                    };
-
-                    welcomeText.innerText = `Welcome back, ${name}. Your secure ecosystem is ready.`;
-                } else {
-                    // الحالة الافتراضية (غير مسجل دخول)
-                    mainBtn.innerText = "LOGIN";
-                    mainBtn.href = "login.html";
-                    
-                    altBtn.innerText = "START EARNING";
-                    altBtn.href = "register.html";
-                }
-            } catch (err) {
-                console.log("Error:", err);
-            } finally {
-                contentDiv.style.opacity = "1";
-            }
-        }
-
-        window.onload = initApp;
-    </script>
 </body>
 </html>
