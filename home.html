@@ -277,6 +277,33 @@
         }
 
         window.onload = initDashboard;
+        async function fetchGlobalAds() {
+    const adSpace = document.getElementById('ad-space');
+    const adLink = document.getElementById('ad-link');
+
+    try {
+        // جلب آخر إعلان تمت إضافته من أي مستخدم
+        const { data: ads, error } = await _supabase
+            .from('ads')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (ads) {
+            adLink.innerText = ads.title.toUpperCase();
+            adLink.href = ads.url;
+        } else {
+            adLink.innerText = "EMPTY";
+            adLink.href = "#";
+        }
+    } catch (err) {
+        adLink.innerText = "EMPTY";
+    }
+}
+
+// استدعاء الدالة عند تشغيل الصفحة
+window.addEventListener('load', fetchGlobalAds);
     </script>
 </body>
 </html>
