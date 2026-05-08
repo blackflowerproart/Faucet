@@ -150,16 +150,64 @@
             <span id="usd-val" style="display:block; color:#00ff00; font-size:0.8rem; margin-top: 5px;">$0.00</span>
         </div>
 
-        <div class="nav-menu">
-            <button class="nav-btn" onclick="handleWithdraw()">Withdraw</button>
-            
-            <button class="nav-btn" onclick="goToAds()">add AD</button>
-            
-            <button class="nav-btn" onclick="alert('Tasks system under design...')">Add Tasks</button>
-            
-            <button class="nav-btn btn-logout" onclick="handleLogout()">Logout</button>
-        </div>
-    </div>
+  <div class="nav-menu">
+    <button class="nav-btn" onclick="handleWithdraw()">Withdraw</button>
+    
+    <button class="nav-btn" onclick="goToAds()">ADD AD</button>
+    
+    <button class="nav-btn" onclick="alert('Tasks system under design...')">Add Tasks</button>
+    
+    <button class="nav-btn btn-logout" onclick="handleLogout()">Logout</button>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // دالة الانتقال مع مراعاة حالة الأحرف الدقيقة
+    function goToAds() {
+        console.log("Navigating to AdControlManeger...");
+        window.location.href = "AdControlManeger.html";
+    }
+
+    async function initDashboard() {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (!session) { 
+            window.location.replace("login.html"); 
+            return; 
+        }
+
+        try {
+            const { data: profile } = await _supabase
+                .from('blackflowerproart')
+                .select('username, balance')
+                .eq('user_id', session.user.id)
+                .single();
+
+            if (profile) {
+                document.getElementById('display-name').innerText = profile.username.toUpperCase();
+                document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+                const usdCalculated = (profile.balance / 15) * 0.00005;
+                document.getElementById('usd-val').innerText = `$${usdCalculated.toFixed(6)}`;
+            }
+            document.body.style.visibility = "visible";
+        } catch (err) {
+            window.location.replace("login.html");
+        }
+    }
+
+    async function handleLogout() {
+        await _supabase.auth.signOut();
+        window.location.replace("login.html");
+    }
+
+    function handleWithdraw() {
+        alert("Minimum withdrawal limit: 30,000 BFP.");
+    }
+
+    window.onload = initDashboard;
+</script>
 
     <div class="main-content">
         <div id="ad-space" class="ad-container">
