@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home | BlackFlower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --pure-black: #000000;
             --pure-white: #ffffff;
             --light-gray: #888888;
+            --accent-red: #ff4444;
+            --sidebar-width: 250px;
         }
 
         body {
@@ -18,37 +21,91 @@
             color: var(--pure-white);
             margin: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
         }
 
-        .header {
-            width: 100%;
-            padding: 20px;
-            border-bottom: 1px solid #222;
+        /* الشريط الجانبي */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: #0a0a0a;
+            border-right: 1px solid #222;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-sizing: border-box;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
         }
 
-        .user-info {
-            text-align: left;
+        .logo {
+            font-weight: bold;
+            letter-spacing: 3px;
+            font-size: 18px;
+            margin-bottom: 40px;
+            text-align: center;
+            border-bottom: 1px solid #222;
+            padding-bottom: 15px;
+        }
+
+        .user-section {
+            margin-bottom: 30px;
         }
 
         .user-name {
             font-size: 14px;
-            letter-spacing: 1px;
             text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--light-gray);
         }
 
-        .balance-box {
-            margin-top: 50px;
+        #display-username {
+            font-size: 18px;
+            color: var(--pure-white);
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* قائمة الأقسام */
+        .nav-menu {
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #111;
+            cursor: pointer;
+            transition: 0.3s;
+            display: block;
+            text-decoration: none;
+            color: var(--light-gray);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            color: var(--pure-white);
+            padding-left: 10px;
+        }
+
+        .nav-item.active {
+            color: var(--pure-white);
+            font-weight: bold;
+        }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* صندوق الرصيد */
+        .balance-card {
             text-align: center;
             border: 1px solid var(--pure-white);
             padding: 40px;
-            width: 300px;
+            min-width: 350px;
+            background: rgba(255,255,255,0.02);
         }
 
         .balance-label {
@@ -58,17 +115,29 @@
             text-transform: uppercase;
         }
 
-        .balance-amount {
-            font-size: 36px;
-            margin: 15px 0;
+        .balance-bfp {
+            font-size: 48px;
+            margin: 10px 0;
             font-family: 'Times New Roman', serif;
         }
 
-        .btn-action {
+        .balance-cents {
+            font-size: 16px;
+            color: #44ff44; /* لون أخضر خفيف للسنتات */
+            margin-bottom: 20px;
+        }
+
+        /* الأزرار */
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
             margin-top: 20px;
+        }
+
+        .btn {
             padding: 12px 25px;
-            background-color: var(--pure-white);
-            color: var(--pure-black);
             border: none;
             cursor: pointer;
             font-weight: bold;
@@ -76,19 +145,28 @@
             letter-spacing: 1px;
             font-size: 12px;
             transition: 0.3s;
+            text-align: center;
+            text-decoration: none;
         }
 
-        .btn-action:hover {
-            background-color: #ccc;
+        .btn-white { background-color: var(--pure-white); color: var(--pure-black); }
+        .btn-white:hover { background-color: #ccc; }
+
+        .btn-outline { 
+            background: transparent; 
+            color: var(--pure-white); 
+            border: 1px solid var(--pure-white); 
         }
+        .btn-outline:hover { background: var(--pure-white); color: var(--pure-black); }
 
         .logout-btn {
+            margin-top: auto;
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
             background: transparent;
-            color: #ff4444;
-            border: 1px solid #ff4444;
-            padding: 5px 10px;
+            padding: 10px;
             cursor: pointer;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         #loading-screen {
@@ -104,28 +182,50 @@
 
 <div id="loading-screen">LOADING...</div>
 
-<div class="header">
-    <div class="user-info">
-        <div class="user-name" id="display-username">GUEST</div>
-        <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
+<div class="sidebar">
+    <div class="logo">BLACKFLOWER</div>
+    
+    <div class="user-section">
+        <span class="user-name">Welcome,</span>
+        <span id="display-username">GUEST</span>
     </div>
-    <div style="letter-spacing: 2px; font-weight: bold;">BLACKFLOWER</div>
+
+    <div class="nav-menu">
+        <div class="balance-label" style="margin-bottom: 10px;">Sections</div>
+        <a href="#" class="nav-item">👁 View Ads</a>
+        <a href="#" class="nav-item">📋 Tasks</a>
+        <a href="ADcontrolmaneger.html" class="nav-item">⚙️ Ad Management</a>
+    </div>
+
+    <button class="logout-btn" onclick="handleLogout()">LOGOUT</button>
 </div>
 
-<div class="balance-box">
-    <div class="balance-label">Current Balance</div>
-    <div class="balance-amount">$<span id="display-balance">0.00</span></div>
-    <button class="btn-action" onclick="location.href='add-ads.html'">Add ADS</button>
+<div class="main-content">
+    <div class="balance-card">
+        <div class="balance-label">Total Balance</div>
+        <div class="balance-bfp"><span id="display-bfp">0</span> BFP</div>
+        <div class="balance-cents">≈ $<span id="display-cents">0.00000</span></div>
+        
+        <div class="button-group">
+            <button class="btn btn-white" onclick="handleWithdraw()">Withdraw Profits</button>
+            <button class="btn btn-outline" onclick="location.href='ADcontrolmaneger.html'">Add Advertisement</button>
+            <button class="btn btn-outline" onclick="alert('Tasks page coming soon!')">Add New Task</button>
+        </div>
+        <p style="font-size: 9px; color: var(--light-gray); margin-top: 15px;">
+            Min. Withdraw: 30,000 BFP
+        </p>
+    </div>
 </div>
 
 <script>
     const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // استخدم مفتاحك الكامل هنا
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentBFP = 0;
 
     async function loadUserData() {
         try {
-            // 1. التحقق من وجود مستخدم مسجل
             const { data: { user } } = await _supabase.auth.getUser();
 
             if (!user) {
@@ -133,7 +233,6 @@
                 return;
             }
 
-            // 2. جلب بيانات المستخدم من جدول blackflowerproart باستخدام user_id
             const { data, error } = await _supabase
                 .from('blackflowerproart')
                 .select('username, balance')
@@ -143,8 +242,15 @@
             if (error) throw error;
 
             if (data) {
+                currentBFP = parseFloat(data.balance || 0);
                 document.getElementById('display-username').innerText = data.username;
-                document.getElementById('display-balance').innerText = parseFloat(data.balance).toFixed(2);
+                
+                // عرض الرصيد بـ BFP
+                document.getElementById('display-bfp').innerText = currentBFP.toLocaleString();
+                
+                // حساب السنتات: (BFP / 15) * 0.00005
+                const centsValue = (currentBFP / 15) * 0.00005;
+                document.getElementById('display-cents').innerText = centsValue.toFixed(5);
             }
 
         } catch (err) {
@@ -154,12 +260,21 @@
         }
     }
 
+    function handleWithdraw() {
+        const MIN_LIMIT = 30000;
+        if (currentBFP < MIN_LIMIT) {
+            alert(`الحد الأدنى للسحب هو ${MIN_LIMIT} BFP. رصيدك الحالي غير كافٍ.`);
+        } else {
+            // هنا تضع كود توجيه لصفحة السحب أو فتح نافذة السحب
+            alert("طلب السحب متاح! جاري التوجيه...");
+        }
+    }
+
     async function handleLogout() {
         await _supabase.auth.signOut();
         window.location.href = "login.html";
     }
 
-    // تشغيل الدالة عند تحميل الصفحة
     window.onload = loadUserData;
 </script>
 
