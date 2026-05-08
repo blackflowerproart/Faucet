@@ -277,32 +277,36 @@
         }
 
         window.onload = initDashboard;
-        async function fetchGlobalAds() {
+      
+    casync function fetchGlobalAds() {
     const adSpace = document.getElementById('ad-space');
-    const adLink = document.getElementById('ad-link');
-
+    
     try {
-        // جلب آخر إعلان تمت إضافته من أي مستخدم
+        // جلب آخر إعلان مضاف من أي مستخدم في العالم
         const { data: ads, error } = await _supabase
             .from('ads')
-            .select('*')
+            .select('title, url')
             .order('created_at', { ascending: false })
             .limit(1)
             .single();
 
-        if (ads) {
-            adLink.innerText = ads.title.toUpperCase();
-            adLink.href = ads.url;
+        if (ads && ads.title) {
+            // تحديث محتوى مربع الإعلانات ليصبح قابلاً للضغط
+            adSpace.innerHTML = `
+                <a href="${ads.url}" target="_blank" style="color: white; text-decoration: none; font-weight: bold; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                    ${ads.title.toUpperCase()}
+                </a>
+            `;
         } else {
-            adLink.innerText = "EMPTY";
-            adLink.href = "#";
+            adSpace.innerText = "EMPTY";
         }
     } catch (err) {
-        adLink.innerText = "EMPTY";
+        console.log("No ads found or error occurred.");
+        adSpace.innerText = "EMPTY";
     }
 }
 
-// استدعاء الدالة عند تشغيل الصفحة
+// تأكد من استدعاء الدالة عند تحميل الصفحة
 window.addEventListener('load', fetchGlobalAds);
     </script>
 </body>
