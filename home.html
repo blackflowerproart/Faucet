@@ -114,67 +114,54 @@
             await loadAds(session.user.id);
             document.body.style.visibility = "visible";
         }
+async function loadAds(userId) {
+    const adsList = document.getElementById('ads-list');
+    
+    // جلب الإعلانات والمشاهدات في وقت واحد لسرعة الأداء
+    const [adsRes, viewsRes] = await Promise.all([
+        _supabase.from('ads').select('*').gt('expiry_at', new Date().toISOString()),
+        _supabase.from('ad_views').select('ad_id, viewed_at').eq('user_id', userId)
+    ]);
 
-        async function loadAds(userId) {
-            const adsList = document.getElementById('ads-list');
-            const now = new Date().toISOString();
-            
-            // تحديد وقت التجميد (قبل 24 ساعة من الآن)
-            const freezeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    if (adsRes.error) { console.error(adsRes.error); return; }
 
-            try {
-                // 1. جلب الإعلانات النشطة فقط (التي لم تنتهِ صلاحيتها)
-                const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
+    // تصفية المشاهدات التي تمت في آخر 24 ساعة فقط محلياً لضمان الدقة
+    const now = new Date();
+    const viewedInLast24h = (viewsRes.data || [])
+        .filter(v => {
+            const viewedDate = new Date(v.viewed_at);
+            const diffInHours = (now - viewedDate) / (1000 * 60 * 60);
+            return diffInHours < 24; // إذا كان الوقت المستغرق أقل من 24 ساعة
+        })
+        .map(v => v.ad_id);
 
-                // 2. جلب سجل مشاهدات هذا المستخدم في آخر 24 ساعة
-                const { data: views } = await _supabase.from('ad_views')
-                    .select('ad_id')
-                    .eq('user_id', userId)
-                    .gt('viewed_at', freezeLimit);
+    // عرض الإعلانات التي لم يتم تجميدها
+    const availableAds = adsRes.data.filter(ad => !viewedInLast24h.includes(ad.id));
 
-                const viewedIds = views ? views.map(v => v.ad_id) : [];
-
-                // 3. فلترة الإعلانات: استبعاد أي إعلان موجود في قائمة المشاهدات الأخيرة
-                const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
-
-                if (availableAds.length > 0) {
-                    adsList.innerHTML = '';
-                    availableAds.forEach(ad => {
-                        const duration = ad.duration || 10;
-                        const reward = (duration >= 20) ? 15 : 8;
-
-                        const item = document.createElement('div');
-                        item.className = 'ad-item';
-                        item.onclick = () => {
-                            localStorage.setItem('active_ad', JSON.stringify({
-                                id: ad.id,
-                                url: ad.url,
-                                reward: reward,
-                                seconds: duration
-                            }));
-                            window.location.href = 'viewer.html';
-                        };
-
-                        item.innerHTML = `
-                            <div class="ad-info">
-                                <b>${ad.title}</b>
-                                <span>Reward for completing visit</span>
-                            </div>
-                            <div class="ad-reward">
-                                <span class="reward-val">+${reward} BFP</span>
-                                <span class="reward-time">${duration} SEC</span>
-                            </div>
-                        `;
-                        adsList.appendChild(item);
-                    });
-                } else {
-                    adsList.innerHTML = '<div class="empty-state">No ads available. Come back later!</div>';
-                }
-            } catch (err) {
-                console.error(err);
-                adsList.innerHTML = '<div class="empty-state">Error loading ads.</div>';
-            }
-        }
+    if (availableAds.length > 0) {
+        adsList.innerHTML = '';
+        availableAds.forEach(ad => {
+            // كود عرض بطاقة الإعلان (كما هو في نسختك السابقة)
+            const duration = ad.duration || 10;
+            const reward = (duration >= 20) ? 15 : 8;
+            const item = document.createElement('div');
+            item.className = 'ad-item';
+            item.onclick = () => {
+                localStorage.setItem('active_ad', JSON.stringify({
+                    id: ad.id, url: ad.url, reward: reward, seconds: duration
+                }));
+                window.location.href = 'viewer.html';
+            };
+            item.innerHTML = `
+                <div class="ad-info"><b>${ad.title}</b><span>Complete visit to earn</span></div>
+                <div class="ad-reward"><span class="reward-val">+${reward} BFP</span><span class="reward-time">${duration}s</span></div>
+            `;
+            adsList.appendChild(item);
+        });
+    } else {
+        adsList.innerHTML = '<div class="empty-state">No ads available. (Next ads in < 24h)</div>';
+    }
+}
 
         async function handleLogout() {
             await _supabase.auth.signOut();
