@@ -18,29 +18,18 @@
         .brand-logo { font-family: serif; letter-spacing: 4px; font-weight: bold; text-transform: uppercase; font-size: 18px; }
         .timer-display { font-size: 15px; font-weight: bold; color: #fff; background: #111; padding: 10px 25px; border: 1px solid #333; }
 
-        /* حاوية العرض المتداخلة */
         .viewport { position: relative; width: 100%; height: calc(100% - 85px); }
-
-        /* 1. رابط الربح الخاص بك (Rotate4All) - يملأ الخلفية */
-        #r4allFrame { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            border: none; z-index: 1; 
-        }
-
-        /* 2. إعلان المستخدم - يظهر فوق رابطك بنسبة شفافة بسيطة أو فوقه تماماً */
-        #targetFrame { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            border: none; z-index: 2; background: #fff;
-        }
+        #r4allFrame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 1; }
+        #targetFrame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 2; background: #fff; }
 
         /* الكابتشا والنجاح */
         #captchaOverlay, #successModal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
         }
-        .modal-box { background: #000; padding: 40px; border: 1px solid #333; text-align: center; color: #fff; }
+        .modal-box { background: #000; padding: 40px; border: 1px solid #333; text-align: center; color: #fff; min-width: 300px; }
         .btn-main { background: #fff; color: #000; border: none; padding: 12px 50px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
-        #confirmBtn:disabled { background: #111; color: #444; cursor: not-allowed; }
+        #confirmBtn:disabled { background: #111; color: #444; cursor: not-allowed; border: 1px solid #222; }
     </style>
 </head>
 <body>
@@ -52,22 +41,21 @@
 
     <div class="viewport">
         <iframe id="r4allFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
-        
         <iframe id="targetFrame" src="about:blank"></iframe>
     </div>
 
     <div id="captchaOverlay">
         <div class="modal-box">
-            <div style="margin-bottom:20px; font-size:11px; letter-spacing:2px;">VERIFY TO EARN</div>
+            <div style="margin-bottom:20px; font-size:11px; letter-spacing:2px; opacity:0.7;">VERIFY YOU ARE HUMAN</div>
             <div class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic" data-callback="onCaptchaSuccess"></div>
-            <button id="confirmBtn" class="btn-main" disabled onclick="showSuccess()">CONFIRM</button>
+            <button id="confirmBtn" class="btn-main" disabled onclick="handleConfirmClick()">CONFIRM</button>
         </div>
     </div>
 
     <div id="successModal">
         <div class="modal-box">
-            <h2>VERIFIED</h2>
-            <p id="rewardTxt"></p>
+            <h2 style="letter-spacing: 5px;">SUCCESS</h2>
+            <p id="rewardTxt" style="color: #888; font-size: 14px;"></p>
             <button class="btn-main" onclick="finalizeAndBack()">CONTINUE</button>
         </div>
     </div>
@@ -83,11 +71,15 @@
         document.getElementById('targetFrame').src = adData.url;
         let timeLeft = adData.seconds;
 
+        // عند نجاح حل الكابتشا
         window.onCaptchaSuccess = function() {
             const btn = document.getElementById('confirmBtn');
             btn.disabled = false;
+            btn.style.backgroundColor = "#fff";
+            btn.style.color = "#000";
         };
 
+        // العداد الزمني
         const timer = setInterval(() => {
             timeLeft--;
             document.getElementById('timerBox').innerText = `${timeLeft}s Remaining`;
@@ -97,18 +89,40 @@
             }
         }, 1000);
 
-        function showSuccess() {
+        // وظيفة زر التاكيد المحدثة
+        function handleConfirmClick() {
+            // 1. إغلاق مربع الكابتشا فوراً
             document.getElementById('captchaOverlay').style.display = 'none';
-            document.getElementById('rewardTxt').innerText = `Success! ${adData.reward} BFP credited.`;
+
+            // 2. تحديد الربح بناءً على مدة الإعلان
+            let reward = (adData.seconds >= 20) ? 15 : 8;
+            adData.finalReward = reward; // حفظها للإرسال لقاعدة البيانات
+
+            // 3. إظهار رسالة التأكيد
+            document.getElementById('rewardTxt').innerText = `You earned ${reward} BFP for this ${adData.seconds}s visit.`;
             document.getElementById('successModal').style.display = 'flex';
         }
 
+        // إرسال البيانات لـ Supabase والعودة للهوم
         async function finalizeAndBack() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
-                await _supabase.from('blackflowerproart').update({ balance: profile.balance + adData.reward }).eq('user_id', session.user.id);
+            const btn = document.querySelector('#successModal .btn-main');
+            btn.innerText = "SAVING...";
+            btn.disabled = true;
+
+            try {
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (session) {
+                    const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', session.user.id).single();
+                    if (profile) {
+                        const newBalance = profile.balance + adData.finalReward;
+                        await _supabase.from('blackflowerproart').update({ balance: newBalance }).eq('user_id', session.user.id);
+                    }
+                }
+            } catch (e) {
+                console.error("Error saving reward");
             }
+
+            localStorage.removeItem('active_ad');
             window.location.href = 'home.html';
         }
     </script>
