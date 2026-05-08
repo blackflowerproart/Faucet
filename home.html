@@ -136,9 +136,18 @@
                 document.getElementById('display-name').innerText = profile.username.toUpperCase();
                 document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
             }
+// داخل دالة loadAds في صفحة home.html
+adEl.onclick = () => {
+    localStorage.setItem('active_ad', JSON.stringify({
+        url: ad.url,
+        reward: reward,
+        seconds: duration,
+        id: ad.id
+    }));
 
-            loadAds();
-            document.body.style.visibility = "visible";
+    // التعديل هنا: التأكد من كتابة اسم الملفviewer.html بشكل صحيح
+    window.location.href = 'viewer.html'; 
+};
         }
 
         async function loadAds() {
