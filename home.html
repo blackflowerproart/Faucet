@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Dashboard</title>
+    <title>Dashboard | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -12,94 +12,67 @@
             --text-white: #f0f0f0;
             --accent: #ffffff;
             --dim-gray: #888888;
-            --sidebar-width: 280px;
+            --sidebar-width: 260px;
             --danger: #ff4444;
+            --success: #00ff00;
         }
 
         body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: var(--bg-black);
-            color: var(--text-white);
-            display: flex;
-            min-height: 100vh;
-            visibility: hidden;
+            margin: 0; font-family: Arial, sans-serif;
+            background-color: var(--bg-black); color: var(--text-white);
+            display: flex; min-height: 100vh; visibility: hidden;
         }
 
+        /* Sidebar */
         .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--card-black);
-            border-right: 1px solid #222;
-            display: flex;
-            flex-direction: column;
-            padding: 30px 20px;
-            position: fixed;
-            height: 100vh;
-            box-sizing: border-box;
-            z-index: 100;
+            width: var(--sidebar-width); background-color: var(--card-black);
+            border-right: 1px solid #222; display: flex; flex-direction: column;
+            padding: 30px 20px; position: fixed; height: 100vh; box-sizing: border-box;
         }
 
-        .logo-small {
-            width: 80px; height: 80px;
-            border-radius: 50%; margin: 0 auto 10px;
-            display: block; border: 1px solid #333; object-fit: cover;
-        }
-
-        .brand {
-            font-family: 'Times New Roman', serif;
-            font-size: 1.4rem; text-transform: uppercase;
-            letter-spacing: 2px; text-align: center; margin: 0;
-        }
-
-        .pro-art-sub {
-            font-family: Arial, sans-serif; font-size: 0.7rem;
-            letter-spacing: 4px; color: var(--dim-gray);
-            text-transform: uppercase; text-align: center;
-            margin-bottom: 30px; display: block;
-        }
-
-        .balance-box {
-            background-color: #111; padding: 15px; border-radius: 4px;
-            border: 1px solid #333; margin-bottom: 25px;
-        }
-
-        .nav-menu { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
-
-        .nav-btn {
-            background: transparent; border: 1px solid #333;
-            color: var(--text-white); padding: 12px 15px;
-            text-align: left; cursor: pointer; text-transform: uppercase;
-            font-size: 0.8rem; transition: 0.3s; width: 100%;
-        }
-
+        .logo-small { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; display: block; border: 1px solid #333; object-fit: cover; }
+        .brand { font-family: 'Times New Roman', serif; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin: 0; }
+        .pro-art-sub { font-family: Arial, sans-serif; font-size: 0.6rem; letter-spacing: 3px; color: var(--dim-gray); text-transform: uppercase; text-align: center; margin-bottom: 30px; display: block; }
+        
+        .balance-box { background-color: #111; padding: 15px; border-radius: 4px; border: 1px solid #333; margin-bottom: 25px; }
+        .nav-btn { background: transparent; border: 1px solid #333; color: var(--text-white); padding: 12px 15px; text-align: left; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; margin-bottom: 10px; width: 100%; transition: 0.3s; }
         .nav-btn:hover { background-color: var(--accent); color: #000; }
+        .btn-logout { border: 1px solid var(--danger); color: var(--danger); }
 
-        .btn-logout { border: 1px solid var(--danger); color: var(--danger); margin-top: 20px; }
-        .btn-logout:hover { background-color: var(--danger); color: white; }
-
+        /* Main Content Grid */
         .main-content {
-            margin-left: var(--sidebar-width);
-            padding: 50px;
-            width: calc(100% - var(--sidebar-width));
-            display: flex; flex-direction: column; align-items: center;
-            box-sizing: border-box;
+            margin-left: var(--sidebar-width); padding: 40px;
+            width: calc(100% - var(--sidebar-width)); box-sizing: border-box;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px;
         }
 
-        /* حاوية الإعلان النشط */
-        .ad-container {
-            width: 100%; max-width: 728px; height: 90px;
-            background: #000; border: 1px dashed #444;
-            display: flex; align-items: center; justify-content: center;
-            margin: 40px 0; overflow: hidden;
+        .section-title {
+            grid-column: span 2; font-family: 'Times New Roman', serif;
+            font-size: 1.8rem; letter-spacing: 4px; border-bottom: 1px solid #222;
+            padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase;
         }
 
-        .ad-link {
-            color: var(--accent); text-decoration: none;
-            font-weight: bold; text-transform: uppercase;
-            letter-spacing: 2px; font-size: 14px;
-            width: 100%; height: 100%;
-            display: flex; align-items: center; justify-content: center;
+        .column-header { font-size: 0.9rem; color: var(--dim-gray); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; display: block; border-left: 3px solid #fff; padding-left: 10px; }
+
+        /* Ad Cards */
+        .ad-grid { display: flex; flex-direction: column; gap: 15px; }
+        
+        .ad-item {
+            background: var(--card-black); border: 1px solid #222; padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s; cursor: pointer;
         }
+        .ad-item:hover { border-color: #fff; transform: translateX(5px); }
+        
+        .ad-info b { display: block; font-size: 1rem; color: #fff; margin-bottom: 5px; }
+        .ad-info span { font-size: 0.75rem; color: var(--dim-gray); }
+        
+        .ad-reward { text-align: right; }
+        .ad-reward .amount { display: block; color: var(--success); font-weight: bold; font-size: 1.1rem; }
+        .ad-reward .duration { font-size: 0.7rem; color: #555; }
+
+        /* Empty State */
+        .empty-msg { color: #333; text-align: center; padding: 40px; font-style: italic; border: 1px dashed #222; }
     </style>
 </head>
 <body>
@@ -110,26 +83,41 @@
         <span class="pro-art-sub">professional art</span>
         
         <div class="balance-box">
-            <span id="display-name" style="display:block; margin-bottom:10px; font-weight:bold;">LOADING...</span>
+            <span id="display-name" style="display:block; margin-bottom:5px; font-weight:bold; font-size:0.8rem; color:#888;">LOADING...</span>
             <span style="font-size: 1.2rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
-            <span id="usd-val" style="display:block; color:#00ff00; font-size:0.8rem;">$0.00</span>
         </div>
 
         <div class="nav-menu">
+            <button class="nav-btn" onclick="window.location.href='AdControlManeger.html'">ADD AD</button>
             <button class="nav-btn" onclick="handleWithdraw()">Withdraw</button>
-            <button class="nav-btn" onclick="goToAds()">ADD AD</button>
-            <button class="nav-btn" onclick="alert('Coming soon...')">Add Tasks</button>
             <button class="nav-btn btn-logout" onclick="handleLogout()">Logout</button>
         </div>
     </div>
 
     <div class="main-content">
-        <div id="ad-space" class="ad-container">
-            <span style="color: #444;">WAITING FOR ADS...</span>
+        <h2 class="section-title">Professional Hub</h2>
+
+        <div class="ad-section">
+            <span class="column-header">Paid Ads (PTC)</span>
+            <div id="ptc-ads-list" class="ad-grid">
+                <div class="empty-msg">empty</div>
+            </div>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <h2 style="font-family: 'Times New Roman', serif; font-size: 2.5rem; letter-spacing: 3px;">DASHBOARD ACTIVE</h2>
+        <div class="task-section">
+            <span class="column-header">Daily Tasks</span>
+            <div id="tasks-list" class="ad-grid">
+                <div class="ad-item" style="cursor: default; opacity: 0.6;">
+                    <div class="ad-info">
+                        <b>Invite 5 Friends</b>
+                        <span>Share your referral link</span>
+                    </div>
+                    <div class="ad-reward">
+                        <span class="amount">+100 BFP</span>
+                    </div>
+                </div>
+                <div class="empty-msg" style="border:none; padding:10px;">More tasks coming soon...</div>
+            </div>
         </div>
     </div>
 
@@ -138,54 +126,62 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        function goToAds() {
-            window.location.href = "AdControlManeger.html";
-        }
-
-        // دالة جلب الإعلان العالمي من جدول ads
-        async function fetchGlobalAd() {
-            const adSpace = document.getElementById('ad-space');
-            try {
-                const { data, error } = await _supabase
-                    .from('ads')
-                    .select('title, url')
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .single();
-
-                if (data) {
-                    adSpace.innerHTML = `
-                        <a href="${data.url}" target="_blank" class="ad-link">
-                            ${data.title}
-                        </a>
-                    `;
-                } else {
-                    adSpace.innerHTML = '<span style="color:#444;">empty</span>';
-                }
-            } catch (e) {
-                adSpace.innerHTML = '<span style="color:#444;">empty</span>';
-            }
-        }
-
-        async function initDashboard() {
+        async function init() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (!session) { window.location.replace("login.html"); return; }
 
-            const { data: profile } = await _supabase
-                .from('blackflowerproart')
-                .select('username, balance')
-                .eq('user_id', session.user.id)
-                .single();
-
+            // جلب بيانات المستخدم
+            const { data: profile } = await _supabase.from('blackflowerproart').select('*').eq('user_id', session.user.id).single();
             if (profile) {
                 document.getElementById('display-name').innerText = profile.username.toUpperCase();
                 document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
-                document.getElementById('usd-val').innerText = `$${((profile.balance / 15) * 0.00005).toFixed(6)}`;
             }
 
-            // تشغيل جلب الإعلانات
-            await fetchGlobalAd();
+            loadAds();
             document.body.style.visibility = "visible";
+        }
+
+        async function loadAds() {
+            const list = document.getElementById('ptc-ads-list');
+            const { data: ads, error } = await _supabase
+                .from('ads')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (ads && ads.length > 0) {
+                list.innerHTML = '';
+                ads.forEach(ad => {
+                    // تحديد الربح والوقت بناءً على البيانات (نفترض وجود عمود duration في جدولك)
+                    // إذا لم يوجد العمود، سنعتبر الافتراضي 10 ثواني
+                    const duration = ad.duration || 10; 
+                    const reward = duration == 20 ? 15 : 8;
+
+                    const adEl = document.createElement('div');
+                    adEl.className = 'ad-item';
+                    adEl.onclick = () => {
+                        // تخزين بيانات الإعلان مؤقتاً لصفحة المشاهدة
+                        localStorage.setItem('active_ad', JSON.stringify({
+                            url: ad.url,
+                            reward: reward,
+                            seconds: duration,
+                            id: ad.id
+                        }));
+                        window.location.href = 'viwer.html';
+                    };
+
+                    adEl.innerHTML = `
+                        <div class="ad-info">
+                            <b>${ad.title.toUpperCase()}</b>
+                            <span>Click to view and earn</span>
+                        </div>
+                        <div class="ad-reward">
+                            <span class="amount">${reward} BFP</span>
+                            <span class="duration">${duration} SEC</span>
+                        </div>
+                    `;
+                    list.appendChild(adEl);
+                });
+            }
         }
 
         async function handleLogout() {
@@ -193,9 +189,9 @@
             window.location.replace("login.html");
         }
 
-        function handleWithdraw() { alert("Min withdrawal: 30,000 BFP"); }
+        function handleWithdraw() { alert("Minimum withdrawal: 30,000 BFP"); }
 
-        window.onload = initDashboard;
+        window.onload = init;
     </script>
 </body>
 </html>
