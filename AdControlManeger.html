@@ -183,12 +183,27 @@
             document.getElementById('customAlert').style.display = 'none';
             location.reload();
         }
+async function saveAd(title, url) {
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    // إرسال البيانات لقاعدة البيانات ليراها الجميع
+    const { error } = await _supabase
+        .from('ads') // تأكد من إنشاء جدول بهذا الاسم في سوبابيس
+        .insert([
+            { 
+                title: title, 
+                url: url, 
+                user_id: session.user.id,
+                created_at: new Date() 
+            }
+        ]);
 
-        function saveAd(title, url) {
-            let ads = JSON.parse(localStorage.getItem('added_ads')) || [];
-            ads.push({ id: Date.now(), title, url });
-            localStorage.setItem('added_ads', JSON.stringify(ads));
-            renderAds();
+    if (error) {
+        console.error("Error saving ad:", error);
+    } else {
+        renderAds();
+    }
+}
         }
 
         function renderAds() {
