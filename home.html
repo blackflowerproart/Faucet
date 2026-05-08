@@ -2,51 +2,146 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #050505; color: #fff; font-family: Arial; margin: 0; padding: 20px; }
-        .ad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
-        .ad-card { background: #0f0f0f; border: 1px solid #222; padding: 20px; cursor: pointer; transition: 0.3s; }
-        .ad-card:hover { border-color: #fff; }
-        .reward { color: #00ff00; font-weight: bold; font-size: 18px; }
-        .meta { color: #888; font-size: 12px; margin-top: 10px; }
+        :root { --bg: #050505; --card: #0a0a0a; --accent: #ffffff; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', Arial, sans-serif; margin: 0; padding: 40px; }
+        h1 { font-family: serif; letter-spacing: 5px; text-transform: uppercase; border-bottom: 1px solid #222; padding-bottom: 20px; }
+        
+        .ad-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 20px; 
+            margin-top: 30px; 
+        }
+
+        .ad-card { 
+            background: var(--card); 
+            border: 1px solid #222; 
+            padding: 25px; 
+            cursor: pointer; 
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .ad-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        
+        .reward { color: #00ff00; font-weight: bold; font-size: 20px; margin: 10px 0; }
+        .meta { color: #555; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .nav-bar { margin-bottom: 40px; display: flex; gap: 15px; }
+        .nav-btn { background: #111; color: #fff; border: 1px solid #333; padding: 10px 20px; cursor: pointer; text-decoration: none; font-size: 12px; }
+        
+        #error-msg { color: #ff4444; background: rgba(255,0,0,0.1); padding: 10px; display: none; margin-bottom: 20px; border: 1px solid #ff4444; }
     </style>
 </head>
 <body>
-    <h1>Available Ads</h1>
-    <div id="ads-list" class="ad-grid">Loading Ads...</div>
+
+    <div class="nav-bar">
+        <a href="AdControlManeger.html" class="nav-btn">CREATE CAMPAIGN</a>
+        <div id="user-balance" class="nav-btn" style="border-color: #00ff00;">BFP: Loading...</div>
+    </div>
+
+    <h1>Professional Hub</h1>
+    <div id="error-msg"></div>
+    <div id="ads-list" class="ad-grid">Checking for available tasks...</div>
 
     <script>
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function loadAds() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            const now = new Date().toISOString();
-            const oneDayAgo = new Date(Date.now() - 24*60*60*1000).toISOString();
+        async function init() {
+            try {
+                // 1. التحقق من الجلسة
+                const { data: { session }, error: sessionErr } = await _supabase.auth.getSession();
+                if (!session) { window.location.href = 'login.html'; return; }
 
-            const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
-            const { data: views } = await _supabase.from('ad_views').select('ad_id').eq('user_id', session.user.id).gt('viewed_at', oneDayAgo);
-            
-            const viewedIds = views.map(v => v.ad_id);
+                // 2. جلب رصيد المستخدم
+                const { data: profile } = await _supabase
+                    .from('blackflowerproart')
+                    .select('balance')
+                    .eq('user_id', session.user.id)
+                    .single();
+                
+                if (profile) {
+                    document.getElementById('user-balance').innerText = `BFP: ${profile.balance.toLocaleString()}`;
+                }
+
+                await loadAds(session.user.id);
+
+            } catch (err) {
+                showError("Connection Error: " + err.message);
+            }
+        }
+
+        async function loadAds(userId) {
             const listEl = document.getElementById('ads-list');
+            const now = new Date().toISOString();
+            const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+            // جلب الإعلانات النشطة
+            const { data: ads, error: adsErr } = await _supabase
+                .from('ads')
+                .select('*')
+                .gt('expiry_at', now);
+
+            if (adsErr) throw adsErr;
+
+            // جلب المشاهدات الأخيرة
+            const { data: views, error: viewsErr } = await _supabase
+                .from('ad_views')
+                .select('ad_id')
+                .eq('user_id', userId)
+                .gt('viewed_at', twentyFourHoursAgo);
+
+            if (viewsErr) throw viewsErr;
+
+            const viewedIds = views.map(v => v.ad_id);
+            const availableAds = ads.filter(ad => !viewedIds.includes(ad.id));
+
             listEl.innerHTML = '';
 
-            ads.filter(a => !viewedIds.includes(a.id)).forEach(ad => {
+            if (availableAds.length === 0) {
+                listEl.innerHTML = '<div style="color:#555">No ads available right now. Check back later or create one!</div>';
+                return;
+            }
+
+            availableAds.forEach(ad => {
                 const reward = ad.duration >= 20 ? 15 : 8;
-                const div = document.createElement('div');
-                div.className = 'ad-card';
-                div.onclick = () => {
-                    localStorage.setItem('active_ad', JSON.stringify({ id: ad.id, url: ad.url, seconds: ad.duration, reward: reward }));
+                const card = document.createElement('div');
+                card.className = 'ad-card';
+                card.onclick = () => {
+                    localStorage.setItem('active_ad', JSON.stringify({
+                        id: ad.id,
+                        url: ad.url,
+                        seconds: ad.duration,
+                        reward: reward
+                    }));
                     window.location.href = 'viewer.html';
                 };
-                div.innerHTML = `<div>${ad.title}</div><div class="reward">+${reward} BFP</div><div class="meta">${ad.duration} Seconds</div>`;
-                listEl.appendChild(div);
+
+                card.innerHTML = `
+                    <div class="meta">AD ID: #${ad.id}</div>
+                    <div style="font-size: 18px; margin: 10px 0; font-weight: bold;">${ad.title}</div>
+                    <div class="reward">+${reward} BFP</div>
+                    <div class="meta">${ad.duration} SECONDS VIEW</div>
+                `;
+                listEl.appendChild(card);
             });
         }
-        loadAds();
+
+        function showError(msg) {
+            const errDiv = document.getElementById('error-msg');
+            errDiv.innerText = msg;
+            errDiv.style.display = 'block';
+            document.getElementById('ads-list').innerText = "";
+        }
+
+        // تشغيل الدالة عند التحميل
+        window.onload = init;
     </script>
 </body>
 </html>
