@@ -10,7 +10,6 @@
             --pure-black: #000000;
             --pure-white: #ffffff;
             --light-gray: #888888;
-            --error-red: #ff4444;
         }
 
         body {
@@ -39,6 +38,7 @@
             border: 1px solid var(--pure-white);
             filter: grayscale(100%);
             margin-bottom: 15px;
+            object-fit: cover;
         }
 
         .brand-title {
@@ -85,15 +85,7 @@
         .footer-link { margin-top: 25px; font-size: 10px; color: var(--light-gray); }
         .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid var(--pure-white); }
         
-        #status-msg { 
-            margin-top: 15px; 
-            font-size: 11px; 
-            display: none; 
-            text-transform: uppercase; 
-            color: var(--error-red);
-            padding: 10px;
-            border: 1px solid rgba(255, 68, 68, 0.3);
-        }
+        #status-msg { margin-top: 15px; font-size: 11px; display: none; text-transform: uppercase; color: #ff4444; }
     </style>
 </head>
 <body>
@@ -106,7 +98,7 @@
         
         <h2>Authentication</h2>
 
-        <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+        <form onsubmit="event.preventDefault(); handleLogin();">
             <div class="input-group">
                 <label>Email Address</label>
                 <input type="email" id="email" placeholder="EMAIL@EXAMPLE.COM" required>
@@ -121,11 +113,11 @@
         
         <div id="status-msg"></div>
 
-        <p class="footer-link">New Member? <a href="register.html">Create Account</a></p>
+        <p class="footer-link">New Member? <a href="rigister.html">Create Account</a></p>
     </div>
 
     <script>
-        // 1. إعدادات Supabase
+        // إعدادات Supabase
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         
@@ -137,13 +129,11 @@
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
-            // إخفاء رسالة الخطأ السابقة وتحديث حالة الزر
-            statusMsg.style.display = "none";
             btn.innerText = 'AUTHENTICATING...';
             btn.disabled = true;
+            statusMsg.style.display = "none";
 
             try {
-                // تنفيذ عملية الدخول
                 const { data, error } = await _supabase.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -152,40 +142,22 @@
                 if (error) throw error;
 
                 if (data.session) {
-                    console.log("Login Success! Local Path OK.");
-                    btn.innerText = 'SUCCESS! REDIRECTING...';
-                    btn.style.backgroundColor = "#44ff44";
-                    
-                    // استخدام المسار الكامل لـ GitHub Pages لضمان الانتقال الصحيح
-                    // استبدل الرابط أدناه برابط صفحة الـ Home الخاص بك إذا اختلف
-                    const homeUrl = "https://blackflowerproart.github.io/Faucet/home.html";
-                    
-                    // تأخير بسيط لمنح المتصفح وقتاً لحفظ الجلسة
-                    setTimeout(() => {
-                        window.location.replace(homeUrl);
-                    }, 600);
+                    // الانتقال لصفحة home.html بعد النجاح مباشرة
+                    window.location.replace("home.html");
                 }
 
             } catch (err) {
                 console.error("Login Error:", err.message);
-                showError(translateError(err.message));
+                showError(err.message.toUpperCase());
                 btn.innerText = 'SIGN IN';
                 btn.disabled = false;
             }
         }
 
-        // دالة لعرض الأخطاء بشكل أفضل
         function showError(text) {
             const statusMsg = document.getElementById('status-msg');
             statusMsg.innerText = text;
             statusMsg.style.display = "block";
-        }
-
-        // ترجمة الأخطاء الشائعة
-        function translateError(msg) {
-            if (msg.includes("Invalid login credentials")) return "Invalid email or password.";
-            if (msg.includes("Email not confirmed")) return "Please confirm your email or disable confirmation in Supabase.";
-            return msg;
         }
     </script>
 </body>
