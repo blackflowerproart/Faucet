@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | BlackFlower</title>
+    <!-- إضافة مكتبة الأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -13,6 +14,7 @@
             --light-gray: #888888;
             --google: #db4437;
             --discord: #7289da;
+            --twitter: #1da1f2;
             --facebook: #1877f2;
             --linkedin: #0077b5;
         }
@@ -38,8 +40,55 @@
             text-align: center;
         }
 
-        /* ... (بقية التنسيقات السابقة كما هي) ... */
+        .logo-header { margin-bottom: 20px; }
+        .logo-header img { 
+            width: 80px; height: 80px; 
+            border: 1px solid var(--pure-white);
+            filter: grayscale(100%);
+            margin-bottom: 15px;
+        }
 
+        .brand-title {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 24px;
+            letter-spacing: 2px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .brand-subtitle {
+            font-size: 10px;
+            letter-spacing: 4px;
+            color: var(--light-gray);
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        h2 { 
+            margin: 30px 0 10px 0; 
+            font-size: 18px; 
+            text-transform: uppercase; 
+            letter-spacing: 3px; 
+        }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; color: var(--light-gray); font-size: 9px; text-transform: uppercase; }
+        .input-group input {
+            width: 100%; padding: 10px; border: none; border-bottom: 1px solid #333;
+            background-color: transparent; color: var(--pure-white); box-sizing: border-box; 
+            outline: none; transition: 0.3s;
+        }
+        .input-group input:focus { border-bottom: 1px solid var(--pure-white); }
+
+        .btn-signup {
+            width: 100%; padding: 15px; border: 1px solid var(--pure-white);
+            background-color: var(--pure-white); color: var(--pure-black);
+            font-size: 13px; font-weight: bold; cursor: pointer;
+            transition: 0.3s; text-transform: uppercase; letter-spacing: 2px;
+            margin-top: 20px;
+        }
+        .btn-signup:hover { background-color: var(--pure-black); color: var(--pure-white); }
+
+        /* تنسيق قسم تسجيل التواصل الاجتماعي */
         .divider {
             margin: 30px 0;
             display: flex;
@@ -67,153 +116,129 @@
         .social-btn {
             background: transparent;
             border: 1px solid #333;
-            color: var(--light-gray);
-            padding: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-size: 18px;
-        }
-
-        /* تعديلات ألوان الـ Hover */
-        .social-btn.google:hover { border-color: var(--google); color: var(--google); }
-        .social-btn.discord:hover { border-color: var(--discord); color: var(--discord); }
-        
-        /* زر تويتر المعدل ليظهر على الخلفية السوداء */
-        .social-btn.twitter:hover { 
-            border-color: var(--pure-white); 
-            color: var(--pure-white); 
-            background-color: #1a1a1a;
-        }
-
-        .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
-        .social-btn.linkedin:hover { border-color: var(--linkedin); color: var(--linkedin); }
-
-        /* ... (بقية الـ CSS السابقة) ... */
-    </style>
-</head>
-<body>
-    <div class="signup-container">
-        <!-- ... (محتوى الصفحة كما هو) ... -->
-        
-        <div class="social-grid">
-            <button class="social-btn google" onclick="socialLogin('google')"><i class="fab fa-google"></i></button>
-            <button class="social-btn discord" onclick="socialLogin('discord')"><i class="fab fa-discord"></i></button>
-            <!-- استخدام أيقونة X الجديدة -->
-            <button class="social-btn twitter" onclick="socialLogin('twitter')"><i class="fa-brands fa-x-twitter"></i></button>
-            <button class="social-btn facebook" onclick="socialLogin('facebook')"><i class="fab fa-facebook-f"></i></button>
-            <button class="social-btn linkedin" onclick="socialLogin('linkedin')"><i class="fab fa-linkedin-in"></i></button>
-        </div>
-        
-        <!-- ... (بقية الصفحة) ... -->
-    </div>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | BlackFlower</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --pure-black: #000000;
-            --pure-white: #ffffff;
-            --light-gray: #888888;
-            --google: #db4437;
-            --discord: #7289da;
-            --facebook: #1877f2;
-            --linkedin: #0077b5;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--pure-black);
             color: var(--pure-white);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .signup-container {
-            background-color: var(--pure-black);
-            padding: 40px;
-            width: 100%;
-            max-width: 380px;
-            border: 1px solid var(--pure-white);
-            text-align: center;
-        }
-
-        /* ... (بقية التنسيقات السابقة كما هي) ... */
-
-        .divider {
-            margin: 30px 0;
-            display: flex;
-            align-items: center;
-            color: #444;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .divider::before, .divider::after {
-            content: "";
-            flex: 1;
-            height: 1px;
-            background: #333;
-        }
-        .divider span { padding: 0 10px; }
-
-        .social-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .social-btn {
-            background: transparent;
-            border: 1px solid #333;
-            color: var(--light-gray);
             padding: 12px;
             cursor: pointer;
             transition: 0.3s;
-            font-size: 18px;
+            font-size: 16px;
         }
 
-        /* تعديلات ألوان الـ Hover */
+        /* ألوان الـ Hover الخاصة بكل منصة */
         .social-btn.google:hover { border-color: var(--google); color: var(--google); }
         .social-btn.discord:hover { border-color: var(--discord); color: var(--discord); }
-        
-        /* زر تويتر المعدل ليظهر على الخلفية السوداء */
-        .social-btn.twitter:hover { 
-            border-color: var(--pure-white); 
-            color: var(--pure-white); 
-            background-color: #1a1a1a;
-        }
-
+        .social-btn.twitter:hover { border-color: var(--twitter); color: var(--twitter); }
         .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
         .social-btn.linkedin:hover { border-color: var(--linkedin); color: var(--linkedin); }
 
-        /* ... (بقية الـ CSS السابقة) ... */
+        .social-btn.full-width { grid-column: span 3; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+        .footer-link { margin-top: 25px; font-size: 10px; color: var(--light-gray); }
+        .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid var(--pure-white); }
+        
+        #status-msg { margin-top: 15px; font-size: 11px; display: none; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <div class="signup-container">
-        <!-- ... (محتوى الصفحة كما هو) ... -->
-        
-        <div class="social-grid">
-            <button class="social-btn google" onclick="socialLogin('google')"><i class="fab fa-google"></i></button>
-            <button class="social-btn discord" onclick="socialLogin('discord')"><i class="fab fa-discord"></i></button>
-            <!-- استخدام أيقونة X الجديدة -->
-            <button class="social-btn twitter" onclick="socialLogin('twitter')"><i class="fa-brands fa-x-twitter"></i></button>
-            <button class="social-btn facebook" onclick="socialLogin('facebook')"><i class="fab fa-facebook-f"></i></button>
-            <button class="social-btn linkedin" onclick="socialLogin('linkedin')"><i class="fab fa-linkedin-in"></i></button>
+        <div class="logo-header">
+            <img src="wight.jpg" alt="Logo">
+            <div class="brand-title">The Black Flower</div>
+            <div class="brand-subtitle">Professional Art</div>
         </div>
         
-        <!-- ... (بقية الصفحة) ... -->
+        <h2>Create Account</h2>
+
+        <div class="input-group">
+            <label>Name</label>
+            <input type="text" id="username" placeholder="YOUR NAME">
+        </div>
+        <div class="input-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="EMAIL@EXAMPLE.COM">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••">
+        </div>
+        
+        <button type="button" id="submitBtn" onclick="handleRegister()" class="btn-signup">Create Account</button>
+        
+        <div class="divider"><span>OR CONTINUE WITH</span></div>
+
+        <div class="social-grid">
+            <button class="social-btn google" onclick="socialLogin('google')" title="Google"><i class="fab fa-google"></i></button>
+            <button class="social-btn discord" onclick="socialLogin('discord')" title="Discord"><i class="fab fa-discord"></i></button>
+            <button class="social-btn twitter" onclick="socialLogin('twitter')" title="Twitter (X)"><i class="fab fa-x-twitter"></i></button>
+            <button class="social-btn facebook" onclick="socialLogin('facebook')" title="Facebook"><i class="fab fa-facebook-f"></i></button>
+            <button class="social-btn linkedin" onclick="socialLogin('linkedin')" title="LinkedIn"><i class="fab fa-linkedin-in"></i></button>
+        </div>
+
+        <div id="status-msg"></div>
+
+        <p class="footer-link">Member? <a href="login.html">Log In</a></p>
     </div>
+
+    <script>
+        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // وظيفة تسجيل الدخول الاجتماعي
+        async function socialLogin(provider) {
+            try {
+                const { error } = await _supabase.auth.signInWithOAuth({
+                    provider: provider,
+                    options: {
+                        redirectTo: window.location.origin + '/success.html' 
+                    }
+                });
+                if (error) throw error;
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        async function handleRegister() {
+            const btn = document.getElementById('submitBtn');
+            const statusMsg = document.getElementById('status-msg');
+            const name = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!name || !email || !password) {
+                alert("All fields are required!");
+                return;
+            }
+
+            btn.innerText = 'PROCESSING...';
+            btn.disabled = true;
+
+            try {
+                const { data, error } = await _supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                if (data.user) {
+                    await _supabase.from('blackflowerproart').insert([
+                        { user_id: data.user.id, username: name, balance: 0.00 }
+                    ]);
+
+                    statusMsg.style.color = "#00ff88";
+                    statusMsg.style.display = "block";
+                    statusMsg.innerText = "SUCCESS! REDIRECTING...";
+                    
+                    setTimeout(() => { window.location.href = "success.html"; }, 1500);
+                }
+            } catch (err) {
+                alert("Error: " + err.message);
+                btn.innerText = 'CREATE ACCOUNT';
+                btn.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
