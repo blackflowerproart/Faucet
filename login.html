@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In | BlackFlower</title>
+    <title>Log In | The Black Flower</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -27,6 +27,7 @@
             min-height: 100vh;
             margin: 0;
             background: radial-gradient(circle at center, #111 0%, #000 100%);
+            /* أزلنا الاختفاء لتجنب الشاشة السوداء */
         }
 
         .login-container {
@@ -36,6 +37,7 @@
             max-width: 380px;
             border: 1px solid var(--pure-white);
             text-align: center;
+            box-shadow: 0 0 20px rgba(255,255,255,0.05);
         }
 
         .logo-header img { 
@@ -112,7 +114,6 @@
         .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
         .social-btn.linkedin:hover { border-color: var(--linkedin); color: var(--linkedin); }
 
-        /* تعديل تنسيق رسالة الخطأ لتكون واضحة داخل الصفحة */
         #status-msg { 
             margin-top: 15px; 
             font-size: 10px; 
@@ -179,7 +180,6 @@
             statusMsg.style.borderColor = isError ? "#300" : "#030";
         }
 
-        // تسجيل الدخول بالبريد والباسورد
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
@@ -194,15 +194,16 @@
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
 
-                const { data: profile } = await _supabase
+                // التحقق من وجود المستخدم في جدولك الخاص
+                const { data: profile, error: profileError } = await _supabase
                     .from('blackflowerproart')
                     .select('user_id')
                     .eq('user_id', data.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (!profile) {
                     await _supabase.auth.signOut();
-                    throw new Error("Account not registered. Please sign up first.");
+                    throw new Error("ACCOUNT NOT FOUND IN DATABASE. PLEASE REGISTER FIRST.");
                 }
 
                 window.location.href = "home.html";
@@ -213,7 +214,6 @@
             }
         });
 
-        // تسجيل الدخول الاجتماعي
         async function socialLogin(provider) {
             try {
                 const { error } = await _supabase.auth.signInWithOAuth({
@@ -228,7 +228,6 @@
             }
         }
 
-        // كود التحقق عند العودة من السوشيال ميديا (بدون alert)
         async function checkSession() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
@@ -236,14 +235,12 @@
                     .from('blackflowerproart')
                     .select('user_id')
                     .eq('user_id', session.user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (!profile) {
-                    showMessage("Account not registered. Redirecting to sign up...");
+                    showMessage("ACCOUNT NOT REGISTERED. REDIRECTING...");
                     await _supabase.auth.signOut();
-                    setTimeout(() => {
-                        window.location.href = "rigister.html";
-                    }, 2000); // إعطاء وقت للمستخدم لقراءة الرسالة
+                    setTimeout(() => { window.location.href = "rigister.html"; }, 2000);
                 } else {
                     window.location.href = "home.html";
                 }
