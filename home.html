@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | The Black Flower</title>
-    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -27,7 +26,6 @@
             visibility: hidden; /* مخفية حتى يتم التحقق من الجلسة */
         }
 
-        /* Sidebar - القائمة الجانبية */
         .sidebar {
             width: var(--sidebar-width); 
             background-color: var(--card-black);
@@ -94,7 +92,6 @@
             color: #000; 
         }
 
-        /* Main Content - المحتوى الرئيسي */
         .main-content {
             margin-left: var(--sidebar-width); 
             padding: 40px;
@@ -185,7 +182,6 @@
         <span class="pro-art-sub">professional art</span>
         
         <div class="balance-box">
-            <!-- سيتم تبديل هذا بالاسم الحقيقي -->
             <span id="user-name" style="color: #888; font-size: 0.8rem; display: block; margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">LOADING...</span>
             <span style="font-size: 1.2rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
         </div>
@@ -207,71 +203,70 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function init() {
-            const { data: { session } } = await _supabase.auth.getSession();
+            // جلب بيانات المستخدم الحالية بدقة
+            const { data: { user }, error: authError } = await _supabase.auth.getUser();
             
-            if (!session) {
+            if (authError || !user) {
                 window.location.replace("index.html"); 
                 return;
             }
 
-            const user = session.user;
-            let displayName = "ARTIST";
-
+            // 1. جلب بيانات الملف الشخصي والرصيد وتحديث الواجهة
             try {
-                // 1. محاولة جلب الاسم والرصيد من الجدول الخاص بك
-                const { data: profile } = await _supabase
+                const { data: profile, error: profileErr } = await _supabase
                     .from('blackflowerproart')
                     .select('*')
                     .eq('user_id', user.id)
-                    .single();
+                    .maybeSingle();
 
                 if (profile) {
-                    displayName = profile.username;
-                    document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+                    document.getElementById('user-name').innerText = profile.username.toUpperCase();
+                    document.getElementById('bfp-val').innerText = parseFloat(profile.balance || 0).toLocaleString();
                 } else {
-                    // 2. إذا لم يوجد (دخول اجتماعي)، جلب الاسم من بيانات الحساب (Google/Facebook/Discord)
-                    displayName = user.user_metadata.full_name || 
-                                  user.user_metadata.name || 
-                                  user.user_metadata.custom_claims?.global_name || 
-                                  user.email.split('@')[0];
-                    
-                    document.getElementById('bfp-val').innerText = "0";
+                    // في حال كان مستخدم جديد (دخول اجتماعي)
+                    const name = user.user_metadata.full_name || user.email.split('@')[0];
+                    document.getElementById('user-name').innerText = name.toUpperCase();
                 }
 
-                document.getElementById('user-name').innerText = displayName.toUpperCase();
+                // 2. جلب وتحميل الإعلانات
+                await loadAds(user.id);
+                
+                // إظهار الصفحة بعد انتهاء التحميل
+                document.body.style.visibility = "visible";
 
             } catch (err) {
-                console.error("Profile load error:", err);
-                document.getElementById('user-name').innerText = user.email.split('@')[0].toUpperCase();
+                console.error("Initialization error:", err);
             }
-
-            await loadAds(user.id);
-            document.body.style.visibility = "visible";
         }
 
         async function loadAds(userId) {
             const adsList = document.getElementById('ads-list');
             const now = new Date().toISOString();
-            const freezeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            
+            // تحديد وقت التجميد (آخر 24 ساعة)
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
             try {
-                // جلب الإعلانات النشطة
+                // جلب الإعلانات التي لم تنتهِ صلاحيتها
                 const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
 
-                // جلب المشاهدات خلال 24 ساعة
-                const { data: views } = await _supabase.from('ad_views')
+                // جلب قائمة الإعلانات التي شاهدها المستخدم خلال آخر 24 ساعة
+                const { data: recentViews } = await _supabase
+                    .from('ad_views')
                     .select('ad_id')
                     .eq('user_id', userId)
-                    .gt('viewed_at', freezeLimit);
+                    .gt('viewed_at', oneDayAgo);
 
-                const viewedIds = views ? views.map(v => v.ad_id) : [];
+                const viewedIds = recentViews ? recentViews.map(v => v.ad_id) : [];
+
+                // تصفية الإعلانات: فقط الإعلانات التي لم يشاهدها خلال الـ 24 ساعة الماضية
                 const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
 
                 if (availableAds.length > 0) {
                     adsList.innerHTML = '';
                     availableAds.forEach(ad => {
                         const duration = ad.duration || 10;
-                        const reward = (duration >= 20) ? 15 : 8;
+                        const reward = ad.reward || ((duration >= 20) ? 15 : 8);
 
                         const item = document.createElement('div');
                         item.className = 'ad-item';
@@ -288,7 +283,7 @@
                         item.innerHTML = `
                             <div class="ad-info">
                                 <b>${ad.title}</b>
-                                <span>Reward for completing visit</span>
+                                <span>Complete task to earn BFP</span>
                             </div>
                             <div class="ad-reward">
                                 <span class="reward-val">+${reward} BFP</span>
@@ -298,10 +293,11 @@
                         adsList.appendChild(item);
                     });
                 } else {
-                    adsList.innerHTML = '<div class="empty-state">No campaigns available. Check back tomorrow!</div>';
+                    adsList.innerHTML = '<div class="empty-state">No new campaigns available. Check back later!</div>';
                 }
             } catch (err) {
-                adsList.innerHTML = '<div class="empty-state">Error loading ads.</div>';
+                console.error("Ads loading error:", err);
+                adsList.innerHTML = '<div class="empty-state">Unable to load campaigns.</div>';
             }
         }
 
@@ -310,6 +306,7 @@
             window.location.replace("index.html");
         }
 
+        // تشغيل الوظيفة عند تحميل النافذة
         window.onload = init;
     </script>
 </body>
