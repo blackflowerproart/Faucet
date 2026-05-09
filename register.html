@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up | BlackFlower</title>
-    <!-- إضافة مكتبة الأيقونات -->
+    <!-- مكتبة الأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -106,7 +107,7 @@
 
         .social-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* تم تغييرها لعمودين لتبدو متناسقة بعد حذف تويتر */
+            grid-template-columns: repeat(2, 1fr); /* عمودين بعد حذف تويتر */
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -121,12 +122,14 @@
             font-size: 16px;
         }
 
+        /* تأثير الـ Hover الموحد */
         .social-btn:hover {
             font-family: 'Times New Roman', serif;
             font-size: 20px;
             transform: translateY(-2px);
         }
 
+        /* ألوان الهوية لكل منصة عند التمرير */
         .social-btn.google:hover { border-color: var(--google); color: var(--google); }
         .social-btn.discord:hover { border-color: var(--discord); color: var(--discord); }
         .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
@@ -135,7 +138,7 @@
         .footer-link { margin-top: 25px; font-size: 10px; color: var(--light-gray); }
         .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid var(--pure-white); }
         
-        #status-msg { margin-top: 15px; font-size: 11px; display: none; text-transform: uppercase; }
+        #status-msg { margin-top: 15px; font-size: 11px; display: none; text-transform: uppercase; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -148,6 +151,7 @@
         
         <h2>Create Account</h2>
 
+        <!-- حقول الإدخال -->
         <div class="input-group">
             <label>Name</label>
             <input type="text" id="username" placeholder="YOUR NAME">
@@ -165,6 +169,7 @@
         
         <div class="divider"><span>OR CONTINUE WITH</span></div>
 
+        <!-- شبكة أزرار التواصل الاجتماعي (تمت إزالة تويتر) -->
         <div class="social-grid">
             <button class="social-btn google" onclick="socialLogin('google')" title="Google"><i class="fab fa-google"></i></button>
             <button class="social-btn discord" onclick="socialLogin('discord')" title="Discord"><i class="fab fa-discord"></i></button>
@@ -178,11 +183,13 @@
     </div>
 
     <script>
+        // إعدادات Supabase
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // تسجيل الدخول الاجتماعي
         async function socialLogin(provider) {
             try {
                 const { error } = await _supabase.auth.signInWithOAuth({
@@ -197,6 +204,7 @@
             }
         }
 
+        // معالجة التسجيل العادي
         async function handleRegister() {
             const btn = document.getElementById('submitBtn');
             const statusMsg = document.getElementById('status-msg');
@@ -221,6 +229,7 @@
                 if (error) throw error;
 
                 if (data.user) {
+                    // إضافة المستخدم لقاعدة البيانات
                     await _supabase.from('blackflowerproart').insert([
                         { user_id: data.user.id, username: name, balance: 0.00 }
                     ]);
@@ -229,6 +238,7 @@
                     statusMsg.style.display = "block";
                     statusMsg.innerText = "SUCCESS! REDIRECTING...";
                     
+                    // التوجه لصفحة النجاح
                     setTimeout(() => { window.location.href = "success.html"; }, 1500);
                 }
             } catch (err) {
