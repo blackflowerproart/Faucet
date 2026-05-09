@@ -205,48 +205,58 @@
         }
 
         // معالجة التسجيل العادي
-        async function handleRegister() {
-            const btn = document.getElementById('submitBtn');
-            const statusMsg = document.getElementById('status-msg');
-            const name = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
+     async function handleRegister() {
+    const btn = document.getElementById('submitBtn');
+    const statusMsg = document.getElementById('status-msg');
+    const name = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
 
-            if (!name || !email || !password) {
-                alert("All fields are required!");
-                return;
-            }
+    if (!name || !email || !password) {
+        alert("Please fill all fields");
+        return;
+    }
 
-            btn.innerText = 'PROCESSING...';
-            btn.disabled = true;
+    btn.innerText = 'CREATING ACCOUNT...';
+    btn.disabled = true;
 
-            try {
-                const { data, error } = await _supabase.auth.signUp({
-                    email: email,
-                    password: password
-                });
+    try {
+        // 1. تسجيل المستخدم في Supabase Auth
+        const { data, error } = await _supabase.auth.signUp({
+            email: email,
+            password: password
+        });
 
-                if (error) throw error;
+        if (error) throw error;
 
-                if (data.user) {
-                    // إضافة المستخدم لقاعدة البيانات
-                    await _supabase.from('blackflowerproart').insert([
-                        { user_id: data.user.id, username: name, balance: 0.00 }
-                    ]);
-
-                    statusMsg.style.color = "#00ff88";
-                    statusMsg.style.display = "block";
-                    statusMsg.innerText = "SUCCESS! REDIRECTING...";
-                    
-                    // التوجه لصفحة النجاح
-                    setTimeout(() => { window.location.href = "success.html"; }, 1500);
+        if (data.user) {
+            // 2. إدخال البيانات الإضافية في جدول blackflowerproart
+            const { error: insertError } = await _supabase.from('blackflowerproart').insert([
+                { 
+                    user_id: data.user.id, 
+                    username: name, 
+                    balance: 0.00 // الرصيد مصفر افتراضياً
                 }
-            } catch (err) {
-                alert("Error: " + err.message);
-                btn.innerText = 'CREATE ACCOUNT';
-                btn.disabled = false;
-            }
+            ]);
+
+            if (insertError) throw insertError;
+
+            // 3. إظهار رسالة نجاح
+            statusMsg.style.color = "#00ff88";
+            statusMsg.style.display = "block";
+            statusMsg.innerText = "SUCCESS! REDIRECTING TO HOME...";
+
+            // 4. الانتقال لصفحة الهوم فوراً
+            setTimeout(() => {
+                window.location.href = "home.html"; 
+            }, 1000);
         }
+    } catch (err) {
+        alert("Registration Error: " + err.message);
+        btn.innerText = 'CREATE ACCOUNT';
+        btn.disabled = false;
+    }
+}
     </script>
 </body>
 </html>
