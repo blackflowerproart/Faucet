@@ -9,51 +9,41 @@
     <style>
         :root { --bg: #000; --accent: #fff; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
-        
-        #topHeader { 
-            height: 80px; background: #000; border-bottom: 1px solid #222; 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 0 25px; color: #fff; z-index: 1000; position: relative; 
-        }
-
+        #topHeader { height: 80px; background: #000; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #fff; z-index: 1000; position: relative; }
         .brand-section { display: flex; align-items: center; gap: 12px; }
         .logo-mini { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #333; }
-        .brand-name { font-family: 'Times New Roman', serif; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
-
         .timer-display { font-size: 14px; font-weight: bold; color: #fff; background: #111; padding: 8px 15px; border: 1px solid #333; min-width: 140px; text-align: center; }
-
         .viewport { width: 100%; height: calc(100% - 80px); }
         #targetFrame { width: 100%; height: 100%; border: none; background: #fff; }
-
-        #captchaOverlay, #successModal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
-        }
+        #captchaOverlay, #successModal, #startOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.98); z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .modal-box { background: #000; padding: 35px; border: 1px solid #333; text-align: center; color: #fff; width: 320px; }
-        
-        .btn-main { 
-            background: #111; color: #444; border: 1px solid #222; padding: 14px; 
-            font-weight: bold; text-transform: uppercase; margin-top: 20px; 
-            cursor: not-allowed; width: 100%; letter-spacing: 2px;
-        }
-        .btn-main.enabled { background: #fff; color: #000; border: 1px solid #fff; cursor: pointer; }
+        .btn-main { background: #fff; color: #000; border: 1px solid #fff; padding: 14px; font-weight: bold; text-transform: uppercase; cursor: pointer; width: 100%; letter-spacing: 2px; margin-top: 10px; }
+        .btn-main:disabled { background: #111; color: #444; border-color: #222; cursor: not-allowed; }
     </style>
 </head>
 <body>
+
+    <div id="startOverlay">
+        <div class="modal-box">
+            <h3 style="letter-spacing: 2px;">READY TO START?</h3>
+            <p style="font-size: 11px; color: #888;">Click below to initialize the safe viewer and start the timer.</p>
+            <button class="btn-main" onclick="startViewing()">START AD</button>
+        </div>
+    </div>
 
     <div id="topHeader">
         <div class="brand-section">
             <img src="wight.jpg" alt="Logo" class="logo-mini">
             <span class="brand-name">The Black Flower</span>
         </div>
-        <div id="timerBox" class="timer-display">Initializing...</div>
+        <div id="timerBox" class="timer-display">Waiting...</div>
     </div>
 
     <div class="viewport">
-        <iframe id="targetFrame" src="about:blank"></iframe>
+        <iframe id="targetFrame" src=""></iframe>
     </div>
 
-    <div id="captchaOverlay">
+    <div id="captchaOverlay" style="display: none;">
         <div class="modal-box">
             <p style="font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom:20px;">VERIFY HUMANITY</p>
             <div id="mt-container" class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic"></div>
@@ -61,11 +51,11 @@
         </div>
     </div>
 
-    <div id="successModal">
+    <div id="successModal" style="display: none;">
         <div class="modal-box">
             <h2 style="letter-spacing: 4px;">COMPLETED</h2>
             <p id="rewardTxt" style="color: #888; font-size: 12px; margin-bottom:25px;"></p>
-            <button id="finalBtn" class="btn-main enabled" onclick="exitViewer()">CONTINUE</button>
+            <button class="btn-main" onclick="exitViewer()">CONTINUE</button>
         </div>
     </div>
 
@@ -77,73 +67,87 @@
         const adData = JSON.parse(localStorage.getItem('active_ad'));
         if (!adData) window.location.href = 'home.html';
 
-        // 1. تشغيل رابط Rotate4All فور تحميل الصفحة لاحتساب الزيارة
-        const ptpUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
-        const ptpWindow = window.open(ptpUrl, '_blank', 'width=100,height=100,left=-1000,top=-1000');
-        
-        document.getElementById('targetFrame').src = adData.url;
-        let timeLeft = parseInt(adData.seconds);
+        let ptpWindow;
 
-        // عداد الثواني
-        const countdown = setInterval(() => {
-            if (timeLeft > 0) {
-                document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
-                timeLeft--;
-            } else {
-                clearInterval(countdown);
-                document.getElementById('timerBox').innerText = "DONE";
-                document.getElementById('captchaOverlay').style.display = 'flex';
-                
-                // مراقبة الكابتشا لتفعيل زر CONFIRM
-                const checkCaptcha = setInterval(() => {
-                    if (window.mtcaptcha && mtcaptcha.getVerifiedToken()) {
-                        const btn = document.getElementById('confirmBtn');
-                        btn.disabled = false;
-                        btn.classList.add('enabled');
-                        clearInterval(checkCaptcha);
-                    }
-                }, 500);
-            }
-        }, 1000);
+        function startViewing() {
+            // 1. فتح رابط Rotate4All (سيسمح المتصفح بهذا لأنه ناتج عن نقرة)
+            const ptpUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
+            ptpWindow = window.open(ptpUrl, '_blank', 'width=400,height=400');
+            
+            // إخفاء طبقة البدء وتشغيل الإعلان
+            document.getElementById('startOverlay').style.display = 'none';
+            document.getElementById('targetFrame').src = adData.url;
+            runTimer();
+        }
 
-        // 2. معالجة المكافأة والتجميد عند الضغط على CONFIRM
+        function runTimer() {
+            let timeLeft = parseInt(adData.seconds);
+            const countdown = setInterval(() => {
+                if (timeLeft > 0) {
+                    document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
+                    timeLeft--;
+                } else {
+                    clearInterval(countdown);
+                    document.getElementById('timerBox').innerText = "DONE";
+                    document.getElementById('captchaOverlay').style.display = 'flex';
+                    
+                    const checkCaptcha = setInterval(() => {
+                        if (window.mtcaptcha && mtcaptcha.getVerifiedToken()) {
+                            const btn = document.getElementById('confirmBtn');
+                            btn.disabled = false;
+                            clearInterval(checkCaptcha);
+                        }
+                    }, 500);
+                }
+            }, 1000);
+        }
+
         async function processReward() {
             const confirmBtn = document.getElementById('confirmBtn');
-            confirmBtn.innerText = "PROCESSING...";
+            confirmBtn.innerText = "SAVING...";
             confirmBtn.disabled = true;
 
             try {
-                const { data: { session } } = await _supabase.auth.getSession();
-                if (!session) throw new Error("No Session");
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (!user) throw new Error("User not logged in");
 
-                const userId = session.user.id;
+                // تحديث الرصيد باستخدام rpc أو استعلام مباشر
+                // ملاحظة: قمنا باستخدام parseFloat لضمان معاملة الأرقام بشكل صحيح
+                const { data: profile } = await _supabase
+                    .from('blackflowerproart')
+                    .select('balance')
+                    .eq('user_id', user.id)
+                    .single();
 
-                // تحديث الرصيد
-                const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', userId).single();
-                const newBalance = (profile?.balance || 0) + parseFloat(adData.reward);
-                
-                await _supabase.from('blackflowerproart').update({ balance: newBalance }).eq('user_id', userId);
+                const currentBalance = parseFloat(profile?.balance || 0);
+                const rewardAmount = parseFloat(adData.reward);
 
-                // إضافة سجل المشاهدة وتجميد الإعلان (viewed_at يستخدم للتحقق من الـ 24 ساعة لاحقاً)
+                const { error: updateError } = await _supabase
+                    .from('blackflowerproart')
+                    .update({ balance: currentBalance + rewardAmount })
+                    .eq('user_id', user.id);
+
+                if (updateError) throw updateError;
+
+                // تسجيل الزيارة لتجميد الإعلان
                 await _supabase.from('ad_views').insert([{ 
-                    user_id: userId, 
+                    user_id: user.id, 
                     ad_id: adData.id,
                     viewed_at: new Date().toISOString() 
                 }]);
 
-                // إغلاق نافذة Rotate4All إذا كانت لا تزال مفتوحة
+                // إغلاق نافذة Rotate4All
                 if (ptpWindow) ptpWindow.close();
 
-                // إظهار رسالة النجاح
                 document.getElementById('captchaOverlay').style.display = 'none';
-                document.getElementById('rewardTxt').innerText = `Successfully earned: ${adData.reward} BFP`;
+                document.getElementById('rewardTxt').innerText = `REWARD: +${rewardAmount} BFP`;
                 document.getElementById('successModal').style.display = 'flex';
 
-            } catch (error) {
-                console.error("Error updating reward:", error);
-                alert("Transaction failed. Please try again.");
-                confirmBtn.innerText = "CONFIRM";
+            } catch (err) {
+                console.error(err);
+                alert("Error updating balance: " + err.message);
                 confirmBtn.disabled = false;
+                confirmBtn.innerText = "CONFIRM";
             }
         }
 
