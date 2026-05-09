@@ -3,70 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Viewer | The Black Flower</title>
+    <meta name='admaven-placement' content='Bqjs5qdw7'>
+    
+    <title>Safe Viewer | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
-            background-color: #000; overflow: hidden;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        /* الشريط العلوي للعداد */
-        #timer-bar {
-            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
-            background: rgba(0, 0, 0, 0.95);
-            border-bottom: 1px solid #333;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; box-sizing: border-box; z-index: 9999;
-        }
-
-        .brand-mini { color: #fff; font-weight: bold; letter-spacing: 1px; font-size: 0.9rem; }
+        :root { --bg: #000; --accent: #fff; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
         
-        .timer-wrapper { display: flex; align-items: center; gap: 15px; }
+        #topHeader { 
+            height: 80px; background: #000; border-bottom: 1px solid #222; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 25px; color: #fff; z-index: 1000; position: relative; 
+        }
+
+        .brand-section { display: flex; align-items: center; gap: 12px; }
+        .logo-mini { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #333; }
+        .brand-name { font-family: 'Times New Roman', serif; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
+
+        .timer-display { font-size: 14px; font-weight: bold; color: #fff; background: #111; padding: 8px 15px; border: 1px solid #333; min-width: 140px; text-align: center; }
+
+        .viewport { width: 100%; height: calc(100% - 80px); }
+        #targetFrame { width: 100%; height: 100%; border: none; background: #fff; }
+
+        #successModal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.98); z-index: 9999; justify-content: center; align-items: center;
+        }
+        .modal-box { background: #000; padding: 35px; border: 1px solid #333; text-align: center; color: #fff; width: 320px; }
         
-        #timer-display {
-            background: #fff; color: #000; font-weight: bold;
-            padding: 5px 15px; border-radius: 4px; min-width: 40px; text-align: center;
-        }
-
-        #confirm-btn {
-            background: #00ff00; color: #000; border: none;
-            padding: 8px 20px; font-weight: bold; cursor: pointer;
-            display: none; text-transform: uppercase; border-radius: 2px;
-        }
-
-        /* حاوية الإطار التي تملأ الشاشة */
-        .ad-container {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            padding-top: 60px; /* لإعطاء مساحة للشريط العلوي */
-            box-sizing: border-box;
-        }
-
-        iframe {
-            width: 100%; height: 100%; border: none;
-            background: #fff;
+        .btn-main { 
+            background: #fff; color: #000; border: 1px solid #fff; padding: 14px; 
+            font-weight: bold; text-transform: uppercase; margin-top: 20px; 
+            cursor: pointer; width: 100%; letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
 
-    <div id="timer-bar">
-        <div class="brand-mini">THE BLACK FLOWER <span style="color: #666; font-size: 0.7rem;">| AD VIEWER</span></div>
-        
-        <div class="timer-wrapper">
-            <div id="timer-display">--</div>
-            <button id="confirm-btn" onclick="claimReward()">Confirm Reward</button>
+    <div id="topHeader">
+        <div class="brand-section">
+            <img src="wight.jpg" alt="Logo" class="logo-mini">
+            <span class="brand-name">The Black Flower</span>
         </div>
+        <div id="timerBox" class="timer-display">Initializing...</div>
     </div>
 
-    <div class="ad-container">
-        <iframe 
-            id="ad-frame" 
-            sandbox="allow-forms allow-pointer-lock allow-same-origin allow-scripts"
-            src="about:blank">
-        </iframe>
+    <div class="viewport">
+        <iframe id="targetFrame" src="about:blank"></iframe>
+    </div>
+
+    <div id="successModal">
+        <div class="modal-box">
+            <h2 style="letter-spacing: 4px;">COMPLETED</h2>
+            <p id="rewardTxt" style="color: #888; font-size: 12px; margin-bottom:25px;"></p>
+            <button id="finalBtn" class="btn-main" onclick="exitViewer()">CONTINUE</button>
+        </div>
     </div>
 
     <script>
@@ -74,78 +66,68 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let activeAd = null;
+        const adData = JSON.parse(localStorage.getItem('active_ad'));
+        if (!adData) window.location.href = 'home.html';
 
-        async function init() {
-            const storedAd = localStorage.getItem('active_ad');
-            if (!storedAd) {
-                window.location.href = 'home.html';
-                return;
-            }
+        // تشغيل رابط Rotate4All
+        const ptpUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
+        const ptpWindow = window.open(ptpUrl, '_blank', 'width=100,height=100,left=-1000,top=-1000');
+        
+        document.getElementById('targetFrame').src = adData.url;
+        let timeLeft = parseInt(adData.seconds);
 
-            activeAd = JSON.parse(storedAd);
-            document.getElementById('ad-frame').src = activeAd.url;
-
-            startTimer(activeAd.seconds);
-        }
-
-        function startTimer(seconds) {
-            let timeLeft = seconds;
-            const display = document.getElementById('timer-display');
-            
-            const interval = setInterval(() => {
+        // عداد الثواني
+        const countdown = setInterval(() => {
+            if (timeLeft > 0) {
+                document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
                 timeLeft--;
-                display.innerText = timeLeft;
+            } else {
+                clearInterval(countdown);
+                document.getElementById('timerBox').innerText = "DONE";
+                // الانتقال مباشرة لمعالجة الربح بعد انتهاء الوقت (بدون كابتشا)
+                processReward();
+            }
+        }, 1000);
 
-                if (timeLeft <= 0) {
-                    clearInterval(interval);
-                    display.style.display = 'none';
-                    document.getElementById('confirm-btn').style.display = 'block';
-                }
-            }, 1000);
-        }
-
-        async function claimReward() {
-            const btn = document.getElementById('confirm-btn');
-            btn.disabled = true;
-            btn.innerText = 'PROCESSING...';
-
+        // معالجة المكافأة تلقائياً بعد انتهاء الوقت
+        async function processReward() {
             try {
-                const { data: { user } } = await _supabase.auth.getUser();
-                if (!user) throw new Error("No session found");
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (!session) throw new Error("No Session");
 
-                // 1. تحديث الرصيد (زيادة الرصيد المخصص)
-                const { data: profile } = await _supabase
-                    .from('blackflowerproart')
-                    .select('balance')
-                    .eq('user_id', user.id)
-                    .single();
+                const userId = session.user.id;
 
-                const newBalance = (parseFloat(profile.balance) || 0) + parseFloat(activeAd.reward);
+                // تحديث الرصيد
+                const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', userId).single();
+                const newBalance = (profile?.balance || 0) + parseFloat(adData.reward);
+                
+                await _supabase.from('blackflowerproart').update({ balance: newBalance }).eq('user_id', userId);
 
-                await _supabase
-                    .from('blackflowerproart')
-                    .update({ balance: newBalance })
-                    .eq('user_id', user.id);
+                // إضافة سجل المشاهدة
+                await _supabase.from('ad_views').insert([{ 
+                    user_id: userId, 
+                    ad_id: adData.id,
+                    viewed_at: new Date().toISOString() 
+                }]);
 
-                // 2. تسجيل المشاهدة في جدول ad_views لمنع التكرار
-                await _supabase.from('ad_views').insert([
-                    { user_id: user.id, ad_id: activeAd.id, viewed_at: new Date().toISOString() }
-                ]);
+                if (ptpWindow) ptpWindow.close();
 
-                // العودة للداشبورد
-                localStorage.removeItem('active_ad');
-                window.location.href = 'home.html';
+                // إظهار رسالة النجاح مباشرة
+                document.getElementById('rewardTxt').innerText = `Successfully earned: ${adData.reward} BFP`;
+                document.getElementById('successModal').style.display = 'flex';
 
-            } catch (err) {
-                console.error(err);
-                alert("Error claiming reward. Please try again.");
-                btn.disabled = false;
-                btn.innerText = 'CONFIRM REWARD';
+            } catch (error) {
+                console.error("Error updating reward:", error);
+                alert("Transaction failed. Auto-retrying...");
+                // محاولة إعادة الإرسال في حال الخطأ
+                setTimeout(processReward, 2000);
             }
         }
 
-        window.onload = init;
+        function exitViewer() {
+            localStorage.removeItem('active_ad');
+            window.location.href = 'home.html';
+        }
     </script>
 </body>
 </html>
