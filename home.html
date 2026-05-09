@@ -169,6 +169,50 @@ async function loadAds(userId) {
         }
 
         window.onload = init;
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function loadUserData() {
+    // 1. التأكد من أن المستخدم مسجل دخول
+    const { data: { user } } = await _supabase.auth.getUser();
+
+    if (!user) {
+        window.location.href = "login.html"; // إذا لم يسجل دخول ارجعه للتسجيل
+        return;
+    }
+
+    // 2. جلب الرصيد من جدول blackflowerproart
+    const { data: profile } = await _supabase
+        .from('blackflowerproart')
+        .select('balance, username')
+        .eq('user_id', user.id)
+        .single();
+
+    if (profile) {
+        document.getElementById('user-balance').innerText = `$${profile.balance.toFixed(2)}`;
+        document.getElementById('welcome-user').innerText = `Welcome, ${profile.username}`;
+    }
+
+    // 3. جلب الإعلانات النشطة الخاصة بهذا المستخدم فقط
+    const { data: ads } = await _supabase
+        .from('ads') // اسم جدول الإعلانات لديك
+        .select('*')
+        .eq('user_id', user.id) // شرط: إعلانات هذا المستخدم فقط
+        .eq('status', 'active'); // شرط: النشطة فقط
+
+    renderAds(ads);
+}
+
+function renderAds(ads) {
+    const container = document.getElementById('ads-container');
+    if (!ads || ads.length === 0) {
+        container.innerHTML = "<p>No active ads found.</p>";
+        return;
+    }
+    // كود عرض الإعلانات هنا...
+}
+
+// تشغيل الوظيفة عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', loadUserData);
     </script>
 </body>
 </html>
