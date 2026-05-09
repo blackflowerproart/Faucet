@@ -1,5 +1,212 @@
-async function init() {
-            // 1. التحقق من وجود جلسة نشطة
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | The Black Flower</title>
+    <!-- مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-black: #050505;
+            --card-black: #0a0a0a;
+            --text-white: #f0f0f0;
+            --accent: #ffffff;
+            --dim-gray: #888888;
+            --sidebar-width: 260px;
+            --success: #00ff00;
+        }
+
+        body {
+            margin: 0; 
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-black); 
+            color: var(--text-white);
+            display: flex; 
+            min-height: 100vh; 
+            visibility: hidden; /* مخفية حتى يتم التحقق من الجلسة */
+        }
+
+        /* Sidebar - القائمة الجانبية */
+        .sidebar {
+            width: var(--sidebar-width); 
+            background-color: var(--card-black);
+            border-right: 1px solid #222; 
+            display: flex; 
+            flex-direction: column;
+            padding: 30px 20px; 
+            position: fixed; 
+            height: 100vh; 
+            box-sizing: border-box;
+        }
+
+        .logo-small { 
+            width: 80px; height: 80px; 
+            border-radius: 50%; 
+            margin: 0 auto 10px; 
+            display: block; 
+            border: 1px solid #333; 
+            object-fit: cover; 
+        }
+
+        .brand { 
+            font-family: 'Times New Roman', serif; 
+            font-size: 1.2rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            text-align: center; 
+            margin: 0; 
+        }
+
+        .pro-art-sub { 
+            font-size: 0.6rem; 
+            letter-spacing: 3px; 
+            color: var(--dim-gray); 
+            text-transform: uppercase; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            display: block; 
+        }
+        
+        .balance-box { 
+            background-color: #111; 
+            padding: 15px; 
+            border: 1px solid #333; 
+            margin-bottom: 25px; 
+            text-align: center; 
+        }
+        
+        .nav-btn { 
+            background: transparent; 
+            border: 1px solid #333; 
+            color: var(--text-white); 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            width: 100%; 
+            transition: 0.3s; 
+        }
+
+        .nav-btn:hover { 
+            background-color: var(--accent); 
+            color: #000; 
+        }
+
+        /* Main Content - المحتوى الرئيسي */
+        .main-content {
+            margin-left: var(--sidebar-width); 
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width)); 
+            box-sizing: border-box;
+        }
+
+        .section-title { 
+            font-size: 0.9rem; 
+            color: var(--dim-gray); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-bottom: 20px; 
+            display: block; 
+            border-left: 3px solid #fff; 
+            padding-left: 10px; 
+        }
+
+        .ad-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+            gap: 20px; 
+        }
+        
+        .ad-item {
+            background: var(--card-black); 
+            border: 1px solid #222; 
+            padding: 20px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            transition: 0.3s; 
+            cursor: pointer;
+        }
+
+        .ad-item:hover { 
+            border-color: #fff; 
+            transform: translateY(-3px); 
+        }
+        
+        .ad-info b { 
+            display: block; 
+            font-size: 1rem; 
+            color: #fff; 
+            margin-bottom: 5px; 
+        }
+
+        .ad-info span { 
+            font-size: 0.75rem; 
+            color: var(--dim-gray); 
+        }
+        
+        .reward-val { 
+            display: block; 
+            color: var(--success); 
+            font-weight: bold; 
+            font-size: 1.1rem; 
+            text-align: right; 
+        }
+
+        .reward-time { 
+            font-size: 0.7rem; 
+            color: #555; 
+            text-transform: uppercase; 
+        }
+
+        .empty-state { 
+            grid-column: 1/-1; 
+            text-align: center; 
+            padding: 50px; 
+            color: #444; 
+            font-style: italic; 
+            border: 1px dashed #222; 
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #222; }
+            .main-content { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <img src="wight.jpg" alt="Logo" class="logo-small">
+        <h1 class="brand">The Black Flower</h1>
+        <span class="pro-art-sub">professional art</span>
+        
+        <div class="balance-box">
+            <!-- سيتم تبديل هذا بالاسم الحقيقي -->
+            <span id="user-name" style="color: #888; font-size: 0.8rem; display: block; margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">LOADING...</span>
+            <span style="font-size: 1.2rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
+        </div>
+
+        <button class="nav-btn" onclick="window.location.href='AdControlManeger.html'">Create Ad</button>
+        <button class="nav-btn" style="margin-top: auto; border-color: #ff4444; color: #ff4444;" onclick="handleLogout()">Logout</button>
+    </div>
+
+    <div class="main-content">
+        <span class="section-title">Available Campaigns</span>
+        <div id="ads-list" class="ad-grid">
+            <div class="empty-state">Loading campaigns...</div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function init() {
             const { data: { session } } = await _supabase.auth.getSession();
             
             if (!session) {
@@ -8,42 +215,102 @@ async function init() {
             }
 
             const user = session.user;
-            let displayName = "USER";
+            let displayName = "ARTIST";
 
             try {
-                // 2. محاولة جلب الاسم من جدول قاعدة البيانات (للتسجيل اليدوي)
+                // 1. محاولة جلب الاسم والرصيد من الجدول الخاص بك
                 const { data: profile } = await _supabase
                     .from('blackflowerproart')
-                    .select('username, balance')
+                    .select('*')
                     .eq('user_id', user.id)
                     .single();
 
-                if (profile && profile.username) {
+                if (profile) {
                     displayName = profile.username;
                     document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
                 } else {
-                    // 3. إذا لم يوجد بروفايل (دخول اجتماعي)، نجلب الاسم من MetaData
-                    // جرب جلب الاسم الكامل، أو اسم المستخدم، أو حتى أول جزء من الإيميل
+                    // 2. إذا لم يوجد (دخول اجتماعي)، جلب الاسم من بيانات الحساب (Google/Facebook/Discord)
                     displayName = user.user_metadata.full_name || 
                                   user.user_metadata.name || 
-                                  user.user_metadata.custom_claims?.global_name || // خاص لديسكورد
+                                  user.user_metadata.custom_claims?.global_name || 
                                   user.email.split('@')[0];
                     
-                    document.getElementById('bfp-val').innerText = "0"; // رصيد افتراضي جديد
+                    document.getElementById('bfp-val').innerText = "0";
                 }
 
-                // عرض الاسم في الواجهة
                 document.getElementById('user-name').innerText = displayName.toUpperCase();
 
             } catch (err) {
-                console.error("Error fetching user data:", err);
-                // في حالة الخطأ، اعرض الإيميل كاسم احتياطي
+                console.error("Profile load error:", err);
                 document.getElementById('user-name').innerText = user.email.split('@')[0].toUpperCase();
             }
 
-            // تحميل الإعلانات المتاحة
             await loadAds(user.id);
-            
-            // إظهار الصفحة بعد انتهاء التحميل
             document.body.style.visibility = "visible";
         }
+
+        async function loadAds(userId) {
+            const adsList = document.getElementById('ads-list');
+            const now = new Date().toISOString();
+            const freezeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+            try {
+                // جلب الإعلانات النشطة
+                const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
+
+                // جلب المشاهدات خلال 24 ساعة
+                const { data: views } = await _supabase.from('ad_views')
+                    .select('ad_id')
+                    .eq('user_id', userId)
+                    .gt('viewed_at', freezeLimit);
+
+                const viewedIds = views ? views.map(v => v.ad_id) : [];
+                const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
+
+                if (availableAds.length > 0) {
+                    adsList.innerHTML = '';
+                    availableAds.forEach(ad => {
+                        const duration = ad.duration || 10;
+                        const reward = (duration >= 20) ? 15 : 8;
+
+                        const item = document.createElement('div');
+                        item.className = 'ad-item';
+                        item.onclick = () => {
+                            localStorage.setItem('active_ad', JSON.stringify({
+                                id: ad.id,
+                                url: ad.url,
+                                reward: reward,
+                                seconds: duration
+                            }));
+                            window.location.href = 'viewer.html';
+                        };
+
+                        item.innerHTML = `
+                            <div class="ad-info">
+                                <b>${ad.title}</b>
+                                <span>Reward for completing visit</span>
+                            </div>
+                            <div class="ad-reward">
+                                <span class="reward-val">+${reward} BFP</span>
+                                <span class="reward-time">${duration} SEC</span>
+                            </div>
+                        `;
+                        adsList.appendChild(item);
+                    });
+                } else {
+                    adsList.innerHTML = '<div class="empty-state">No campaigns available. Check back tomorrow!</div>';
+                }
+            } catch (err) {
+                adsList.innerHTML = '<div class="empty-state">Error loading ads.</div>';
+            }
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            window.location.replace("index.html");
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
