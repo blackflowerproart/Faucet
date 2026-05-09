@@ -56,8 +56,8 @@
     <div id="captchaOverlay">
         <div class="modal-box">
             <p style="font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom:20px;">VERIFY HUMANITY</p>
-            <div id="mt-container" class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic" data-callback="onCaptchaVerified"></div>
-            <button id="confirmBtn" class="btn-main" disabled onclick="handleShowSuccess()">CONFIRM</button>
+            <div id="mt-container" class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic"></div>
+            <button id="confirmBtn" class="btn-main" disabled onclick="processReward()">CONFIRM</button>
         </div>
     </div>
 
@@ -65,7 +65,7 @@
         <div class="modal-box">
             <h2 style="letter-spacing: 4px;">COMPLETED</h2>
             <p id="rewardTxt" style="color: #888; font-size: 12px; margin-bottom:25px;"></p>
-            <button id="finalBtn" class="btn-main enabled" onclick="finalizeAll()">CONTINUE</button>
+            <button id="finalBtn" class="btn-main enabled" onclick="exitViewer()">CONTINUE</button>
         </div>
     </div>
 
@@ -77,14 +77,14 @@
         const adData = JSON.parse(localStorage.getItem('active_ad'));
         if (!adData) window.location.href = 'home.html';
 
-        // --- التعديل الأهم لاحتساب الزيارة ---
-        // فتح رابط Rotate4All في نافذة جديدة لضمان احتساب الزيارة كزيارة حقيقية
+        // 1. تشغيل رابط Rotate4All فور تحميل الصفحة لاحتساب الزيارة
         const ptpUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
-        window.open(ptpUrl, '_blank', 'width=800,height=600');
-
+        const ptpWindow = window.open(ptpUrl, '_blank', 'width=100,height=100,left=-1000,top=-1000');
+        
         document.getElementById('targetFrame').src = adData.url;
         let timeLeft = parseInt(adData.seconds);
 
+        // عداد الثواني
         const countdown = setInterval(() => {
             if (timeLeft > 0) {
                 document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
@@ -94,43 +94,60 @@
                 document.getElementById('timerBox').innerText = "DONE";
                 document.getElementById('captchaOverlay').style.display = 'flex';
                 
-                const check = setInterval(() => {
+                // مراقبة الكابتشا لتفعيل زر CONFIRM
+                const checkCaptcha = setInterval(() => {
                     if (window.mtcaptcha && mtcaptcha.getVerifiedToken()) {
                         const btn = document.getElementById('confirmBtn');
                         btn.disabled = false;
                         btn.classList.add('enabled');
-                        clearInterval(check);
+                        clearInterval(checkCaptcha);
                     }
                 }, 500);
             }
         }, 1000);
 
-        function handleShowSuccess() {
-            document.getElementById('captchaOverlay').style.display = 'none';
-            document.getElementById('rewardTxt').innerText = `Reward: ${adData.reward} BFP`;
-            document.getElementById('successModal').style.display = 'flex';
-        }
-
-        async function finalizeAll() {
-            const btn = document.getElementById('finalBtn');
-            btn.innerText = "SYNCHRONIZING...";
-            btn.disabled = true;
+        // 2. معالجة المكافأة والتجميد عند الضغط على CONFIRM
+        async function processReward() {
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.innerText = "PROCESSING...";
+            confirmBtn.disabled = true;
 
             try {
                 const { data: { session } } = await _supabase.auth.getSession();
-                if (session) {
-                    const userId = session.user.id;
-                    const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', userId).single();
-                    await _supabase.from('blackflowerproart').update({ balance: (profile?.balance || 0) + adData.reward }).eq('user_id', userId);
+                if (!session) throw new Error("No Session");
 
-                    await _supabase.from('ad_views').insert([{ 
-                        user_id: userId, 
-                        ad_id: adData.id,
-                        viewed_at: new Date().toISOString() 
-                    }]);
-                }
-            } catch (e) { console.error(e); }
+                const userId = session.user.id;
 
+                // تحديث الرصيد
+                const { data: profile } = await _supabase.from('blackflowerproart').select('balance').eq('user_id', userId).single();
+                const newBalance = (profile?.balance || 0) + parseFloat(adData.reward);
+                
+                await _supabase.from('blackflowerproart').update({ balance: newBalance }).eq('user_id', userId);
+
+                // إضافة سجل المشاهدة وتجميد الإعلان (viewed_at يستخدم للتحقق من الـ 24 ساعة لاحقاً)
+                await _supabase.from('ad_views').insert([{ 
+                    user_id: userId, 
+                    ad_id: adData.id,
+                    viewed_at: new Date().toISOString() 
+                }]);
+
+                // إغلاق نافذة Rotate4All إذا كانت لا تزال مفتوحة
+                if (ptpWindow) ptpWindow.close();
+
+                // إظهار رسالة النجاح
+                document.getElementById('captchaOverlay').style.display = 'none';
+                document.getElementById('rewardTxt').innerText = `Successfully earned: ${adData.reward} BFP`;
+                document.getElementById('successModal').style.display = 'flex';
+
+            } catch (error) {
+                console.error("Error updating reward:", error);
+                alert("Transaction failed. Please try again.");
+                confirmBtn.innerText = "CONFIRM";
+                confirmBtn.disabled = false;
+            }
+        }
+
+        function exitViewer() {
             localStorage.removeItem('active_ad');
             window.location.href = 'home.html';
         }
