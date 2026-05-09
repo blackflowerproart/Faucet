@@ -19,7 +19,8 @@
         body {
             margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
             background-color: var(--bg-black); color: var(--text-white);
-            display: flex; min-height: 100vh; visibility: hidden;
+            display: flex; min-height: 100vh;
+            /* تم إزالة visibility: hidden لتجنب الشاشة السوداء */
         }
 
         /* Sidebar Style */
@@ -88,7 +89,7 @@
         <span class="pro-art-sub">professional art</span>
         
         <div class="balance-box">
-            <span id="user-name" class="user-label">USER ACCESS</span>
+            <span id="user-name" class="user-label">CONNECTING...</span>
             <span style="font-size: 1.3rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
         </div>
 
@@ -109,33 +110,34 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function init() {
-            // 1. التحقق من الجلسة
+            // التحقق من الجلسة
             const { data: { user }, error: authError } = await _supabase.auth.getUser();
             if (authError || !user) {
                 window.location.replace("index.html");
                 return;
             }
 
-            // 2. جلب بيانات المستخدم (الاسم والرصيد)
             try {
-                const { data: profile } = await _supabase
+                // جلب ملف المستخدم الشخصي
+                const { data: profile, error: pError } = await _supabase
                     .from('blackflowerproart')
                     .select('username, balance')
                     .eq('user_id', user.id)
                     .maybeSingle();
 
                 if (profile) {
-                    document.getElementById('user-name').innerText = profile.username.toUpperCase();
-                    // استخدام parseFloat لضمان معاملة الرصيد كرقمه
+                    document.getElementById('user-name').innerText = (profile.username || "USER").toUpperCase();
                     document.getElementById('bfp-val').innerText = parseFloat(profile.balance || 0).toLocaleString();
+                } else {
+                    document.getElementById('user-name').innerText = "GUEST";
                 }
 
-                // 3. تحميل الإعلانات المخصصة لهذا المستخدم
+                // تحميل الإعلانات
                 await loadAds(user.id);
-                document.body.style.visibility = "visible";
 
             } catch (err) {
                 console.error("Initialization Failed:", err);
+                document.getElementById('ads-list').innerHTML = '<div class="empty-state">Error connecting to database.</div>';
             }
         }
 
@@ -145,11 +147,13 @@
             const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
             try {
-                // جلب الإعلانات النشطة + سجل المشاهدات في طلبين متوازيين للسرعة
+                // جلب الإعلانات النشطة وسجل المشاهدات
                 const [adsRes, viewsRes] = await Promise.all([
                     _supabase.from('ads').select('*').gt('expiry_at', now),
                     _supabase.from('ad_views').select('ad_id').eq('user_id', userId).gt('viewed_at', oneDayAgo)
                 ]);
+
+                if (adsRes.error) throw adsRes.error;
 
                 const viewedIds = viewsRes.data ? viewsRes.data.map(v => v.ad_id) : [];
                 const availableAds = adsRes.data ? adsRes.data.filter(ad => !viewedIds.includes(ad.id)) : [];
@@ -157,14 +161,12 @@
                 if (availableAds.length > 0) {
                     adsList.innerHTML = '';
                     availableAds.forEach(ad => {
-                        // تحديد السعر: إذا وجد سعر في قاعدة البيانات يستخدمه، وإلا يستخدم السعر التلقائي بناءً على الوقت
                         const duration = ad.duration || 10;
                         const adReward = ad.reward != null ? ad.reward : (duration >= 20 ? 15 : 8);
 
                         const item = document.createElement('div');
                         item.className = 'ad-item';
                         item.onclick = () => {
-                            // تخزين بيانات الإعلان الحالي ليتم استخدامها في صفحة viewer.html
                             localStorage.setItem('active_ad', JSON.stringify({
                                 id: ad.id,
                                 url: ad.url,
@@ -177,7 +179,7 @@
                         item.innerHTML = `
                             <div class="ad-info">
                                 <b>${ad.title}</b>
-                                <span>Earn BFP by visiting this link</span>
+                                <span>Visit to earn BFP reward</span>
                             </div>
                             <div class="reward-display">
                                 <span class="reward-val">+${adReward} BFP</span>
@@ -187,11 +189,11 @@
                         adsList.appendChild(item);
                     });
                 } else {
-                    adsList.innerHTML = '<div class="empty-state">No new ads available for now.<br>Check back in 24 hours.</div>';
+                    adsList.innerHTML = '<div class="empty-state">No new ads available.<br>Check again in 24 hours.</div>';
                 }
             } catch (err) {
                 console.error("Ads Loading Error:", err);
-                adsList.innerHTML = '<div class="empty-state">System error while loading ads.</div>';
+                adsList.innerHTML = '<div class="empty-state">Unable to load ads at this moment.</div>';
             }
         }
 
