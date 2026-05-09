@@ -14,7 +14,6 @@
             --light-gray: #888888;
             --google: #db4437;
             --discord: #7289da;
-            --twitter: #ffffff; /* جعلنا تويتر أبيض ليظهر بوضوح على الأسود */
             --facebook: #1877f2;
             --linkedin: #0077b5;
         }
@@ -107,7 +106,7 @@
 
         .social-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr); /* تم تغييرها لعمودين لتبدو متناسقة بعد حذف تويتر */
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -122,18 +121,14 @@
             font-size: 16px;
         }
 
-        /* تعديل الـ Hover الموحد كما طلبت */
         .social-btn:hover {
             font-family: 'Times New Roman', serif;
-            font-size: 22px; /* تكبير بسيط للأيقونة */
-            border-width: 1px;
-            transform: translateY(-2px); /* رفعة بسيطة للزر لإعطاء تفاعل حي */
+            font-size: 20px;
+            transform: translateY(-2px);
         }
 
-        /* ألوان الـ Hover المخصصة لكل منصة مع الحفاظ على الخط الجديد */
         .social-btn.google:hover { border-color: var(--google); color: var(--google); }
         .social-btn.discord:hover { border-color: var(--discord); color: var(--discord); }
-        .social-btn.twitter:hover { border-color: var(--twitter); color: var(--twitter); }
         .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
         .social-btn.linkedin:hover { border-color: var(--linkedin); color: var(--linkedin); }
 
@@ -173,7 +168,6 @@
         <div class="social-grid">
             <button class="social-btn google" onclick="socialLogin('google')" title="Google"><i class="fab fa-google"></i></button>
             <button class="social-btn discord" onclick="socialLogin('discord')" title="Discord"><i class="fab fa-discord"></i></button>
-            <button class="social-btn twitter" onclick="socialLogin('twitter')" title="Twitter (X)"><i class="fab fa-x-twitter"></i></button>
             <button class="social-btn facebook" onclick="socialLogin('facebook')" title="Facebook"><i class="fab fa-facebook-f"></i></button>
             <button class="social-btn linkedin" onclick="socialLogin('linkedin')" title="LinkedIn"><i class="fab fa-linkedin-in"></i></button>
         </div>
@@ -185,7 +179,7 @@
 
     <script>
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-        const SUPABASE_KEY = 'YOUR_SUPABASE_KEY'; // تأكد من وضع مفتاحك هنا
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
