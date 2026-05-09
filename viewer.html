@@ -9,41 +9,57 @@
     <style>
         :root { --bg: #000; --accent: #fff; }
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; font-family: Arial, sans-serif; }
-        #topHeader { height: 80px; background: #000; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 25px; color: #fff; z-index: 1000; position: relative; }
+        
+        #topHeader { 
+            height: 80px; background: #000; border-bottom: 1px solid #222; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 25px; color: #fff; z-index: 1000; position: relative; 
+        }
+
         .brand-section { display: flex; align-items: center; gap: 12px; }
         .logo-mini { width: 45px; height: 45px; border-radius: 50%; border: 1px solid #333; }
+        .brand-name { font-family: 'Times New Roman', serif; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; }
+
         .timer-display { font-size: 14px; font-weight: bold; color: #fff; background: #111; padding: 8px 15px; border: 1px solid #333; min-width: 140px; text-align: center; }
-        .viewport { width: 100%; height: calc(100% - 80px); }
-        #targetFrame { width: 100%; height: 100%; border: none; background: #fff; }
-        #captchaOverlay, #successModal, #startOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.98); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+
+        .viewport { width: 100%; height: calc(100% - 80px); position: relative; }
+        
+        /* إطار Rotate4All: مرئي تقنياً بنسبة 5% لضمان احتساب الزيارة دون إزعاج */
+        #r4aFrame { width: 100%; height: 5%; border: none; background: #000; border-bottom: 1px solid #111; }
+        /* إطار الإعلان الرئيسي */
+        #targetFrame { width: 100%; height: 95%; border: none; background: #fff; }
+
+        #captchaOverlay, #successModal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0, 0, 0, 0.98); z-index: 9999; 
+            display: none; justify-content: center; align-items: center; 
+        }
         .modal-box { background: #000; padding: 35px; border: 1px solid #333; text-align: center; color: #fff; width: 320px; }
-        .btn-main { background: #fff; color: #000; border: 1px solid #fff; padding: 14px; font-weight: bold; text-transform: uppercase; cursor: pointer; width: 100%; letter-spacing: 2px; margin-top: 10px; }
+        
+        .btn-main { 
+            background: #fff; color: #000; border: 1px solid #fff; 
+            padding: 14px; font-weight: bold; text-transform: uppercase; 
+            cursor: pointer; width: 100%; letter-spacing: 2px; margin-top: 10px; 
+        }
         .btn-main:disabled { background: #111; color: #444; border-color: #222; cursor: not-allowed; }
     </style>
 </head>
-<body>
-
-    <div id="startOverlay">
-        <div class="modal-box">
-            <h3 style="letter-spacing: 2px;">START AD VIEW</h3>
-            <p style="font-size: 11px; color: #888;">To count your visit on Rotate4All and earn BFP, please click start.</p>
-            <button class="btn-main" onclick="startSystem()">START NOW</button>
-        </div>
-    </div>
+<body onload="autoStart()">
 
     <div id="topHeader">
         <div class="brand-section">
             <img src="wight.jpg" alt="Logo" class="logo-mini">
             <span class="brand-name">The Black Flower</span>
         </div>
-        <div id="timerBox" class="timer-display">Ready...</div>
+        <div id="timerBox" class="timer-display">Initializing...</div>
     </div>
 
     <div class="viewport">
+        <iframe id="r4aFrame" src="https://www.rotate4all.com/promote/pmq0c6xfa7wk"></iframe>
         <iframe id="targetFrame" src=""></iframe>
     </div>
 
-    <div id="captchaOverlay" style="display: none;">
+    <div id="captchaOverlay">
         <div class="modal-box">
             <p style="font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom:20px;">VERIFY HUMANITY</p>
             <div id="mt-container" class="mtcaptcha" data-sitekey="MTPublic-e0hUm0HwS" data-theme="basic"></div>
@@ -51,7 +67,7 @@
         </div>
     </div>
 
-    <div id="successModal" style="display: none;">
+    <div id="successModal">
         <div class="modal-box">
             <h2 style="letter-spacing: 4px;">SUCCESS!</h2>
             <p id="rewardTxt" style="color: #888; font-size: 12px; margin-bottom:25px;"></p>
@@ -65,18 +81,12 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const adData = JSON.parse(localStorage.getItem('active_ad'));
-        if (!adData) window.location.href = 'home.html';
-
-        let r4aWindow;
-
-        function startSystem() {
-            // فتح Rotate4All في نافذة منبثقة واضحة لضمان احتساب PTP
-            const r4aUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
-            r4aWindow = window.open(r4aUrl, 'Rotate4All', 'width=1000,height=700');
+        
+        function autoStart() {
+            if (!adData) { window.location.href = 'home.html'; return; }
             
-            document.getElementById('startOverlay').style.display = 'none';
+            // بدء تحميل الإعلان فوراً
             document.getElementById('targetFrame').src = adData.url;
-            
             startTimer();
         }
 
@@ -91,6 +101,7 @@
                     document.getElementById('timerBox').innerText = "VERIFYING...";
                     document.getElementById('captchaOverlay').style.display = 'flex';
                     
+                    // فحص الكابتشا لتفعيل الزر
                     const check = setInterval(() => {
                         if (window.mtcaptcha && mtcaptcha.getVerifiedToken()) {
                             const b = document.getElementById('confirmBtn');
@@ -108,48 +119,37 @@
             btn.disabled = true;
 
             try {
-                // التأكد من الحصول على الجلسة الحالية
                 const { data: { session } } = await _supabase.auth.getSession();
                 if (!session) throw "No Session Found";
                 
                 const uid = session.user.id;
 
-                // 1. جلب الرصيد الحالي بدقة
-                const { data: profile, error: fetchErr } = await _supabase
+                // 1. جلب الرصيد
+                const { data: profile } = await _supabase
                     .from('blackflowerproart')
                     .select('balance')
                     .eq('user_id', uid)
                     .maybeSingle();
 
-                if (fetchErr) throw fetchErr;
+                const newBalance = parseFloat(profile?.balance || 0) + parseFloat(adData.reward);
 
-                const oldBalance = parseFloat(profile?.balance || 0);
-                const reward = parseFloat(adData.reward);
-                const newBalance = oldBalance + reward;
-
-                // 2. تحديث الرصيد (مهم: يجب أن يكون حقل balance رقمياً في Supabase)
-                const { error: upErr } = await _supabase
-                    .from('blackflowerproart')
-                    .update({ balance: newBalance })
-                    .eq('user_id', uid);
-
-                if (upErr) throw upErr;
-
-                // 3. تجميد الإعلان لـ 24 ساعة عبر إضافة سجل مشاهدة
-                await _supabase.from('ad_views').insert([
-                    { user_id: uid, ad_id: adData.id, viewed_at: new Date().toISOString() }
+                // 2. تحديث الرصيد وتجميد الإعلان (24 ساعة)
+                await Promise.all([
+                    _supabase.from('blackflowerproart').update({ balance: newBalance }).eq('user_id', uid),
+                    _supabase.from('ad_views').insert([{ 
+                        user_id: uid, 
+                        ad_id: adData.id, 
+                        viewed_at: new Date().toISOString() 
+                    }])
                 ]);
 
-                // 4. إغلاق نافذة Rotate4All بنجاح
-                if (r4aWindow) r4aWindow.close();
-
                 document.getElementById('captchaOverlay').style.display = 'none';
-                document.getElementById('rewardTxt').innerText = `+${reward} BFP Added to your account!`;
+                document.getElementById('rewardTxt').innerText = `+${adData.reward} BFP Added to your account!`;
                 document.getElementById('successModal').style.display = 'flex';
 
             } catch (err) {
                 console.error("Critical Error:", err);
-                alert("Database Sync Error. Please check your connection.");
+                alert("Database Sync Error.");
                 btn.disabled = false;
                 btn.innerText = "CONFIRM";
             }
@@ -157,7 +157,6 @@
 
         function goToHome() {
             localStorage.removeItem('active_ad');
-            // إجبار المتصفح على تحديث صفحة home لجلب البيانات الجديدة
             window.location.replace('home.html');
         }
     </script>
