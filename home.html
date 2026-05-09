@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | The Black Flower</title>
+    <title>Dashboard | The Black Flower Pro Art</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -17,155 +17,61 @@
         }
 
         body {
-            margin: 0; 
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg-black); 
-            color: var(--text-white);
-            display: flex; 
-            min-height: 100vh; 
-            visibility: hidden; /* مخفية حتى يتم التحقق من الجلسة */
+            margin: 0; font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-black); color: var(--text-white);
+            display: flex; min-height: 100vh; visibility: hidden;
         }
 
+        /* Sidebar Style */
         .sidebar {
-            width: var(--sidebar-width); 
-            background-color: var(--card-black);
-            border-right: 1px solid #222; 
-            display: flex; 
-            flex-direction: column;
-            padding: 30px 20px; 
-            position: fixed; 
-            height: 100vh; 
-            box-sizing: border-box;
+            width: var(--sidebar-width); background-color: var(--card-black);
+            border-right: 1px solid #222; display: flex; flex-direction: column;
+            padding: 30px 20px; position: fixed; height: 100vh; box-sizing: border-box;
         }
 
-        .logo-small { 
-            width: 80px; height: 80px; 
-            border-radius: 50%; 
-            margin: 0 auto 10px; 
-            display: block; 
-            border: 1px solid #333; 
-            object-fit: cover; 
-        }
-
-        .brand { 
-            font-family: 'Times New Roman', serif; 
-            font-size: 1.2rem; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            text-align: center; 
-            margin: 0; 
-        }
-
-        .pro-art-sub { 
-            font-size: 0.6rem; 
-            letter-spacing: 3px; 
-            color: var(--dim-gray); 
-            text-transform: uppercase; 
-            text-align: center; 
-            margin-bottom: 30px; 
-            display: block; 
-        }
+        .logo-small { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; display: block; border: 1px solid #333; object-fit: cover; }
+        .brand { font-family: 'Times New Roman', serif; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin: 0; }
+        .pro-art-sub { font-size: 0.6rem; letter-spacing: 3px; color: var(--dim-gray); text-transform: uppercase; text-align: center; margin-bottom: 30px; display: block; }
         
-        .balance-box { 
-            background-color: #111; 
-            padding: 15px; 
-            border: 1px solid #333; 
-            margin-bottom: 25px; 
-            text-align: center; 
-        }
-        
+        .balance-box { background-color: #111; padding: 15px; border: 1px solid #333; margin-bottom: 25px; text-align: center; }
+        .user-label { color: #888; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+
         .nav-btn { 
-            background: transparent; 
-            border: 1px solid #333; 
-            color: var(--text-white); 
-            padding: 12px; 
-            margin-bottom: 10px; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            font-size: 0.75rem; 
-            width: 100%; 
-            transition: 0.3s; 
+            background: transparent; border: 1px solid #333; color: var(--text-white); 
+            padding: 12px; margin-bottom: 10px; cursor: pointer; text-transform: uppercase; 
+            font-size: 0.75rem; width: 100%; transition: 0.3s; 
         }
+        .nav-btn:hover { background-color: var(--accent); color: #000; }
 
-        .nav-btn:hover { 
-            background-color: var(--accent); 
-            color: #000; 
-        }
-
+        /* Content Area */
         .main-content {
-            margin-left: var(--sidebar-width); 
-            padding: 40px;
-            width: calc(100% - var(--sidebar-width)); 
-            box-sizing: border-box;
+            margin-left: var(--sidebar-width); padding: 40px;
+            width: calc(100% - var(--sidebar-width)); box-sizing: border-box;
         }
 
         .section-title { 
-            font-size: 0.9rem; 
-            color: var(--dim-gray); 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            margin-bottom: 20px; 
-            display: block; 
-            border-left: 3px solid #fff; 
-            padding-left: 10px; 
+            font-size: 0.9rem; color: var(--dim-gray); text-transform: uppercase; 
+            letter-spacing: 2px; margin-bottom: 25px; display: block; 
+            border-left: 3px solid #fff; padding-left: 10px; 
         }
 
-        .ad-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 20px; 
-        }
+        .ad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         
         .ad-item {
-            background: var(--card-black); 
-            border: 1px solid #222; 
-            padding: 20px;
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            transition: 0.3s; 
-            cursor: pointer;
+            background: var(--card-black); border: 1px solid #222; padding: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s; cursor: pointer; position: relative;
         }
-
-        .ad-item:hover { 
-            border-color: #fff; 
-            transform: translateY(-3px); 
-        }
+        .ad-item:hover { border-color: #fff; transform: translateY(-3px); background: #0f0f0f; }
         
-        .ad-info b { 
-            display: block; 
-            font-size: 1rem; 
-            color: #fff; 
-            margin-bottom: 5px; 
-        }
-
-        .ad-info span { 
-            font-size: 0.75rem; 
-            color: var(--dim-gray); 
-        }
+        .ad-info b { display: block; font-size: 1.1rem; color: #fff; margin-bottom: 6px; }
+        .ad-info span { font-size: 0.8rem; color: var(--dim-gray); }
         
-        .reward-val { 
-            display: block; 
-            color: var(--success); 
-            font-weight: bold; 
-            font-size: 1.1rem; 
-            text-align: right; 
-        }
+        .reward-display { text-align: right; }
+        .reward-val { display: block; color: var(--success); font-weight: bold; font-size: 1.2rem; }
+        .reward-time { font-size: 0.7rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
 
-        .reward-time { 
-            font-size: 0.7rem; 
-            color: #555; 
-            text-transform: uppercase; 
-        }
-
-        .empty-state { 
-            grid-column: 1/-1; 
-            text-align: center; 
-            padding: 50px; 
-            color: #444; 
-            font-style: italic; 
-            border: 1px dashed #222; 
-        }
+        .empty-state { grid-column: 1/-1; text-align: center; padding: 60px; color: #444; border: 1px dashed #222; }
 
         @media (max-width: 768px) {
             body { flex-direction: column; }
@@ -182,8 +88,8 @@
         <span class="pro-art-sub">professional art</span>
         
         <div class="balance-box">
-            <span id="user-name" style="color: #888; font-size: 0.8rem; display: block; margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">LOADING...</span>
-            <span style="font-size: 1.2rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
+            <span id="user-name" class="user-label">USER ACCESS</span>
+            <span style="font-size: 1.3rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
         </div>
 
         <button class="nav-btn" onclick="window.location.href='AdControlManeger.html'">Create Ad</button>
@@ -191,9 +97,9 @@
     </div>
 
     <div class="main-content">
-        <span class="section-title">Available Campaigns</span>
+        <span class="section-title">Available Ad Campaigns</span>
         <div id="ads-list" class="ad-grid">
-            <div class="empty-state">Loading campaigns...</div>
+            <div class="empty-state">Loading latest offers...</div>
         </div>
     </div>
 
@@ -203,78 +109,66 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function init() {
-            // جلب بيانات المستخدم الحالية بدقة
+            // 1. التحقق من الجلسة
             const { data: { user }, error: authError } = await _supabase.auth.getUser();
-            
             if (authError || !user) {
-                window.location.replace("index.html"); 
+                window.location.replace("index.html");
                 return;
             }
 
-            // 1. جلب بيانات الملف الشخصي والرصيد وتحديث الواجهة
+            // 2. جلب بيانات المستخدم (الاسم والرصيد)
             try {
-                const { data: profile, error: profileErr } = await _supabase
+                const { data: profile } = await _supabase
                     .from('blackflowerproart')
-                    .select('*')
+                    .select('username, balance')
                     .eq('user_id', user.id)
                     .maybeSingle();
 
                 if (profile) {
                     document.getElementById('user-name').innerText = profile.username.toUpperCase();
+                    // استخدام parseFloat لضمان معاملة الرصيد كرقمه
                     document.getElementById('bfp-val').innerText = parseFloat(profile.balance || 0).toLocaleString();
-                } else {
-                    // في حال كان مستخدم جديد (دخول اجتماعي)
-                    const name = user.user_metadata.full_name || user.email.split('@')[0];
-                    document.getElementById('user-name').innerText = name.toUpperCase();
                 }
 
-                // 2. جلب وتحميل الإعلانات
+                // 3. تحميل الإعلانات المخصصة لهذا المستخدم
                 await loadAds(user.id);
-                
-                // إظهار الصفحة بعد انتهاء التحميل
                 document.body.style.visibility = "visible";
 
             } catch (err) {
-                console.error("Initialization error:", err);
+                console.error("Initialization Failed:", err);
             }
         }
 
         async function loadAds(userId) {
             const adsList = document.getElementById('ads-list');
             const now = new Date().toISOString();
-            
-            // تحديد وقت التجميد (آخر 24 ساعة)
             const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
             try {
-                // جلب الإعلانات التي لم تنتهِ صلاحيتها
-                const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
+                // جلب الإعلانات النشطة + سجل المشاهدات في طلبين متوازيين للسرعة
+                const [adsRes, viewsRes] = await Promise.all([
+                    _supabase.from('ads').select('*').gt('expiry_at', now),
+                    _supabase.from('ad_views').select('ad_id').eq('user_id', userId).gt('viewed_at', oneDayAgo)
+                ]);
 
-                // جلب قائمة الإعلانات التي شاهدها المستخدم خلال آخر 24 ساعة
-                const { data: recentViews } = await _supabase
-                    .from('ad_views')
-                    .select('ad_id')
-                    .eq('user_id', userId)
-                    .gt('viewed_at', oneDayAgo);
-
-                const viewedIds = recentViews ? recentViews.map(v => v.ad_id) : [];
-
-                // تصفية الإعلانات: فقط الإعلانات التي لم يشاهدها خلال الـ 24 ساعة الماضية
-                const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
+                const viewedIds = viewsRes.data ? viewsRes.data.map(v => v.ad_id) : [];
+                const availableAds = adsRes.data ? adsRes.data.filter(ad => !viewedIds.includes(ad.id)) : [];
 
                 if (availableAds.length > 0) {
                     adsList.innerHTML = '';
                     availableAds.forEach(ad => {
+                        // تحديد السعر: إذا وجد سعر في قاعدة البيانات يستخدمه، وإلا يستخدم السعر التلقائي بناءً على الوقت
                         const duration = ad.duration || 10;
-                        const reward = ad.reward || ((duration >= 20) ? 15 : 8);
+                        const adReward = ad.reward != null ? ad.reward : (duration >= 20 ? 15 : 8);
 
                         const item = document.createElement('div');
                         item.className = 'ad-item';
                         item.onclick = () => {
+                            // تخزين بيانات الإعلان الحالي ليتم استخدامها في صفحة viewer.html
                             localStorage.setItem('active_ad', JSON.stringify({
                                 id: ad.id,
                                 url: ad.url,
-                                reward: reward,
+                                reward: adReward,
                                 seconds: duration
                             }));
                             window.location.href = 'viewer.html';
@@ -283,21 +177,21 @@
                         item.innerHTML = `
                             <div class="ad-info">
                                 <b>${ad.title}</b>
-                                <span>Complete task to earn BFP</span>
+                                <span>Earn BFP by visiting this link</span>
                             </div>
-                            <div class="ad-reward">
-                                <span class="reward-val">+${reward} BFP</span>
+                            <div class="reward-display">
+                                <span class="reward-val">+${adReward} BFP</span>
                                 <span class="reward-time">${duration} SEC</span>
                             </div>
                         `;
                         adsList.appendChild(item);
                     });
                 } else {
-                    adsList.innerHTML = '<div class="empty-state">No new campaigns available. Check back later!</div>';
+                    adsList.innerHTML = '<div class="empty-state">No new ads available for now.<br>Check back in 24 hours.</div>';
                 }
             } catch (err) {
-                console.error("Ads loading error:", err);
-                adsList.innerHTML = '<div class="empty-state">Unable to load campaigns.</div>';
+                console.error("Ads Loading Error:", err);
+                adsList.innerHTML = '<div class="empty-state">System error while loading ads.</div>';
             }
         }
 
@@ -306,7 +200,6 @@
             window.location.replace("index.html");
         }
 
-        // تشغيل الوظيفة عند تحميل النافذة
         window.onload = init;
     </script>
 </body>
