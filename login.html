@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log In | BlackFlower</title>
-    <!-- مكتبة الأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -80,7 +79,6 @@
         }
         .btn-login:hover { background-color: var(--pure-black); color: var(--pure-white); }
         
-        /* تنسيق أزرار السوشيال ميديا */
         .divider {
             margin: 25px 0;
             display: flex;
@@ -114,7 +112,18 @@
         .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
         .social-btn.linkedin:hover { border-color: var(--linkedin); color: var(--linkedin); }
 
-        #status-msg { margin-top: 15px; font-size: 11px; color: #ff4444; display: none; text-transform: uppercase; }
+        /* تعديل تنسيق رسالة الخطأ لتكون واضحة داخل الصفحة */
+        #status-msg { 
+            margin-top: 15px; 
+            font-size: 10px; 
+            color: #ff4444; 
+            display: none; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            border: 1px solid #300;
+            padding: 10px;
+            background: rgba(255, 0, 0, 0.05);
+        }
         
         .footer-link { margin-top: 25px; font-size: 11px; color: var(--light-gray); }
         .footer-link a { color: var(--pure-white); text-decoration: none; border-bottom: 1px solid white; }
@@ -161,14 +170,23 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        const statusMsg = document.getElementById('status-msg');
+
+        function showMessage(text, isError = true) {
+            statusMsg.innerText = text.toUpperCase();
+            statusMsg.style.display = "block";
+            statusMsg.style.color = isError ? "#ff4444" : "#00ff00";
+            statusMsg.style.borderColor = isError ? "#300" : "#030";
+        }
+
         // تسجيل الدخول بالبريد والباسورد
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
-            const statusMsg = document.getElementById('status-msg');
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
 
+            statusMsg.style.display = "none";
             btn.innerText = 'VERIFYING...';
             btn.disabled = true;
 
@@ -176,7 +194,6 @@
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
 
-                // التحقق من وجوده في جدول البيانات الخاص
                 const { data: profile } = await _supabase
                     .from('blackflowerproart')
                     .select('user_id')
@@ -185,13 +202,12 @@
 
                 if (!profile) {
                     await _supabase.auth.signOut();
-                    throw new Error("Account not found in our database. Please register.");
+                    throw new Error("Account not registered. Please sign up first.");
                 }
 
                 window.location.href = "home.html";
             } catch (err) {
-                statusMsg.innerText = err.message.toUpperCase();
-                statusMsg.style.display = "block";
+                showMessage(err.message);
                 btn.innerText = 'SIGN IN';
                 btn.disabled = false;
             }
@@ -208,11 +224,11 @@
                 });
                 if (error) throw error;
             } catch (err) {
-                alert(err.message);
+                showMessage(err.message);
             }
         }
 
-        // كود التحقق عند العودة من السوشيال ميديا
+        // كود التحقق عند العودة من السوشيال ميديا (بدون alert)
         async function checkSession() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) {
@@ -223,16 +239,17 @@
                     .single();
 
                 if (!profile) {
-                    alert("ACCOUNT NOT REGISTERED. REDIRECTING TO SIGN UP...");
+                    showMessage("Account not registered. Redirecting to sign up...");
                     await _supabase.auth.signOut();
-                    window.location.href = "rigister.html";
+                    setTimeout(() => {
+                        window.location.href = "rigister.html";
+                    }, 2000); // إعطاء وقت للمستخدم لقراءة الرسالة
                 } else {
                     window.location.href = "home.html";
                 }
             }
         }
 
-        // تشغيل التحقق التلقائي عند تحميل الصفحة
         window.onload = checkSession;
     </script>
 </body>
