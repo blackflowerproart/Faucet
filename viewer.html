@@ -25,9 +25,9 @@
 
     <div id="startOverlay">
         <div class="modal-box">
-            <h3 style="letter-spacing: 2px;">READY TO START?</h3>
-            <p style="font-size: 11px; color: #888;">Click below to initialize the safe viewer and start the timer.</p>
-            <button class="btn-main" onclick="startViewing()">START AD</button>
+            <h3 style="letter-spacing: 2px;">START AD VIEW</h3>
+            <p style="font-size: 11px; color: #888;">To count your visit on Rotate4All and earn BFP, please click start.</p>
+            <button class="btn-main" onclick="startSystem()">START NOW</button>
         </div>
     </div>
 
@@ -36,7 +36,7 @@
             <img src="wight.jpg" alt="Logo" class="logo-mini">
             <span class="brand-name">The Black Flower</span>
         </div>
-        <div id="timerBox" class="timer-display">Waiting...</div>
+        <div id="timerBox" class="timer-display">Ready...</div>
     </div>
 
     <div class="viewport">
@@ -53,9 +53,9 @@
 
     <div id="successModal" style="display: none;">
         <div class="modal-box">
-            <h2 style="letter-spacing: 4px;">COMPLETED</h2>
+            <h2 style="letter-spacing: 4px;">SUCCESS!</h2>
             <p id="rewardTxt" style="color: #888; font-size: 12px; margin-bottom:25px;"></p>
-            <button class="btn-main" onclick="exitViewer()">CONTINUE</button>
+            <button class="btn-main" onclick="goToHome()">BACK TO DASHBOARD</button>
         </div>
     </div>
 
@@ -67,35 +67,35 @@
         const adData = JSON.parse(localStorage.getItem('active_ad'));
         if (!adData) window.location.href = 'home.html';
 
-        let ptpWindow;
+        let r4aWindow;
 
-        function startViewing() {
-            // 1. فتح رابط Rotate4All (سيسمح المتصفح بهذا لأنه ناتج عن نقرة)
-            const ptpUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
-            ptpWindow = window.open(ptpUrl, '_blank', 'width=400,height=400');
+        function startSystem() {
+            // فتح Rotate4All في نافذة منبثقة واضحة لضمان احتساب PTP
+            const r4aUrl = "https://www.rotate4all.com/promote/pmq0c6xfa7wk";
+            r4aWindow = window.open(r4aUrl, 'Rotate4All', 'width=1000,height=700');
             
-            // إخفاء طبقة البدء وتشغيل الإعلان
             document.getElementById('startOverlay').style.display = 'none';
             document.getElementById('targetFrame').src = adData.url;
-            runTimer();
+            
+            startTimer();
         }
 
-        function runTimer() {
-            let timeLeft = parseInt(adData.seconds);
-            const countdown = setInterval(() => {
-                if (timeLeft > 0) {
-                    document.getElementById('timerBox').innerText = `${timeLeft}s REMAINING`;
-                    timeLeft--;
+        function startTimer() {
+            let sec = parseInt(adData.seconds);
+            const interval = setInterval(() => {
+                if (sec > 0) {
+                    document.getElementById('timerBox').innerText = `${sec}s REMAINING`;
+                    sec--;
                 } else {
-                    clearInterval(countdown);
-                    document.getElementById('timerBox').innerText = "DONE";
+                    clearInterval(interval);
+                    document.getElementById('timerBox').innerText = "VERIFYING...";
                     document.getElementById('captchaOverlay').style.display = 'flex';
                     
-                    const checkCaptcha = setInterval(() => {
+                    const check = setInterval(() => {
                         if (window.mtcaptcha && mtcaptcha.getVerifiedToken()) {
-                            const btn = document.getElementById('confirmBtn');
-                            btn.disabled = false;
-                            clearInterval(checkCaptcha);
+                            const b = document.getElementById('confirmBtn');
+                            b.disabled = false;
+                            clearInterval(check);
                         }
                     }, 500);
                 }
@@ -103,57 +103,62 @@
         }
 
         async function processReward() {
-            const confirmBtn = document.getElementById('confirmBtn');
-            confirmBtn.innerText = "SAVING...";
-            confirmBtn.disabled = true;
+            const btn = document.getElementById('confirmBtn');
+            btn.innerText = "UPDATING...";
+            btn.disabled = true;
 
             try {
-                const { data: { user } } = await _supabase.auth.getUser();
-                if (!user) throw new Error("User not logged in");
+                // التأكد من الحصول على الجلسة الحالية
+                const { data: { session } } = await _supabase.auth.getSession();
+                if (!session) throw "No Session Found";
+                
+                const uid = session.user.id;
 
-                // تحديث الرصيد باستخدام rpc أو استعلام مباشر
-                // ملاحظة: قمنا باستخدام parseFloat لضمان معاملة الأرقام بشكل صحيح
-                const { data: profile } = await _supabase
+                // 1. جلب الرصيد الحالي بدقة
+                const { data: profile, error: fetchErr } = await _supabase
                     .from('blackflowerproart')
                     .select('balance')
-                    .eq('user_id', user.id)
-                    .single();
+                    .eq('user_id', uid)
+                    .maybeSingle();
 
-                const currentBalance = parseFloat(profile?.balance || 0);
-                const rewardAmount = parseFloat(adData.reward);
+                if (fetchErr) throw fetchErr;
 
-                const { error: updateError } = await _supabase
+                const oldBalance = parseFloat(profile?.balance || 0);
+                const reward = parseFloat(adData.reward);
+                const newBalance = oldBalance + reward;
+
+                // 2. تحديث الرصيد (مهم: يجب أن يكون حقل balance رقمياً في Supabase)
+                const { error: upErr } = await _supabase
                     .from('blackflowerproart')
-                    .update({ balance: currentBalance + rewardAmount })
-                    .eq('user_id', user.id);
+                    .update({ balance: newBalance })
+                    .eq('user_id', uid);
 
-                if (updateError) throw updateError;
+                if (upErr) throw upErr;
 
-                // تسجيل الزيارة لتجميد الإعلان
-                await _supabase.from('ad_views').insert([{ 
-                    user_id: user.id, 
-                    ad_id: adData.id,
-                    viewed_at: new Date().toISOString() 
-                }]);
+                // 3. تجميد الإعلان لـ 24 ساعة عبر إضافة سجل مشاهدة
+                await _supabase.from('ad_views').insert([
+                    { user_id: uid, ad_id: adData.id, viewed_at: new Date().toISOString() }
+                ]);
 
-                // إغلاق نافذة Rotate4All
-                if (ptpWindow) ptpWindow.close();
+                // 4. إغلاق نافذة Rotate4All بنجاح
+                if (r4aWindow) r4aWindow.close();
 
                 document.getElementById('captchaOverlay').style.display = 'none';
-                document.getElementById('rewardTxt').innerText = `REWARD: +${rewardAmount} BFP`;
+                document.getElementById('rewardTxt').innerText = `+${reward} BFP Added to your account!`;
                 document.getElementById('successModal').style.display = 'flex';
 
             } catch (err) {
-                console.error(err);
-                alert("Error updating balance: " + err.message);
-                confirmBtn.disabled = false;
-                confirmBtn.innerText = "CONFIRM";
+                console.error("Critical Error:", err);
+                alert("Database Sync Error. Please check your connection.");
+                btn.disabled = false;
+                btn.innerText = "CONFIRM";
             }
         }
 
-        function exitViewer() {
+        function goToHome() {
             localStorage.removeItem('active_ad');
-            window.location.href = 'home.html';
+            // إجبار المتصفح على تحديث صفحة home لجلب البيانات الجديدة
+            window.location.replace('home.html');
         }
     </script>
 </body>
