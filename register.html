@@ -46,6 +46,7 @@
             border: 1px solid var(--pure-white);
             filter: grayscale(100%);
             margin-bottom: 15px;
+            object-fit: cover;
         }
 
         .brand-title {
@@ -107,7 +108,7 @@
 
         .social-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr); /* عمودين بعد حذف تويتر */
+            grid-template-columns: repeat(2, 1fr); 
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -122,14 +123,12 @@
             font-size: 16px;
         }
 
-        /* تأثير الـ Hover الموحد */
         .social-btn:hover {
             font-family: 'Times New Roman', serif;
             font-size: 20px;
             transform: translateY(-2px);
         }
 
-        /* ألوان الهوية لكل منصة عند التمرير */
         .social-btn.google:hover { border-color: var(--google); color: var(--google); }
         .social-btn.discord:hover { border-color: var(--discord); color: var(--discord); }
         .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
@@ -151,7 +150,6 @@
         
         <h2>Create Account</h2>
 
-        <!-- حقول الإدخال -->
         <div class="input-group">
             <label>Name</label>
             <input type="text" id="username" placeholder="YOUR NAME">
@@ -169,7 +167,6 @@
         
         <div class="divider"><span>OR CONTINUE WITH</span></div>
 
-        <!-- شبكة أزرار التواصل الاجتماعي (تمت إزالة تويتر) -->
         <div class="social-grid">
             <button class="social-btn google" onclick="socialLogin('google')" title="Google"><i class="fab fa-google"></i></button>
             <button class="social-btn discord" onclick="socialLogin('discord')" title="Discord"><i class="fab fa-discord"></i></button>
@@ -189,13 +186,16 @@
         
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // رابط المسار الخاص بموقعك على GitHub
+        const BASE_URL = 'https://blackflowerproart.github.io/Faucet';
+
         // تسجيل الدخول الاجتماعي
         async function socialLogin(provider) {
             try {
                 const { error } = await _supabase.auth.signInWithOAuth({
                     provider: provider,
                     options: {
-                        redirectTo: window.location.origin + '/success.html' 
+                        redirectTo: `${BASE_URL}/home.html` 
                     }
                 });
                 if (error) throw error;
@@ -205,58 +205,54 @@
         }
 
         // معالجة التسجيل العادي
-     async function handleRegister() {
-    const btn = document.getElementById('submitBtn');
-    const statusMsg = document.getElementById('status-msg');
-    const name = document.getElementById('username').value.trim();
-    const email = document.getElementById('email').value.trim();
-    const password = document.getElementById('password').value;
+        async function handleRegister() {
+            const btn = document.getElementById('submitBtn');
+            const statusMsg = document.getElementById('status-msg');
+            const name = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
 
-    if (!name || !email || !password) {
-        alert("Please fill all fields");
-        return;
-    }
+            if (!name || !email || !password) {
+                alert("All fields are required!");
+                return;
+            }
 
-    btn.innerText = 'CREATING ACCOUNT...';
-    btn.disabled = true;
+            btn.innerText = 'PROCESSING...';
+            btn.disabled = true;
 
-    try {
-        // 1. تسجيل المستخدم في Supabase Auth
-        const { data, error } = await _supabase.auth.signUp({
-            email: email,
-            password: password
-        });
+            try {
+                const { data, error } = await _supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        // تعديل رابط التأكيد ليتناسب مع GitHub Pages
+                        emailRedirectTo: `${BASE_URL}/success.html`
+                    }
+                });
 
-        if (error) throw error;
+                if (error) throw error;
 
-        if (data.user) {
-            // 2. إدخال البيانات الإضافية في جدول blackflowerproart
-            const { error: insertError } = await _supabase.from('blackflowerproart').insert([
-                { 
-                    user_id: data.user.id, 
-                    username: name, 
-                    balance: 0.00 // الرصيد مصفر افتراضياً
+                if (data.user) {
+                    // إضافة المستخدم لقاعدة البيانات
+                    const { error: dbError } = await _supabase.from('blackflowerproart').insert([
+                        { user_id: data.user.id, username: name, balance: 0.00 }
+                    ]);
+
+                    if (dbError) console.error("Database Insert Error:", dbError);
+
+                    statusMsg.style.color = "#00ff88";
+                    statusMsg.style.display = "block";
+                    statusMsg.innerText = "CHECK YOUR EMAIL TO CONFIRM!";
+                    
+                    // إذا كان خيار Confirm Email مغلق في سوبابيز، سيتم التوجيه فوراً:
+                    // window.location.href = "home.html";
                 }
-            ]);
-
-            if (insertError) throw insertError;
-
-            // 3. إظهار رسالة نجاح
-            statusMsg.style.color = "#00ff88";
-            statusMsg.style.display = "block";
-            statusMsg.innerText = "SUCCESS! REDIRECTING TO HOME...";
-
-            // 4. الانتقال لصفحة الهوم فوراً
-            setTimeout(() => {
-                window.location.href = "home.html"; 
-            }, 1000);
+            } catch (err) {
+                alert("Error: " + err.message);
+                btn.innerText = 'CREATE ACCOUNT';
+                btn.disabled = false;
+            }
         }
-    } catch (err) {
-        alert("Registration Error: " + err.message);
-        btn.innerText = 'CREATE ACCOUNT';
-        btn.disabled = false;
-    }
-}
     </script>
 </body>
 </html>
