@@ -168,7 +168,18 @@
         <div class="social-grid">
             <button class="social-btn google" onclick="socialLogin('google')" title="Google"><i class="fab fa-google"></i></button>
             <button class="social-btn discord" onclick="socialLogin('discord')" title="Discord"><i class="fab fa-discord"></i></button>
-            <button class="social-btn twitter" onclick="socialLogin('twitter')" title="Twitter (X)"><i class="fab fa-x-twitter"></i></button>
+            /* اللون الافتراضي لزر تويتر ليظهر على الخلفية السوداء */
+.social-btn.twitter {
+    color: var(--light-gray); /* لون رمادي فاتح ليظهر بوضوح */
+    border-color: #333;
+}
+
+/* لون الـ Hover عند تمرير الماوس */
+.social-btn.twitter:hover {
+    border-color: var(--pure-white); /* يصبح الإطار أبيض */
+    color: var(--pure-white);        /* يصبح الشعار أبيض ناصع */
+    background-color: #111;          /* خلفية رمادية غامقة جداً للتمييز */
+}
             <button class="social-btn facebook" onclick="socialLogin('facebook')" title="Facebook"><i class="fab fa-facebook-f"></i></button>
             <button class="social-btn linkedin" onclick="socialLogin('linkedin')" title="LinkedIn"><i class="fab fa-linkedin-in"></i></button>
         </div>
