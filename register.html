@@ -189,25 +189,23 @@
                 if (authData.user) {
                     const autoUsername = email.split('@')[0];
                     btn.innerText = "CREATING PROFILE...";
+// داخل دالة التسجيل بعد التأكد من إنشاء المستخدم بنجاح:
+const { error: dbError } = await _supabase
+    .from('blackflowerproart')
+    .insert([
+        { 
+            user_id: authData.user.id, // تأكد أن الاسم هنا user_id
+            username: email.split('@')[0], 
+            balance: 0 
+        }
+    ]);
 
-                    // 2. إدخال البيانات في الجدول الجديد (blackflowerproart)
-                    const { error: dbError } = await _supabase
-                        .from('blackflowerproart')
-                        .insert([
-                            { 
-                                user_id: authData.user.id, 
-                                username: autoUsername, 
-                                balance: 0 
-                            }
-                        ]);
-                    
-                    if (dbError) {
-                        alert("DATABASE ERROR: " + dbError.message);
-                        throw dbError;
-                    }
-                    
-                    window.location.replace("home.html");
-                }
+if (dbError) {
+    console.error("الخطأ الحقيقي هو:", dbError);
+    alert("فشل الحفظ: " + dbError.message);
+} else {
+    window.location.replace("home.html");
+}
             } catch (err) {
                 showAlert(err.message, "red");
                 btn.innerText = "REGISTER";
