@@ -1,50 +1,79 @@
-<div style="text-align: center; padding: 20px;">
-    <img src="wight.jpg" alt="Logo" style="width: 100px; height: auto;">
-    <h1 style="font-family: 'Times New Roman', Times, serif; margin: 0;">The Black Flower</h1>
-    <p style="font-family: Arial, sans-serif; font-size: 14px; color: gray; margin: 0;">Professional Art</p>
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <title>لوحة التحكم</title>
+    <style>
+        body { background-color: #000; color: #fff; font-family: Arial; text-align: center; margin: 0; padding-bottom: 50px; }
+        .header-section { padding: 30px; background: #111; border-bottom: 2px solid #28a745; margin-bottom: 30px; }
+        .balance-card { background: linear-gradient(45deg, #111, #222); padding: 25px; border-radius: 20px; border: 1px solid #28a745; display: inline-block; min-width: 280px; margin: 20px; }
+        .balance-card h3 { font-size: 1.5rem; color: #bbb; margin: 0; }
+        .balance-card span { font-size: 3rem; font-weight: bold; color: #28a745; }
+        .ads-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: auto; }
+        .ad-card { background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; transition: 0.3s; }
+        .ad-card:hover { border-color: #28a745; }
+        .ad-card h4 { font-size: 1.4rem; margin-bottom: 10px; }
+        .reward { color: #28a745; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; display: block; }
+        .btn-view { background: #28a745; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; }
+        .logout { color: #ff4444; background: none; border: 1px solid #ff4444; padding: 5px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    </style>
 </head>
 <body>
-    <!-- الشعار هنا -->
-    <div id="user-info" style="text-align: center; border: 1px solid #ddd; padding: 10px;">
-        <h3>مرحباً: <span id="display-name">جاري التحميل...</span></h3>
-        <p>رصيدك: <span id="balance">0.00</span>$</p>
+
+    <div class="header-section">
+        <img src="wight.jpg" width="80">
+        <h1 style="font-family: 'Times New Roman'; margin: 5px 0;">The Black Flower</h1>
+        <p style="font-family: Arial; font-weight: bold; color: #888;">Professional art</p>
+        <button class="logout" onclick="_supabase.auth.signOut().then(()=>location.href='index.html')">خروج</button>
     </div>
 
-    <div id="ads-section" style="margin-top: 20px;">
-        <h4>الإعلانات المتاحة (غير المشاهدة في آخر 24 ساعة):</h4>
-        <div id="ads-list"></div>
+    <div class="balance-card">
+        <h3 id="user-welcome">مرحباً...</h3>
+        <span>$</span><span id="user-balance">0.00</span>
+    </div>
+
+    <h2 style="margin-top: 40px;">الإعلانات المتاحة لك الآن</h2>
+    <div id="ads-list" class="ads-grid">
+        <p>جاري التحقق من الإعلانات الجديدة...</p>
     </div>
 
     <script>
-        const supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function loadDashboard() {
-            const { data: { user } } = await supabase.auth.getUser();
+        async function loadData() {
+            const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
 
-            // 1. جلب بيانات البروفايل (الاسم)
-            let { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
-            document.getElementById('display-name').innerText = profile.username;
+            const { data: profile } = await _supabase.from('profiles').select('username').eq('id', user.id).single();
+            const { data: wallet } = await _supabase.from('wallets').select('balance').eq('id', user.id).single();
 
-            // 2. جلب الرصيد
-            let { data: wallet } = await supabase.from('wallets').select('balance').eq('id', user.id).single();
-            document.getElementById('balance').innerText = wallet.balance;
+            document.getElementById('user-welcome').innerText = "مرحباً: " + (profile ? profile.username : "User");
+            document.getElementById('user-balance').innerText = wallet ? wallet.balance : "0.00";
 
-            // 3. جلب الإعلانات غير المشاهدة (المنطق الذي كتبناه في SQL)
-            const { data: ads, error } = await supabase.rpc('get_available_ads'); // أو استخدام استعلام عادي
-            // ملاحظة: يفضل استخدام استعلام الفلترة هنا أو Function (RPC) في Supabase
-            
-            let adsContainer = document.getElementById('ads-list');
-            // عرض الإعلانات هنا عبر Loop
+            // جلب الإعلانات
+            const { data: ads } = await _supabase.from('ads').select('*');
+            const list = document.getElementById('ads-list');
+            list.innerHTML = "";
+
+            if(ads && ads.length > 0) {
+                ads.forEach(ad => {
+                    list.innerHTML += `
+                        <div class="ad-card">
+                            <h4>${ad.title}</h4>
+                            <span class="reward">اربح ${ad.reward_amount}$</span>
+                            <button class="btn-view" onclick="alert('سيتم فتح الإعلان...')">شاهد الآن</button>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = "<p>لا توجد إعلانات حالياً.</p>";
+            }
         }
-
-        loadDashboard();
+        loadData();
     </script>
 </body>
 </html>
-</div>
