@@ -6,59 +6,277 @@
     <title>Dashboard | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --bg-black: #050505; --card-black: #0a0a0a; --text-white: #f0f0f0; --sidebar-width: 260px; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-black); color: var(--text-white); display: flex; min-height: 100vh; visibility: hidden; }
-        .sidebar { width: var(--sidebar-width); background-color: var(--card-black); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 30px 20px; position: fixed; height: 100vh; box-sizing: border-box; }
-        .main-content { margin-left: var(--sidebar-width); padding: 40px; width: calc(100% - var(--sidebar-width)); }
-        .balance-box { background-color: #111; padding: 15px; border: 1px solid #333; text-align: center; margin-top: 20px; }
-        .nav-btn { background: transparent; border: 1px solid #333; color: white; padding: 12px; margin-top: 10px; cursor: pointer; width: 100%; text-transform: uppercase; font-size: 0.7rem; }
+        :root {
+            --bg-black: #050505;
+            --card-black: #0a0a0a;
+            --text-white: #f0f0f0;
+            --accent: #ffffff;
+            --dim-gray: #888888;
+            --sidebar-width: 260px;
+            --success: #00ff00;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-white);
+            display: flex;
+            min-height: 100vh;
+            visibility: hidden; /* تظهر الصفحة فقط بعد التأكد من الدخول */
+        }
+
+        /* القائمة الجانبية */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--card-black);
+            border-right: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            position: fixed;
+            height: 100vh;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .logo-small {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: block;
+            border: 1px solid #333;
+            object-fit: cover;
+        }
+
+        .brand {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+
+        .balance-box {
+            background-color: #111;
+            padding: 15px;
+            border: 1px solid #333;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .user-label { color: var(--dim-gray); font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .balance-val { font-size: 1.4rem; font-weight: bold; color: var(--accent); }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--text-white);
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            width: 100%;
+            transition: 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .nav-btn:hover { background-color: var(--accent); color: #000; }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 40px;
+            width: calc(100% - var(--sidebar-width));
+            box-sizing: border-box;
+        }
+
+        .section-header {
+            border-left: 3px solid #fff;
+            padding-left: 15px;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 { font-size: 0.9rem; letter-spacing: 3px; text-transform: uppercase; margin: 0; }
+
+        .ad-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .ad-card {
+            background: var(--card-black);
+            border: 1px solid #222;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .ad-card:hover { border-color: #fff; transform: translateY(-2px); }
+        .ad-info b { display: block; font-size: 0.9rem; margin-bottom: 5px; }
+        .ad-info span { font-size: 0.7rem; color: var(--dim-gray); }
+        .ad-reward { text-align: right; }
+        .reward-amount { color: var(--success); font-weight: bold; display: block; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid #222; }
+            .main-content { margin-left: 0; width: 100%; padding: 20px; }
+        }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
-        <img src="wight.jpg" style="width:70px; border-radius:50%; margin: 0 auto; display:block;">
-        <h1 style="font-family:serif; font-size:1rem; text-align:center; letter-spacing:2px;">THE BLACK FLOWER</h1>
+        <img src="wight.jpg" alt="Logo" class="logo-small">
+        <h1 class="brand">The Black Flower</h1>
+        
         <div class="balance-box">
-            <span id="user-name" style="font-size:0.7rem; color:#888;">LOADING...</span>
-            <div style="font-size:1.2rem;"><span id="bfp-val">0</span> BFP</div>
+            <span class="user-label" id="display-username">Checking...</span>
+            <div class="balance-val"><span id="user-balance">0</span> BFP</div>
         </div>
-        <button class="nav-btn" style="margin-top:auto; border-color:red; color:red;" onclick="logout()">Logout</button>
+
+        <button class="nav-btn" onclick="window.location.href='AdControlManeger.html'">Create Ad</button>
+        <button class="nav-btn" style="margin-top: auto; border-color: #551111; color: #ff4444;" onclick="handleLogout()">Sign Out</button>
     </div>
+
     <div class="main-content">
-        <h2 style="border-left:3px solid #fff; padding-left:10px; font-size:0.9rem; letter-spacing:2px;">DASHBOARD</h2>
-        <div id="ads-list" style="margin-top:20px; color:#444;">Checking for available tasks...</div>
+        <div class="section-header">
+            <h2>Available Tasks</h2>
+        </div>
+        
+        <div id="ads-container" class="ad-grid">
+            </div>
     </div>
 
     <script>
+        // إعدادات Supabase
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function init() {
-            // مراقبة الجلسة (لجوجل والعادي)
+        async function startApp() {
+            // 1. مراقبة حالة الدخول (سواء يدوي أو جوجل)
             _supabase.auth.onAuthStateChange(async (event, session) => {
                 if (session) {
                     const user = session.user;
-                    let { data: profile } = await _supabase.from('blackflowerproart').select('*').eq('user_id', user.id).single();
+                    
+                    try {
+                        // 2. جلب بيانات المستخدم من الجدول
+                        let { data: profile, error } = await _supabase
+                            .from('blackflowerproart')
+                            .select('*')
+                            .eq('user_id', user.id)
+                            .single();
 
-                    // إذا كان مستخدم جوجل جديد غير موجود في قاعدة البيانات
-                    if (!profile) {
-                        const name = user.user_metadata.full_name || user.email.split('@')[0];
-                        const { data: newP } = await _supabase.from('blackflowerproart').insert([{ user_id: user.id, username: name, balance: 0 }]).select().single();
-                        profile = newP;
+                        // 3. إذا كان المستخدم غير موجود (حالة دخول جوجل لأول مرة)
+                        if (!profile) {
+                            const nameFromMeta = user.user_metadata.full_name || user.email.split('@')[0];
+                            const { data: newProfile, error: insError } = await _supabase
+                                .from('blackflowerproart')
+                                .insert([{ user_id: user.id, username: nameFromMeta, balance: 0 }])
+                                .select().single();
+                            
+                            if (insError) throw insError;
+                            profile = newProfile;
+                        }
+
+                        // 4. تحديث الواجهة بالبيانات
+                        document.getElementById('display-username').innerText = profile.username.toUpperCase();
+                        document.getElementById('user-balance').innerText = profile.balance.toLocaleString();
+                        
+                        // إظهار الصفحة
+                        document.body.style.visibility = "visible";
+
+                        // 5. تحميل الإعلانات المتاحة فقط
+                        await fetchAvailableAds(user.id);
+
+                    } catch (err) {
+                        console.error("Error:", err.message);
                     }
-
-                    document.getElementById('user-name').innerText = profile.username.toUpperCase();
-                    document.getElementById('bfp-val').innerText = profile.balance;
-                    document.body.style.visibility = "visible";
                 } else {
+                    // لا يوجد جلسة، العودة لصفحة الدخول
                     window.location.replace("index.html");
                 }
             });
         }
 
-        async function logout() { await _supabase.auth.signOut(); window.location.replace("index.html"); }
-        window.onload = init;
+        async function fetchAvailableAds(userId) {
+            const container = document.getElementById('ads-container');
+            const now = new Date().toISOString();
+            // وقت التجميد (آخر 24 ساعة)
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+            try {
+                // جلب كل الإعلانات التي لم تنتهِ صلاحيتها
+                const { data: allAds } = await _supabase
+                    .from('ads')
+                    .select('*')
+                    .gt('expiry_at', now);
+
+                // جلب الإعلانات التي شاهدها المستخدم بالفعل في آخر 24 ساعة (المجمدة)
+                const { data: viewedAds } = await _supabase
+                    .from('ad_views')
+                    .select('ad_id')
+                    .eq('user_id', userId)
+                    .gt('viewed_at', oneDayAgo);
+
+                const viewedIds = viewedAds ? viewedAds.map(v => v.ad_id) : [];
+
+                // تصفية الإعلانات: عرض فقط التي لم يشاهدها المستخدم
+                const available = allAds ? allAds.filter(ad => !viewedIds.includes(ad.id)) : [];
+
+                if (available.length === 0) {
+                    container.innerHTML = '<p style="color:#444; font-size:0.8rem;">No tasks available right now. Check back later.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                available.forEach(ad => {
+                    const reward = ad.duration >= 20 ? 15 : 8; // مثال على منطق الجوائز
+                    const card = document.createElement('div');
+                    card.className = 'ad-card';
+                    card.onclick = () => {
+                        localStorage.setItem('active_ad', JSON.stringify({
+                            id: ad.id,
+                            url: ad.url,
+                            reward: reward,
+                            seconds: ad.duration
+                        }));
+                        window.location.href = 'viewer.html';
+                    };
+
+                    card.innerHTML = `
+                        <div class="ad-info">
+                            <b>${ad.title}</b>
+                            <span>${ad.duration} Seconds duration</span>
+                        </div>
+                        <div class="ad-reward">
+                            <span class="reward-amount">+${reward} BFP</span>
+                            <span style="font-size:0.6rem; color:#555;">AVAILABLE</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                container.innerHTML = '<p style="color:red;">Error loading tasks.</p>';
+            }
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            window.location.replace("index.html");
+        }
+
+        // تشغيل الكود عند التحميل
+        window.onload = startApp;
     </script>
 </body>
 </html>
