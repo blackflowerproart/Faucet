@@ -23,7 +23,7 @@
             color: var(--text-white);
             display: flex;
             min-height: 100vh;
-            visibility: hidden; /* تظهر الصفحة فقط بعد التأكد من الدخول */
+            visibility: hidden; /* مخفية حتى التأكد من الجلسة */
         }
 
         /* القائمة الجانبية */
@@ -121,7 +121,6 @@
         .ad-card:hover { border-color: #fff; transform: translateY(-2px); }
         .ad-info b { display: block; font-size: 0.9rem; margin-bottom: 5px; }
         .ad-info span { font-size: 0.7rem; color: var(--dim-gray); }
-        .ad-reward { text-align: right; }
         .reward-amount { color: var(--success); font-weight: bold; display: block; }
 
         @media (max-width: 768px) {
@@ -138,7 +137,7 @@
         <h1 class="brand">The Black Flower</h1>
         
         <div class="balance-box">
-            <span class="user-label" id="display-username">Checking...</span>
+            <span class="user-label" id="display-username">VERIFYING...</span>
             <div class="balance-val"><span id="user-balance">0</span> BFP</div>
         </div>
 
@@ -148,7 +147,7 @@
 
     <div class="main-content">
         <div class="section-header">
-            <h2>Available Tasks</h2>
+            <h2>Available Campaigns</h2>
         </div>
         
         <div id="ads-container" class="ad-grid">
@@ -156,90 +155,92 @@
     </div>
 
     <script>
-        // إعدادات Supabase
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function startApp() {
-            // 1. مراقبة حالة الدخول (سواء يدوي أو جوجل)
+        async function initDashboard() {
+            // مراقبة حالة الدخول فوراً وبشكل مستمر
             _supabase.auth.onAuthStateChange(async (event, session) => {
                 if (session) {
                     const user = session.user;
                     
                     try {
-                        // 2. جلب بيانات المستخدم من الجدول
+                        // 1. محاولة جلب الملف الشخصي
                         let { data: profile, error } = await _supabase
                             .from('blackflowerproart')
                             .select('*')
                             .eq('user_id', user.id)
                             .single();
 
-                        // 3. إذا كان المستخدم غير موجود (حالة دخول جوجل لأول مرة)
+                        // 2. إذا كان المستخدم جديداً (سواء سجل بجوجل أو يدوي ولم يُنشأ له سجل)
                         if (!profile) {
-                            const nameFromMeta = user.user_metadata.full_name || user.email.split('@')[0];
+                            // استخلاص اسم المستخدم من البريد (مثلاً: ahmed من ahmed@gmail.com)
+                            const autoUsername = user.email.split('@')[0];
+                            
                             const { data: newProfile, error: insError } = await _supabase
                                 .from('blackflowerproart')
-                                .insert([{ user_id: user.id, username: nameFromMeta, balance: 0 }])
+                                .insert([{ 
+                                    user_id: user.id, 
+                                    username: autoUsername, 
+                                    balance: 0 
+                                }])
                                 .select().single();
                             
                             if (insError) throw insError;
                             profile = newProfile;
                         }
 
-                        // 4. تحديث الواجهة بالبيانات
+                        // 3. تحديث الواجهة بالاسم المستخلص والرصيد
                         document.getElementById('display-username').innerText = profile.username.toUpperCase();
                         document.getElementById('user-balance').innerText = profile.balance.toLocaleString();
                         
-                        // إظهار الصفحة
+                        // إظهار الصفحة بعد تجهيز البيانات
                         document.body.style.visibility = "visible";
 
-                        // 5. تحميل الإعلانات المتاحة فقط
-                        await fetchAvailableAds(user.id);
+                        // 4. تحميل الإعلانات المتاحة (التي لم يشاهدها خلال 24 ساعة)
+                        await loadAds(user.id);
 
                     } catch (err) {
-                        console.error("Error:", err.message);
+                        console.error("Dashboard Error:", err.message);
                     }
                 } else {
-                    // لا يوجد جلسة، العودة لصفحة الدخول
+                    // إذا لم تكن هناك جلسة، توجه لصفحة الدخول فوراً وامنع الرجوع
                     window.location.replace("index.html");
                 }
             });
         }
 
-        async function fetchAvailableAds(userId) {
+        async function loadAds(userId) {
             const container = document.getElementById('ads-container');
             const now = new Date().toISOString();
-            // وقت التجميد (آخر 24 ساعة)
-            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            // تحديد وقت التجميد (آخر 24 ساعة)
+            const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
             try {
-                // جلب كل الإعلانات التي لم تنتهِ صلاحيتها
-                const { data: allAds } = await _supabase
-                    .from('ads')
-                    .select('*')
-                    .gt('expiry_at', now);
-
-                // جلب الإعلانات التي شاهدها المستخدم بالفعل في آخر 24 ساعة (المجمدة)
-                const { data: viewedAds } = await _supabase
+                // جلب الإعلانات النشطة
+                const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
+                
+                // جلب المشاهدات الخاصة بهذا المستخدم في آخر 24 ساعة
+                const { data: views } = await _supabase
                     .from('ad_views')
                     .select('ad_id')
                     .eq('user_id', userId)
-                    .gt('viewed_at', oneDayAgo);
+                    .gt('viewed_at', twentyFourHoursAgo);
 
-                const viewedIds = viewedAds ? viewedAds.map(v => v.ad_id) : [];
+                const viewedIds = views ? views.map(v => v.ad_id) : [];
 
-                // تصفية الإعلانات: عرض فقط التي لم يشاهدها المستخدم
-                const available = allAds ? allAds.filter(ad => !viewedIds.includes(ad.id)) : [];
+                // تصفية الإعلانات: عرض التي لم يشاهدها المستخدم فقط
+                const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
 
-                if (available.length === 0) {
-                    container.innerHTML = '<p style="color:#444; font-size:0.8rem;">No tasks available right now. Check back later.</p>';
+                if (availableAds.length === 0) {
+                    container.innerHTML = '<p style="color:#444; font-size:0.8rem;">No ads available for now. Come back tomorrow!</p>';
                     return;
                 }
 
                 container.innerHTML = '';
-                available.forEach(ad => {
-                    const reward = ad.duration >= 20 ? 15 : 8; // مثال على منطق الجوائز
+                availableAds.forEach(ad => {
+                    const reward = ad.duration >= 20 ? 15 : 8; // منطق الجوائز
                     const card = document.createElement('div');
                     card.className = 'ad-card';
                     card.onclick = () => {
@@ -255,18 +256,17 @@
                     card.innerHTML = `
                         <div class="ad-info">
                             <b>${ad.title}</b>
-                            <span>${ad.duration} Seconds duration</span>
+                            <span>Reward: ${reward} BFP | Time: ${ad.duration}s</span>
                         </div>
-                        <div class="ad-reward">
+                        <div style="text-align:right">
                             <span class="reward-amount">+${reward} BFP</span>
-                            <span style="font-size:0.6rem; color:#555;">AVAILABLE</span>
                         </div>
                     `;
                     container.appendChild(card);
                 });
 
             } catch (err) {
-                container.innerHTML = '<p style="color:red;">Error loading tasks.</p>';
+                container.innerHTML = '<p style="color:red;">Failed to load campaigns.</p>';
             }
         }
 
@@ -275,8 +275,7 @@
             window.location.replace("index.html");
         }
 
-        // تشغيل الكود عند التحميل
-        window.onload = startApp;
+        window.onload = initDashboard;
     </script>
 </body>
 </html>
