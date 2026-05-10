@@ -1,154 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
+<div style="text-align: center; padding: 20px;">
+    <img src="wight.jpg" alt="Logo" style="width: 100px; height: auto;">
+    <h1 style="font-family: 'Times New Roman', Times, serif; margin: 0;">The Black Flower</h1>
+    <p style="font-family: Arial, sans-serif; font-size: 14px; color: gray; margin: 0;">Professional Art</p>
+    <!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Pro Art</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --pure-black: #000000;
-            --pure-white: #ffffff;
-            --dim-gray: #888888;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background-color: var(--pure-black);
-            color: var(--pure-white);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-        }
-
-        .hero-container {
-            text-align: center;
-            max-width: 500px;
-            padding: 20px;
-        }
-
-        .logo-main {
-            width: 120px;
-            height: 120px;
-            border: 1px solid var(--pure-white);
-            border-radius: 50%;
-            margin-bottom: 25px;
-            object-fit: cover;
-            animation: fadeIn 1.5s ease;
-        }
-
-        .brand-name {
-            font-family: 'Times New Roman', serif;
-            font-size: 2.5rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            margin: 0;
-            animation: slideUp 1s ease;
-        }
-
-        .tagline {
-            color: var(--dim-gray);
-            font-size: 0.8rem;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin: 15px 0 40px 0;
-            animation: slideUp 1.2s ease;
-        }
-
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            align-items: center;
-            animation: fadeIn 2s ease;
-        }
-
-        .btn {
-            width: 250px;
-            padding: 15px 30px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-primary {
-            background-color: var(--pure-white);
-            color: var(--pure-black);
-            border: 1px solid var(--pure-white);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--pure-black);
-            color: var(--pure-white);
-        }
-
-        .btn-secondary {
-            background-color: transparent;
-            color: var(--pure-white);
-            border: 1px solid #333;
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--pure-white);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 480px) {
-            .brand-name { font-size: 1.8rem; }
-            .btn { width: 200px; }
-        }
-    </style>
+    <title>The Black Flower - الرئيسية</title>
 </head>
 <body>
-
-    <div class="hero-container">
-        <img src="wight.jpg" alt="Black Flower Logo" class="logo-main">
-        <h1 class="brand-name">The Black Flower</h1>
-        <p class="tagline">Advertising & Digital Art</p>
-
-        <div class="button-group">
-            <a href="register.html" class="btn btn-primary">Start Earning</a>
-            
-            <a href="login.html" class="btn btn-secondary">Login</a>
-        </div>
+    <!-- الشعار هنا -->
+    <div style="text-align: center; margin-top: 50px;">
+        <button onclick="location.href='login.html'">Login</button>
+        <button onclick="location.href='register.html'" style="background-color: green; color: white;">Start Earning</button>
     </div>
-
-    <script>
-        // إعدادات Supabase للتحقق من الجلسة
-        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // إذا كان المستخدم مسجلاً بالفعل، لا داعي لبقائه هنا، انقله للهوم فوراً
-        async function checkAutoLogin() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session) {
-                window.location.replace("home.html");
-            }
-        }
-        
-        window.onload = checkAutoLogin;
-    </script>
 </body>
 </html>
+</div>
