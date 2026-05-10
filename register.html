@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | BlackFlower Pro Art</title>
+    <title>Join Us | The Black Flower</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --pure-black: #000000;
-            --pure-white: #ffffff;
-            --light-gray: #888888;
-            --google-red: #db4437;
+            --black: #000000;
+            --white: #ffffff;
+            --gray: #888888;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--pure-black);
-            color: var(--pure-white);
+            background-color: var(--black);
+            color: var(--white);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -26,25 +25,24 @@
             background: radial-gradient(circle at center, #111 0%, #000 100%);
         }
 
-        .register-container {
-            background-color: var(--pure-black);
+        .register-card {
+            background-color: var(--black);
             padding: 40px;
             width: 100%;
             max-width: 400px;
-            border: 1px solid var(--pure-white);
+            border: 1px solid var(--white);
             text-align: center;
             box-sizing: border-box;
         }
 
-        .logo-header img {
+        .logo-box img {
             width: 70px; height: 70px;
-            border: 1px solid var(--pure-white);
+            border: 1px solid var(--white);
             border-radius: 50%;
             margin-bottom: 15px;
-            object-fit: cover;
         }
 
-        .brand-title {
+        .title {
             font-family: 'Times New Roman', serif;
             font-size: 18px;
             letter-spacing: 3px;
@@ -52,39 +50,38 @@
             margin-bottom: 30px;
         }
 
-        .input-group {
+        .field {
             margin-bottom: 20px;
             text-align: left;
         }
 
-        .input-group label {
+        .field label {
             display: block;
             margin-bottom: 5px;
-            color: var(--light-gray);
+            color: var(--gray);
             font-size: 10px;
             text-transform: uppercase;
         }
 
-        .input-group input {
+        .field input {
             width: 100%;
             padding: 10px;
             border: none;
             border-bottom: 1px solid #333;
             background-color: transparent;
-            color: var(--pure-white);
+            color: var(--white);
             box-sizing: border-box;
             outline: none;
-            transition: 0.3s;
         }
 
-        .input-group input:focus { border-bottom: 1px solid var(--pure-white); }
+        .field input:focus { border-bottom: 1px solid var(--white); }
 
-        .btn-register {
+        .btn-submit {
             width: 100%;
             padding: 15px;
-            border: 1px solid var(--pure-white);
-            background-color: var(--pure-white);
-            color: var(--pure-black);
+            border: 1px solid var(--white);
+            background-color: var(--white);
+            color: var(--black);
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
@@ -93,12 +90,12 @@
             transition: 0.3s;
         }
 
-        .btn-register:disabled { background-color: #333; color: #888; border-color: #333; cursor: not-allowed; }
+        .btn-submit:disabled { background-color: #333; color: #666; border-color: #333; cursor: not-allowed; }
 
-        .google-btn {
+        .google-link {
             background: transparent;
             border: 1px solid #333;
-            color: var(--pure-white);
+            color: var(--white);
             padding: 12px;
             cursor: pointer;
             width: 100%;
@@ -109,69 +106,71 @@
             font-size: 11px;
             text-transform: uppercase;
             margin-top: 20px;
+            text-decoration: none;
         }
 
-        #msg { margin-top: 15px; font-size: 10px; text-transform: uppercase; display: none; }
+        #alert-box { margin-top: 15px; font-size: 10px; text-transform: uppercase; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="register-container">
-        <div class="logo-header">
+    <div class="register-card">
+        <div class="logo-box">
             <img src="wight.jpg" alt="Logo">
-            <div class="brand-title">The Black Flower</div>
+            <div class="title">The Black Flower</div>
         </div>
 
-        <form id="registerForm">
-            <div class="input-group">
+        <form id="regForm">
+            <div class="field">
                 <label>Email Address</label>
-                <input type="email" id="email" placeholder="EMAIL@EXAMPLE.COM" required>
+                <input type="email" id="email" required>
             </div>
-            <div class="input-group">
+            <div class="field">
                 <label>Password</label>
-                <input type="password" id="password" placeholder="MIN 6 CHARACTERS" required>
+                <input type="password" id="password" required>
             </div>
-            <div class="input-group">
+            <div class="field">
                 <label>Confirm Password</label>
-                <input type="password" id="confirmPassword" placeholder="REPEAT PASSWORD" required>
+                <input type="password" id="confirm" required>
             </div>
             
-            <button type="submit" id="submitBtn" class="btn-register">Create Account</button>
+            <button type="submit" id="mainBtn" class="btn-submit">Register</button>
         </form>
 
-        <button class="google-btn" onclick="socialLogin('google')">
+        <button class="google-link" onclick="loginWithGoogle()">
             <i class="fab fa-google"></i> Continue with Google
         </button>
 
-        <div id="msg"></div>
-        
+        <div id="alert-box"></div>
+
         <p style="margin-top: 25px; font-size: 10px; color: #555;">
-            ALREADY A MEMBER? <a href="login.html" style="color: white; text-decoration: none; border-bottom: 1px solid #555;">SIGN IN</a>
+            HAVE AN ACCOUNT? <a href="login.html" style="color: white; text-decoration: none; border-bottom: 1px solid #555;">LOG IN</a>
         </p>
     </div>
 
     <script>
-        // إعدادات الربط مع المشروع
+        // تكوين Supabase
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // منع الوصول إذا كان المستخدم مسجلاً بالفعل
-        async function checkSession() {
+        // مراقبة الجلسة
+        async function checkStatus() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) window.location.replace("home.html");
         }
-        checkSession();
+        checkStatus();
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+        // منطق التسجيل
+        document.getElementById('regForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirmPassword').value;
-            const btn = document.getElementById('submitBtn');
+            const confirm = document.getElementById('confirm').value;
+            const btn = document.getElementById('mainBtn');
 
             if (password !== confirm) {
-                showMessage("Passwords do not match", "red");
+                showAlert("Passwords do not match", "red");
                 return;
             }
 
@@ -179,7 +178,7 @@
             btn.disabled = true;
 
             try {
-                // 1. إنشاء الحساب في نظام المصادقة
+                // 1. إنشاء الحساب
                 const { data: authData, error: authError } = await _supabase.auth.signUp({
                     email: email,
                     password: password
@@ -188,11 +187,10 @@
                 if (authError) throw authError;
 
                 if (authData.user) {
-                    // استخراج اسم المستخدم تلقائياً من البريد الإلكتروني
                     const autoUsername = email.split('@')[0];
-                    btn.innerText = "INITIALIZING PROFILE...";
+                    btn.innerText = "CREATING PROFILE...";
 
-                    // 2. إدخال البيانات في جدول blackflowerproart (مع معالجة الخطأ)
+                    // 2. إدخال البيانات في الجدول الجديد (blackflowerproart)
                     const { error: dbError } = await _supabase
                         .from('blackflowerproart')
                         .insert([
@@ -204,33 +202,32 @@
                         ]);
                     
                     if (dbError) {
-                        // تنبيه تشخيصي يظهر السبب التقني الدقيق
-                        alert("Critical Database Error:\nCode: " + dbError.code + "\nMessage: " + dbError.message + "\nHint: Check RLS policies or column names.");
+                        alert("DATABASE ERROR: " + dbError.message);
                         throw dbError;
                     }
                     
                     window.location.replace("home.html");
                 }
             } catch (err) {
-                showMessage(err.message, "red");
-                btn.innerText = "CREATE ACCOUNT";
+                showAlert(err.message, "red");
+                btn.innerText = "REGISTER";
                 btn.disabled = false;
             }
         });
 
-        async function socialLogin(provider) {
+        async function loginWithGoogle() {
             const { error } = await _supabase.auth.signInWithOAuth({
-                provider: provider,
+                provider: 'google',
                 options: { redirectTo: "https://blackflowerproart.github.io/Faucet/home.html" }
             });
-            if (error) showMessage(error.message, "red");
+            if (error) showAlert(error.message, "red");
         }
 
-        function showMessage(text, color) {
-            const msgDiv = document.getElementById('msg');
-            msgDiv.innerText = text.toUpperCase();
-            msgDiv.style.color = color;
-            msgDiv.style.display = "block";
+        function showAlert(text, color) {
+            const box = document.getElementById('alert-box');
+            box.innerText = text.toUpperCase();
+            box.style.color = color;
+            box.style.display = "block";
         }
     </script>
 </body>
