@@ -164,6 +164,54 @@
             window.location.replace("index.html");
         }
     });
+            async function init() {
+    // 1. مراقبة الجلسة فور العودة من جوجل
+    const { data: { session } } = await _supabase.auth.getSession();
+    
+    if (!session) {
+        // إذا لم توجد جلسة، أعده لصفحة الدخول
+        window.location.replace("index.html");
+        return;
+    }
+
+    const user = session.user;
+
+    try {
+        // 2. التحقق هل المستخدم مسجل في الجدول؟
+        let { data: profile } = await _supabase
+            .from('blackflowerproart')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
+
+        // 3. إذا لم يوجد (مستخدم جوجل جديد)، أنشئ له حساباً فوراً
+        if (!profile) {
+            const extractedName = user.user_metadata.full_name || user.email.split('@')[0];
+            const { data: newProfile, error: insError } = await _supabase
+                .from('blackflowerproart')
+                .insert([{ 
+                    user_id: user.id, 
+                    username: extractedName, 
+                    balance: 0 
+                }])
+                .select().single();
+            
+            if (insError) throw insError;
+            profile = newProfile;
+        }
+
+        // 4. عرض البيانات
+        document.getElementById('user-name').innerText = profile.username.toUpperCase();
+        document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+        
+        // إظهار الصفحة وتحميل المحتوى
+        document.body.style.visibility = "visible";
+        await loadAds(user.id);
+
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
 }
     </script>
 </body>
