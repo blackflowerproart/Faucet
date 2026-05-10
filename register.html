@@ -3,35 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | BlackFlower</title>
+    <title>Sign Up | BlackFlower Pro Art</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --pure-black: #000000; --pure-white: #ffffff; --light-gray: #888888; --google: #db4437; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--pure-black); color: var(--pure-white); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: radial-gradient(circle at center, #111 0%, #000 100%); }
-        .login-container { background-color: var(--pure-black); padding: 40px; width: 100%; max-width: 380px; border: 1px solid var(--pure-white); text-align: center; }
-        .logo-header img { width: 80px; height: 80px; border: 1px solid var(--pure-white); border-radius: 50%; margin-bottom: 15px; object-fit: cover; }
-        .brand-title { font-family: 'Times New Roman', serif; font-size: 24px; letter-spacing: 2px; text-transform: uppercase; }
-        .input-group { margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--light-gray); font-size: 10px; text-transform: uppercase; }
-        .input-group input { width: 100%; padding: 12px; border: none; border-bottom: 1px solid #333; background-color: transparent; color: var(--pure-white); box-sizing: border-box; outline: none; transition: 0.3s; }
-        .input-group input:focus { border-bottom: 1px solid var(--pure-white); }
-        .btn-login { width: 100%; padding: 15px; border: 1px solid var(--pure-white); background-color: var(--pure-white); color: var(--pure-black); font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 2px; }
-        .btn-login:hover { background-color: var(--pure-black); color: var(--pure-white); }
-        .social-btn { background: transparent; border: 1px solid #333; color: var(--pure-white); padding: 12px; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; }
-        .social-btn:hover { border-color: var(--google); color: var(--google); }
+        :root {
+            --pure-black: #000000;
+            --pure-white: #ffffff;
+            --light-gray: #888888;
+            --google-red: #db4437;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--pure-black);
+            color: var(--pure-white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        .register-container {
+            background-color: var(--pure-black);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--pure-white);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .logo-header img {
+            width: 70px;
+            height: 70px;
+            border: 1px solid var(--pure-white);
+            border-radius: 50%;
+            margin-bottom: 15px;
+            object-fit: cover;
+        }
+
+        .brand-title {
+            font-family: 'Times New Roman', serif;
+            font-size: 20px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--light-gray);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-bottom: 1px solid #333;
+            background-color: transparent;
+            color: var(--pure-white);
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-bottom: 1px solid var(--pure-white);
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid var(--pure-white);
+            background-color: var(--pure-white);
+            color: var(--pure-black);
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        .btn-register:hover {
+            background-color: var(--pure-black);
+            color: var(--pure-white);
+        }
+
+        .divider {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            color: #444;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #222;
+        }
+
+        .divider span { padding: 0 10px; }
+
+        .google-btn {
+            background: transparent;
+            border: 1px solid #333;
+            color: var(--pure-white);
+            padding: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .google-btn:hover {
+            border-color: var(--google-red);
+            color: var(--google-red);
+        }
+
+        #error-msg {
+            color: #ff4444;
+            font-size: 11px;
+            margin-top: 15px;
+            display: none;
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo-header"><img src="wight.jpg" alt="Logo"><div class="brand-title">The Black Flower</div></div>
-        <h2 style="font-size: 14px; letter-spacing: 4px; color: #888; text-transform: uppercase; margin: 30px 0;">Sign Up</h2>
+
+    <div class="register-container">
+        <div class="logo-header">
+            <img src="wight.jpg" alt="Logo">
+            <div class="brand-title">The Black Flower</div>
+        </div>
+
         <form id="registerForm">
-            <div class="input-group"><label>Email</label><input type="email" id="email" required></div>
-            <div class="input-group"><label>Password</label><input type="password" id="password" required></div>
-            <button type="submit" id="regBtn" class="btn-login">Sign Up</button>
+            <div class="input-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="NAME" required>
+            </div>
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="EMAIL" required>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="PASSWORD" required>
+            </div>
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <input type="password" id="confirmPassword" placeholder="CONFIRM" required>
+            </div>
+            
+            <button type="submit" id="submitBtn" class="btn-register">Create Account</button>
         </form>
-        <button class="social-btn" onclick="socialLogin('google')"><i class="fab fa-google"></i> Continue with Google</button>
+
+        <div class="divider"><span>OR</span></div>
+
+        <button class="google-btn" onclick="socialLogin('google')">
+            <i class="fab fa-google"></i> Continue with Google
+        </button>
+
+        <div id="error-msg"></div>
+
+        <p style="margin-top: 20px; font-size: 11px; color: #555;">
+            ALREADY HAVE AN ACCOUNT? <a href="login.html" style="color: white; text-decoration: none;">SIGN IN</a>
+        </p>
     </div>
 
     <script>
@@ -39,25 +198,75 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // دالة الدخول بجوجل المحدثة
+        // 1. دالة التسجيل اليدوي
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMsg = document.getElementById('error-msg');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // التحقق من تطابق كلمة السر
+            if (password !== confirmPassword) {
+                showError("Passwords do not match");
+                return;
+            }
+
+            submitBtn.innerText = "CREATING...";
+            submitBtn.disabled = true;
+
+            try {
+                // إنشاء الحساب في نظام Authentication
+                const { data: authData, error: authError } = await _supabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (authError) throw authError;
+
+                if (authData.user) {
+                    // إدخال بيانات المستخدم في جدول blackflowerproart
+                    const { error: dbError } = await _supabase
+                        .from('blackflowerproart')
+                        .insert([
+                            { 
+                                user_id: authData.user.id, 
+                                username: username, 
+                                balance: 0 
+                            }
+                        ]);
+
+                    if (dbError) throw dbError;
+
+                    // الانتقال لصفحة هوم
+                    window.location.href = "home.html";
+                }
+
+            } catch (err) {
+                showError(err.message);
+                submitBtn.innerText = "CREATE ACCOUNT";
+                submitBtn.disabled = false;
+            }
+        });
+
+        // 2. دالة تسجيل الدخول عبر جوجل
         async function socialLogin(provider) {
             const { error } = await _supabase.auth.signInWithOAuth({
                 provider: provider,
-                options: { redirectTo: "https://blackflowerproart.github.io/Faucet/home.html" }
+                options: {
+                    redirectTo: "https://blackflowerproart.github.io/Faucet/home.html"
+                }
             });
-            if (error) alert(error.message);
+            if (error) showError(error.message);
         }
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const { data, error } = await _supabase.auth.signUp({ email, password });
-            if (data.user) {
-                await _supabase.from('blackflowerproart').insert([{ user_id: data.user.id, username: email.split('@')[0], balance: 0 }]);
-                window.location.href = "home.html";
-            } else { alert(error.message); }
-        });
+        function showError(msg) {
+            const errorMsg = document.getElementById('error-msg');
+            errorMsg.innerText = msg.toUpperCase();
+            errorMsg.style.display = "block";
+        }
     </script>
 </body>
 </html>
