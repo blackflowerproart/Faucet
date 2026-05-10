@@ -63,7 +63,6 @@
             color: var(--light-gray);
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .input-group input {
@@ -89,16 +88,11 @@
             font-size: 12px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.3s;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        .btn-register:hover { background-color: var(--pure-black); color: var(--pure-white); }
-
-        .divider { margin: 25px 0; display: flex; align-items: center; color: #444; font-size: 9px; text-transform: uppercase; }
-        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #222; }
-        .divider span { padding: 0 10px; }
+        .btn-register:disabled { background-color: #333; color: #888; border-color: #333; cursor: not-allowed; }
 
         .google-btn {
             background: transparent;
@@ -106,7 +100,6 @@
             color: var(--pure-white);
             padding: 12px;
             cursor: pointer;
-            transition: 0.3s;
             width: 100%;
             display: flex;
             justify-content: center;
@@ -114,11 +107,10 @@
             gap: 10px;
             font-size: 11px;
             text-transform: uppercase;
+            margin-top: 20px;
         }
 
-        .google-btn:hover { border-color: var(--google-red); color: var(--google-red); }
-
-        #msg { margin-top: 15px; font-size: 10px; text-transform: uppercase; display: none; word-wrap: break-word; }
+        #msg { margin-top: 15px; font-size: 10px; text-transform: uppercase; display: none; }
     </style>
 </head>
 <body>
@@ -143,20 +135,14 @@
                 <input type="password" id="confirmPassword" placeholder="REPEAT PASSWORD" required>
             </div>
             
-            <button type="submit" id="submitBtn" class="btn-register">Sign Up</button>
+            <button type="submit" id="submitBtn" class="btn-register">Create Account</button>
         </form>
-
-        <div class="divider"><span>OR QUICK ACCESS</span></div>
 
         <button class="google-btn" onclick="socialLogin('google')">
             <i class="fab fa-google"></i> Continue with Google
         </button>
 
         <div id="msg"></div>
-
-        <p style="margin-top: 25px; font-size: 10px; color: #555;">
-            ALREADY A MEMBER? <a href="login.html" style="color: white; text-decoration: none; border-bottom: 1px solid #555;">SIGN IN</a>
-        </p>
     </div>
 
     <script>
@@ -164,14 +150,6 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // حماية: إذا كان مسجل دخول مسبقاً، توجه للهوم مباشرة
-        async function checkSession() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session) window.location.replace("home.html");
-        }
-        checkSession();
-
-        // 1. التسجيل اليدوي
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value.trim();
@@ -184,13 +162,11 @@
                 return;
             }
 
-            btn.innerText = "PROCESSING...";
+            btn.innerText = "AUTHENTICATING...";
             btn.disabled = true;
 
             try {
-                // استخراج اسم المستخدم تلقائياً من البريد
-                const autoUsername = email.split('@')[0];
-
+                // 1. إنشاء الحساب في Supabase Auth
                 const { data: authData, error: authError } = await _supabase.auth.signUp({
                     email: email,
                     password: password
@@ -199,7 +175,10 @@
                 if (authError) throw authError;
 
                 if (authData.user) {
-                    // إدخال البيانات في جدول blackflowerproart
+                    const autoUsername = email.split('@')[0];
+                    btn.innerText = "SAVING PROFILE...";
+
+                    // 2. إدخال البيانات في الجدول (هنا يحدث الخطأ عادةً)
                     const { error: dbError } = await _supabase
                         .from('blackflowerproart')
                         .insert([
@@ -211,26 +190,24 @@
                         ]);
                     
                     if (dbError) {
-                        console.error("DB Error Detail:", dbError);
-                        throw new Error("DATABASE ERROR: " + dbError.message);
+                        // إظهار السبب التقني الدقيق في تنبيه
+                        alert("SUPABASE DB ERROR:\nMessage: " + dbError.message + "\nCode: " + dbError.code + "\nHint: " + (dbError.hint || "Check your RLS Policies"));
+                        throw dbError;
                     }
                     
                     window.location.replace("home.html");
                 }
             } catch (err) {
                 showMessage(err.message, "red");
-                btn.innerText = "SIGN UP";
+                btn.innerText = "CREATE ACCOUNT";
                 btn.disabled = false;
             }
         });
 
-        // 2. تسجيل دخول جوجل
         async function socialLogin(provider) {
             const { error } = await _supabase.auth.signInWithOAuth({
                 provider: provider,
-                options: {
-                    redirectTo: "https://blackflowerproart.github.io/Faucet/home.html"
-                }
+                options: { redirectTo: "https://blackflowerproart.github.io/Faucet/home.html" }
             });
             if (error) showMessage(error.message, "red");
         }
