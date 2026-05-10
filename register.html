@@ -90,6 +90,7 @@
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 2px;
+            transition: 0.3s;
         }
 
         .btn-register:disabled { background-color: #333; color: #888; border-color: #333; cursor: not-allowed; }
@@ -143,12 +144,24 @@
         </button>
 
         <div id="msg"></div>
+        
+        <p style="margin-top: 25px; font-size: 10px; color: #555;">
+            ALREADY A MEMBER? <a href="login.html" style="color: white; text-decoration: none; border-bottom: 1px solid #555;">SIGN IN</a>
+        </p>
     </div>
 
     <script>
+        // إعدادات الربط مع المشروع
         const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // منع الوصول إذا كان المستخدم مسجلاً بالفعل
+        async function checkSession() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) window.location.replace("home.html");
+        }
+        checkSession();
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -166,7 +179,7 @@
             btn.disabled = true;
 
             try {
-                // 1. إنشاء الحساب في Supabase Auth
+                // 1. إنشاء الحساب في نظام المصادقة
                 const { data: authData, error: authError } = await _supabase.auth.signUp({
                     email: email,
                     password: password
@@ -175,10 +188,11 @@
                 if (authError) throw authError;
 
                 if (authData.user) {
+                    // استخراج اسم المستخدم تلقائياً من البريد الإلكتروني
                     const autoUsername = email.split('@')[0];
-                    btn.innerText = "SAVING PROFILE...";
+                    btn.innerText = "INITIALIZING PROFILE...";
 
-                    // 2. إدخال البيانات في الجدول (هنا يحدث الخطأ عادةً)
+                    // 2. إدخال البيانات في جدول blackflowerproart (مع معالجة الخطأ)
                     const { error: dbError } = await _supabase
                         .from('blackflowerproart')
                         .insert([
@@ -190,8 +204,8 @@
                         ]);
                     
                     if (dbError) {
-                        // إظهار السبب التقني الدقيق في تنبيه
-                        alert("SUPABASE DB ERROR:\nMessage: " + dbError.message + "\nCode: " + dbError.code + "\nHint: " + (dbError.hint || "Check your RLS Policies"));
+                        // تنبيه تشخيصي يظهر السبب التقني الدقيق
+                        alert("Critical Database Error:\nCode: " + dbError.code + "\nMessage: " + dbError.message + "\nHint: Check RLS policies or column names.");
                         throw dbError;
                     }
                     
