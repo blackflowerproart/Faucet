@@ -1,46 +1,44 @@
-<div style="text-align: center; padding: 20px;">
-    <img src="wight.jpg" alt="Logo" style="width: 100px; height: auto;">
-    <h1 style="font-family: 'Times New Roman', Times, serif; margin: 0;">The Black Flower</h1>
-    <p style="font-family: Arial, sans-serif; font-size: 14px; color: gray; margin: 0;">Professional Art</p>
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل حساب جديد</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <title>التسجيل</title>
+    <style>
+        body { background-color: #000; color: #fff; font-family: Arial; margin: 0; padding: 20px; text-align: center; }
+        h1 { font-family: 'Times New Roman'; font-size: 2.5rem; }
+        .form-container { max-width: 450px; margin: 20px auto; background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; }
+        input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1rem; box-sizing: border-box; }
+        .reg-btn { width: 100%; padding: 15px; background: #28a745; color: white; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        .google-btn { width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-size: 1.1rem; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <!-- الشعار هنا -->
-    <div style="max-width: 300px; margin: auto; text-align: center;">
-        <input type="text" id="username" placeholder="اسم المستخدم" required><br><br>
-        <input type="email" id="email" placeholder="البريد الإلكتروني" required><br><br>
-        <input type="password" id="password" placeholder="كلمة السر" required><br><br>
-        <button onclick="signUpWithEmail()">تسجيل بالبريد</button>
-        <hr>
-        <button onclick="signInWithGoogle()">التسجيل عبر Google</button>
+    <img src="wight.jpg" width="100">
+    <h1>The Black Flower</h1>
+    <div class="form-container">
+        <h2>إنشاء حساب جديد</h2>
+        <input type="text" id="username" placeholder="اسم المستخدم">
+        <input type="email" id="email" placeholder="البريد الإلكتروني">
+        <input type="password" id="password" placeholder="كلمة السر">
+        <button class="reg-btn" onclick="handleSignUp()">تسجيل الآن</button>
+        <button class="google-btn" onclick="handleGoogle()">التسجيل عبر Google</button>
     </div>
 
     <script>
-        const supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function signUpWithEmail() {
+        async function handleSignUp() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const username = document.getElementById('username').value;
-
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: { data: { username: username } } // إرسال الاسم للـ Trigger
-            });
-
-            if (error) alert(error.message);
-            else alert('تفحص بريدك لتأكيد الحساب!');
+            const { error } = await _supabase.auth.signUp({ email, password, options: { data: { username } } });
+            if (error) alert(error.message); else alert("تفحص بريدك للتأكيد!");
         }
-
-        async function signInWithGoogle() {
-            await supabase.auth.signInWithOAuth({ provider: 'google' });
-        }
+        async function handleGoogle() { await _supabase.auth.signInWithOAuth({ provider: 'google' }); }
     </script>
 </body>
 </html>
-</div>
