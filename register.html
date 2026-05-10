@@ -204,21 +204,23 @@
 
   async function socialLogin(provider) {
     try {
-        // تحديد الرابط الحالي وتغيير نهايته إلى home.html ديناميكياً
-        const currentPath = window.location.pathname;
-        const redirectUrl = window.location.origin + currentPath.replace(/\/[^/]*$/, '/home.html');
+        // إنشاء الرابط الذي سينتقل إليه المستخدم بعد اختيار الإيميل
+        // هذا السطر يضمن أننا نرسله لصفحة home.html بغض النظر عن مكانه الحالي
+        const baseUrl = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/');
+        const redirectTarget = baseUrl + "/home.html";
 
         const { error } = await _supabase.auth.signInWithOAuth({
             provider: provider,
             options: {
-                redirectTo: redirectUrl // هذا هو السطر الأهم
+                // هنا نحدد الرابط الذي أضفناه في الخطوة الأولى
+                redirectTo: redirectTarget 
             }
         });
 
         if (error) throw error;
     } catch (err) {
-        console.error("Social Login Error:", err.message);
-        alert("Login failed: " + err.message);
+        console.error("Login Error:", err.message);
+        alert("حدث خطأ أثناء تسجيل الدخول: " + err.message);
     }
 }
     </script>
