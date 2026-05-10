@@ -78,9 +78,7 @@
             transition: 0.3s;
         }
 
-        .input-group input:focus {
-            border-bottom: 1px solid var(--pure-white);
-        }
+        .input-group input:focus { border-bottom: 1px solid var(--pure-white); }
 
         .btn-register {
             width: 100%;
@@ -96,20 +94,9 @@
             letter-spacing: 2px;
         }
 
-        .btn-register:hover {
-            background-color: var(--pure-black);
-            color: var(--pure-white);
-        }
+        .btn-register:hover { background-color: var(--pure-black); color: var(--pure-white); }
 
-        .divider {
-            margin: 25px 0;
-            display: flex;
-            align-items: center;
-            color: #444;
-            font-size: 9px;
-            text-transform: uppercase;
-        }
-
+        .divider { margin: 25px 0; display: flex; align-items: center; color: #444; font-size: 9px; text-transform: uppercase; }
         .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #222; }
         .divider span { padding: 0 10px; }
 
@@ -131,7 +118,7 @@
 
         .google-btn:hover { border-color: var(--google-red); color: var(--google-red); }
 
-        #msg { margin-top: 15px; font-size: 10px; text-transform: uppercase; display: none; }
+        #msg { margin-top: 15px; font-size: 10px; text-transform: uppercase; display: none; word-wrap: break-word; }
     </style>
 </head>
 <body>
@@ -177,7 +164,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // حماية: إذا كان مسجل دخول لا يرى هذه الصفحة
+        // حماية: إذا كان مسجل دخول مسبقاً، توجه للهوم مباشرة
         async function checkSession() {
             const { data: { session } } = await _supabase.auth.getSession();
             if (session) window.location.replace("home.html");
@@ -201,7 +188,7 @@
             btn.disabled = true;
 
             try {
-                // استخراج اسم المستخدم من البريد
+                // استخراج اسم المستخدم تلقائياً من البريد
                 const autoUsername = email.split('@')[0];
 
                 const { data: authData, error: authError } = await _supabase.auth.signUp({
@@ -212,10 +199,21 @@
                 if (authError) throw authError;
 
                 if (authData.user) {
-                    // إدخال الاسم التلقائي في قاعدة البيانات
-                    await _supabase.from('blackflowerproart').insert([
-                        { user_id: authData.user.id, username: autoUsername, balance: 0 }
-                    ]);
+                    // إدخال البيانات في جدول blackflowerproart
+                    const { error: dbError } = await _supabase
+                        .from('blackflowerproart')
+                        .insert([
+                            { 
+                                user_id: authData.user.id, 
+                                username: autoUsername, 
+                                balance: 0 
+                            }
+                        ]);
+                    
+                    if (dbError) {
+                        console.error("DB Error Detail:", dbError);
+                        throw new Error("DATABASE ERROR: " + dbError.message);
+                    }
                     
                     window.location.replace("home.html");
                 }
@@ -226,7 +224,7 @@
             }
         });
 
-        // 2. تسجيل جوجل
+        // 2. تسجيل دخول جوجل
         async function socialLogin(provider) {
             const { error } = await _supabase.auth.signInWithOAuth({
                 provider: provider,
