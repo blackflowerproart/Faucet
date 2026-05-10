@@ -3,230 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join Us | The Black Flower</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Register | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --black: #000000;
-            --white: #ffffff;
-            --gray: #888888;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--black);
-            color: var(--white);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-        }
-
-        .register-card {
-            background-color: var(--black);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid var(--white);
-            text-align: center;
-            box-sizing: border-box;
-        }
-
-        .logo-box img {
-            width: 70px; height: 70px;
-            border: 1px solid var(--white);
-            border-radius: 50%;
-            margin-bottom: 15px;
-        }
-
-        .title {
-            font-family: 'Times New Roman', serif;
-            font-size: 18px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 30px;
-        }
-
-        .field {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .field label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--gray);
-            font-size: 10px;
-            text-transform: uppercase;
-        }
-
-        .field input {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-bottom: 1px solid #333;
-            background-color: transparent;
-            color: var(--white);
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        .field input:focus { border-bottom: 1px solid var(--white); }
-
-        .btn-submit {
-            width: 100%;
-            padding: 15px;
-            border: 1px solid var(--white);
-            background-color: var(--white);
-            color: var(--black);
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.3s;
-        }
-
-        .btn-submit:disabled { background-color: #333; color: #666; border-color: #333; cursor: not-allowed; }
-
-        .google-link {
-            background: transparent;
-            border: 1px solid #333;
-            color: var(--white);
-            padding: 12px;
-            cursor: pointer;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            font-size: 11px;
-            text-transform: uppercase;
-            margin-top: 20px;
-            text-decoration: none;
-        }
-
-        #alert-box { margin-top: 15px; font-size: 10px; text-transform: uppercase; display: none; }
+        body { background: #000; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { border: 1px solid #fff; padding: 40px; width: 320px; text-align: center; }
+        input { width: 100%; padding: 10px; margin: 10px 0; background: transparent; border: 1px solid #333; color: #fff; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #fff; color: #000; border: none; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 10px; }
+        button:disabled { background: #444; }
     </style>
 </head>
 <body>
 
-    <div class="register-card">
-        <div class="logo-box">
-            <img src="wight.jpg" alt="Logo">
-            <div class="title">The Black Flower</div>
-        </div>
+<div class="card">
+    <h2 style="letter-spacing: 3px;">SIGN UP</h2>
+    <form id="regForm">
+        <input type="email" id="email" placeholder="EMAIL" required>
+        <input type="password" id="password" placeholder="PASSWORD" required>
+        <button type="submit" id="btn">Create Account</button>
+    </form>
+</div>
 
-        <form id="regForm">
-            <div class="field">
-                <label>Email Address</label>
-                <input type="email" id="email" required>
-            </div>
-            <div class="field">
-                <label>Password</label>
-                <input type="password" id="password" required>
-            </div>
-            <div class="field">
-                <label>Confirm Password</label>
-                <input type="password" id="confirm" required>
-            </div>
-            
-            <button type="submit" id="mainBtn" class="btn-submit">Register</button>
-        </form>
+<script>
+    const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        <button class="google-link" onclick="loginWithGoogle()">
-            <i class="fab fa-google"></i> Continue with Google
-        </button>
+    document.getElementById('regForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('btn');
+        const userPart = email.split('@')[0];
 
-        <div id="alert-box"></div>
+        btn.innerText = "CREATING...";
+        btn.disabled = true;
 
-        <p style="margin-top: 25px; font-size: 10px; color: #555;">
-            HAVE AN ACCOUNT? <a href="login.html" style="color: white; text-decoration: none; border-bottom: 1px solid #555;">LOG IN</a>
-        </p>
-    </div>
-
-    <script>
-        // تكوين Supabase
-        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // مراقبة الجلسة
-        async function checkStatus() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            if (session) window.location.replace("home.html");
-        }
-        checkStatus();
-
-        // منطق التسجيل
-        document.getElementById('regForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirm = document.getElementById('confirm').value;
-            const btn = document.getElementById('mainBtn');
-
-            if (password !== confirm) {
-                showAlert("Passwords do not match", "red");
-                return;
-            }
-
-            btn.innerText = "AUTHENTICATING...";
-            btn.disabled = true;
-
-            try {
-                // 1. إنشاء الحساب
-                const { data: authData, error: authError } = await _supabase.auth.signUp({
-                    email: email,
-                    password: password
-                });
-
-                if (authError) throw authError;
-
-                if (authData.user) {
-                    const autoUsername = email.split('@')[0];
-                    btn.innerText = "CREATING PROFILE...";
-// داخل دالة التسجيل بعد التأكد من إنشاء المستخدم بنجاح:
-const { error: dbError } = await _supabase
-    .from('blackflowerproart')
-    .insert([
-        { 
-            user_id: authData.user.id, // تأكد أن الاسم هنا user_id
-            username: email.split('@')[0], 
-            balance: 0 
-        }
-    ]);
-
-if (dbError) {
-    console.error("الخطأ الحقيقي هو:", dbError);
-    alert("فشل الحفظ: " + dbError.message);
-} else {
-    window.location.replace("home.html");
-}
-            } catch (err) {
-                showAlert(err.message, "red");
-                btn.innerText = "REGISTER";
-                btn.disabled = false;
-            }
-        });
-
-        async function loginWithGoogle() {
-            const { error } = await _supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: { redirectTo: "https://blackflowerproart.github.io/Faucet/home.html" }
+        try {
+            // 1. إنشاء الحساب في Auth
+            const { data: authData, error: authError } = await _supabase.auth.signUp({
+                email, password
             });
-            if (error) showAlert(error.message, "red");
-        }
 
-        function showAlert(text, color) {
-            const box = document.getElementById('alert-box');
-            box.innerText = text.toUpperCase();
-            box.style.color = color;
-            box.style.display = "block";
+            if (authError) throw authError;
+
+            if (authData.user) {
+                // انتظر ثانية واحدة لضمان استقرار السيرفر
+                btn.innerText = "SAVING DATA...";
+                await new Promise(res => setTimeout(res, 1000));
+
+                // 2. الحفظ في الجدول
+                const { error: dbError } = await _supabase
+                    .from('blackflowerproart')
+                    .insert([{ 
+                        user_id: authData.user.id, 
+                        username: userPart, 
+                        balance: 0 
+                    }]);
+
+                if (dbError) {
+                    // إذا فشل هنا، سيظهر التنبيه بالسبب الحقيقي
+                    alert("خطأ في الجدول: " + dbError.message);
+                    console.log(dbError);
+                } else {
+                    // نجاح كامل - انتقل للرئيسية
+                    window.location.replace("home.html");
+                }
+            }
+        } catch (err) {
+            alert("خطأ في النظام: " + err.message);
+        } finally {
+            btn.innerText = "Create Account";
+            btn.disabled = false;
         }
-    </script>
+    });
+</script>
+
 </body>
 </html>
