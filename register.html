@@ -3,30 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل حساب جديد</title>
+    <title>إنشاء حساب - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #000; color: #fff; font-family: Arial; margin: 0; padding: 20px; text-align: center; }
-        h1 { font-family: 'Times New Roman'; font-size: 2.5rem; }
-        .form-container { max-width: 450px; margin: 20px auto; background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; }
-        input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1rem; box-sizing: border-box; }
-        .reg-btn { width: 100%; padding: 15px; background: #28a745; color: white; border: none; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        .google-btn { width: 100%; padding: 15px; background: #fff; color: #000; border: none; font-size: 1.1rem; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold; }
+        /* التنسيق المتجاوب والخلفية السوداء */
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header img { width: 120px; border-radius: 10px; margin-bottom: 10px; }
+        .header h1 { font-family: 'Times New Roman', serif; font-size: 2.8rem; margin: 0; }
+        .header p { font-family: Arial; font-size: 1.1rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+        .form-container { 
+            background: #111; 
+            padding: 40px; 
+            border-radius: 20px; 
+            border: 1px solid #333; 
+            width: 100%; 
+            max-width: 450px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 { font-size: 1.8rem; margin-bottom: 25px; color: #28a745; }
+
+        input { 
+            width: 100%; 
+            padding: 18px; 
+            margin: 12px 0; 
+            border-radius: 10px; 
+            border: 1px solid #444; 
+            background: #1a1a1a; 
+            color: #fff; 
+            font-size: 1.2rem; 
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus { border-color: #28a745; }
+
+        .reg-btn { 
+            width: 100%; 
+            padding: 18px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            font-size: 1.3rem; 
+            font-weight: bold; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+
+        .reg-btn:hover { background: #218838; transform: scale(1.02); }
+
+        .google-btn { 
+            width: 100%; 
+            padding: 16px; 
+            background: #fff; 
+            color: #000; 
+            border: none; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .error-msg { color: #ff4444; margin-top: 10px; display: none; font-size: 1rem; }
+
+        /* للهواتف الصغيرة */
+        @media (max-width: 480px) {
+            .header h1 { font-size: 2.2rem; }
+            .form-container { padding: 25px; }
+            input, .reg-btn { font-size: 1.1rem; padding: 15px; }
+        }
     </style>
 </head>
 <body>
-    <img src="wight.jpg" width="100">
-    <h1>The Black Flower</h1>
+
+    <div class="header">
+        <img src="wight.jpg" alt="Logo">
+        <h1>The Black Flower</h1>
+        <p>Professional art</p>
+    </div>
+
     <div class="form-container">
         <h2>إنشاء حساب جديد</h2>
         <input type="text" id="username" placeholder="اسم المستخدم">
         <input type="email" id="email" placeholder="البريد الإلكتروني">
         <input type="password" id="password" placeholder="كلمة السر">
-        <button class="reg-btn" onclick="handleSignUp()">تسجيل الآن</button>
-        <button class="google-btn" onclick="handleGoogle()">التسجيل عبر Google</button>
+        
+        <p id="error-display" class="error-msg"></p>
+
+        <button class="reg-btn" id="btn-text" onclick="handleSignUp()">تسجيل ودخول مباشر</button>
+        
+        <div style="margin: 20px 0; color: #444;">أو</div>
+        
+        <button class="google-btn" onclick="handleGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+            التسجيل عبر Google
+        </button>
     </div>
 
     <script>
+        // إعدادات Supabase الخاصة بك
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -35,10 +131,46 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const username = document.getElementById('username').value;
-            const { error } = await _supabase.auth.signUp({ email, password, options: { data: { username } } });
-            if (error) alert(error.message); else alert("تفحص بريدك للتأكيد!");
+            const errorDisplay = document.getElementById('error-display');
+            const btn = document.getElementById('btn-text');
+
+            if (!username || !email || !password) {
+                errorDisplay.innerText = "يرجى ملء جميع الحقول";
+                errorDisplay.style.display = "block";
+                return;
+            }
+
+            btn.innerText = "جاري المعالجة...";
+            btn.disabled = true;
+
+            const { data, error } = await _supabase.auth.signUp({
+                email,
+                password,
+                options: { 
+                    data: { username: username } 
+                }
+            });
+
+            if (error) {
+                errorDisplay.innerText = "خطأ: " + error.message;
+                errorDisplay.style.display = "block";
+                btn.innerText = "تسجيل ودخول مباشر";
+                btn.disabled = false;
+            } else {
+                // بما أن التأكيد معطل، سينتقل فوراً لصفحة الهوم
+                window.location.href = 'home.html';
+            }
         }
-        async function handleGoogle() { await _supabase.auth.signInWithOAuth({ provider: 'google' }); }
+
+        async function handleGoogle() {
+            const { error } = await _supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/home.html'
+                }
+            });
+            if (error) alert(error.message);
+        }
     </script>
 </body>
 </html>
