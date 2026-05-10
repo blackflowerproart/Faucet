@@ -3,116 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower | Home</title>
+    <title>The Black Flower | Pro Art</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #000000;
-            --text-color: #ffffff;
-            --accent-gray: #888888;
+            --pure-black: #000000;
+            --pure-white: #ffffff;
+            --dim-gray: #888888;
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            height: 100vh;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background-color: var(--pure-black);
+            color: var(--pure-white);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
+            height: 100vh;
+            overflow: hidden;
             background: radial-gradient(circle at center, #111 0%, #000 100%);
         }
 
-        /* تنسيق شعار الصورة */
-        .logo {
-            width: 150px;
-            height: 150px;
-            margin-bottom: 20px;
-            border-radius: 50%; 
+        .hero-container {
+            text-align: center;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .logo-main {
+            width: 120px;
+            height: 120px;
+            border: 1px solid var(--pure-white);
+            border-radius: 50%;
+            margin-bottom: 25px;
             object-fit: cover;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 1.5s ease;
         }
 
-        /* العنوان بخط التايمز */
-        h1 {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 3.5rem;
-            margin: 0;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* النص الفرعي بخط أريال */
-        .subtitle {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 0.9rem;
-            color: var(--accent-gray);
+        .brand-name {
+            font-family: 'Times New Roman', serif;
+            font-size: 2.5rem;
             letter-spacing: 5px;
             text-transform: uppercase;
-            margin-top: 5px;
-            margin-bottom: 50px;
+            margin: 0;
+            animation: slideUp 1s ease;
         }
 
-        /* حاوية الأزرار */
-        .button-container {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        /* التنسيق المشترك للأزرار */
-        .btn {
-            text-decoration: none;
-            padding: 15px 40px;
-            font-family: Arial, sans-serif;
+        .tagline {
+            color: var(--dim-gray);
             font-size: 0.8rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin: 15px 0 40px 0;
+            animation: slideUp 1.2s ease;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            animation: fadeIn 2s ease;
+        }
+
+        .btn {
+            width: 250px;
+            padding: 15px 30px;
+            font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 2px;
-            border-radius: 2px;
+            cursor: pointer;
             transition: all 0.3s ease;
-            min-width: 160px;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        /* زر Login باللون الأبيض */
-        .btn-login {
-            background-color: var(--text-color);
-            color: var(--bg-color);
-            border: 1px solid var(--text-color);
+        .btn-primary {
+            background-color: var(--pure-white);
+            color: var(--pure-black);
+            border: 1px solid var(--pure-white);
         }
 
-        .btn-login:hover {
+        .btn-primary:hover {
+            background-color: var(--pure-black);
+            color: var(--pure-white);
+        }
+
+        .btn-secondary {
             background-color: transparent;
-            color: var(--text-color);
+            color: var(--pure-white);
+            border: 1px solid #333;
         }
 
-        /* زر Start Earning شفاف بإطار */
-        .btn-earning {
-            background-color: transparent;
-            color: var(--text-color);
-            border: 1px solid var(--text-color);
+        .btn-secondary:hover {
+            border-color: var(--pure-white);
         }
 
-        .btn-earning:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .brand-name { font-size: 1.8rem; }
+            .btn { width: 200px; }
         }
     </style>
 </head>
 <body>
 
-    <img src="wight.jpg" alt="The Black Flower Logo" class="logo">
+    <div class="hero-container">
+        <img src="wight.jpg" alt="Black Flower Logo" class="logo-main">
+        <h1 class="brand-name">The Black Flower</h1>
+        <p class="tagline">Advertising & Digital Art</p>
 
-    <h1>The Black Flower</h1>
-    
-    <div class="subtitle">professional art</div>
-
-    <div class="button-container">
-        <a href="login.html" class="btn btn-login">Login</a>
-        <a href="register.html" class="btn btn-earning">Start Earning</a>
+        <div class="button-group">
+            <a href="register.html" class="btn btn-primary">Start Earning</a>
+            
+            <a href="login.html" class="btn btn-secondary">Login</a>
+        </div>
     </div>
 
+    <script>
+        // إعدادات Supabase للتحقق من الجلسة
+        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // إذا كان المستخدم مسجلاً بالفعل، لا داعي لبقائه هنا، انقله للهوم فوراً
+        async function checkAutoLogin() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (session) {
+                window.location.replace("home.html");
+            }
+        }
+        
+        window.onload = checkAutoLogin;
+    </script>
 </body>
 </html>
