@@ -6,149 +6,36 @@
     <title>Dashboard | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-black: #050505;
-            --card-black: #0a0a0a;
-            --text-white: #f0f0f0;
-            --accent: #ffffff;
-            --dim-gray: #888888;
-            --sidebar-width: 260px;
-            --success: #00ff00;
-        }
-
-        body {
-            margin: 0; 
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: var(--bg-black); 
-            color: var(--text-white);
-            display: flex; 
-            min-height: 100vh; 
-            visibility: hidden; /* مخفية حتى يتم التحقق من الجلسة */
-        }
-
-        /* Sidebar - القائمة الجانبية */
-        .sidebar {
-            width: var(--sidebar-width); 
-            background-color: var(--card-black);
-            border-right: 1px solid #222; 
-            display: flex; 
-            flex-direction: column;
-            padding: 30px 20px; 
-            position: fixed; 
-            height: 100vh; 
-            box-sizing: border-box;
-        }
-
-        .logo-small { 
-            width: 80px; height: 80px; 
-            border-radius: 50%; 
-            margin: 0 auto 10px; 
-            display: block; 
-            border: 1px solid #333; 
-            object-fit: cover; 
-        }
-
-        .brand { 
-            font-family: 'Times New Roman', serif; 
-            font-size: 1.2rem; 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            text-align: center; 
-            margin: 0; 
-        }
-
-        .balance-box { 
-            background-color: #111; 
-            padding: 15px; 
-            border: 1px solid #333; 
-            margin-bottom: 25px; 
-            text-align: center; 
-        }
-        
-        .nav-btn { 
-            background: transparent; 
-            border: 1px solid #333; 
-            color: var(--text-white); 
-            padding: 12px; 
-            margin-bottom: 10px; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            font-size: 0.75rem; 
-            width: 100%; 
-            transition: 0.3s; 
-        }
-
-        .nav-btn:hover { 
-            background-color: var(--accent); 
-            color: #000; 
-        }
-
-        .main-content {
-            margin-left: var(--sidebar-width); 
-            padding: 40px;
-            width: calc(100% - var(--sidebar-width)); 
-            box-sizing: border-box;
-        }
-
-        .section-title { 
-            font-size: 0.9rem; 
-            color: var(--dim-gray); 
-            text-transform: uppercase; 
-            letter-spacing: 2px; 
-            margin-bottom: 20px; 
-            display: block; 
-            border-left: 3px solid #fff; 
-            padding-left: 10px; 
-        }
-
-        .ad-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 20px; 
-        }
-        
-        .ad-item {
-            background: var(--card-black); 
-            border: 1px solid #222; 
-            padding: 20px;
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            transition: 0.3s; 
-            cursor: pointer;
-        }
-
+        :root { --bg-black: #050505; --card-black: #0a0a0a; --text-white: #f0f0f0; --accent: #ffffff; --dim-gray: #888888; --sidebar-width: 260px; --success: #00ff00; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-black); color: var(--text-white); display: flex; min-height: 100vh; visibility: hidden; }
+        .sidebar { width: var(--sidebar-width); background-color: var(--card-black); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 30px 20px; position: fixed; height: 100vh; box-sizing: border-box; }
+        .logo-small { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 10px; display: block; border: 1px solid #333; object-fit: cover; }
+        .brand { font-family: 'Times New Roman', serif; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 2px; text-align: center; margin: 0; }
+        .balance-box { background-color: #111; padding: 15px; border: 1px solid #333; margin-bottom: 25px; text-align: center; }
+        .nav-btn { background: transparent; border: 1px solid #333; color: var(--text-white); padding: 12px; margin-bottom: 10px; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; width: 100%; transition: 0.3s; }
+        .nav-btn:hover { background-color: var(--accent); color: #000; }
+        .main-content { margin-left: var(--sidebar-width); padding: 40px; width: calc(100% - var(--sidebar-width)); box-sizing: border-box; }
+        .ad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .ad-item { background: var(--card-black); border: 1px solid #222; padding: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
         .ad-item:hover { border-color: #fff; }
-        
         .reward-val { color: var(--success); font-weight: bold; }
-
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; border-right: none; }
-            .main-content { margin-left: 0; width: 100%; }
-            body { flex-direction: column; }
-        }
     </style>
 </head>
 <body>
-
     <div class="sidebar">
         <img src="wight.jpg" alt="Logo" class="logo-small">
         <h1 class="brand">The Black Flower</h1>
-        
         <div class="balance-box">
-            <span id="user-name" style="color: #888; font-size: 0.8rem; display: block; margin-bottom: 5px;">VERIFYING...</span>
+            <span id="user-name" style="color: #888; font-size: 0.8rem; display: block; margin-bottom: 5px;">LOADING...</span>
             <span style="font-size: 1.2rem; font-weight: bold;"><span id="bfp-val">0</span> BFP</span>
         </div>
-
         <button class="nav-btn" onclick="window.location.href='AdControlManeger.html'">Create Ad</button>
         <button class="nav-btn" style="margin-top: auto; border-color: #ff4444; color: #ff4444;" onclick="handleLogout()">Logout</button>
     </div>
 
     <div class="main-content">
-        <span class="section-title">Available Campaigns</span>
-        <div id="ads-list" class="ad-grid">
-            <div style="color:#444">Loading...</div>
-        </div>
+        <span style="color:var(--dim-gray); text-transform:uppercase; letter-spacing:2px; font-size:0.8rem; border-left:3px solid #fff; padding-left:10px; margin-bottom:20px; display:block;">Available Campaigns</span>
+        <div id="ads-list" class="ad-grid"></div>
     </div>
 
     <script>
@@ -157,102 +44,50 @@
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function init() {
-            // 1. جلب الجلسة الحالية فوراً
-            const { data: { session }, error: sessionError } = await _supabase.auth.getSession();
-            
-            if (!session || sessionError) {
-                window.location.replace("index.html");
-                return;
-            }
+            _supabase.auth.onAuthStateChange(async (event, session) => {
+                if (session) {
+                    const user = session.user;
+                    let { data: profile } = await _supabase.from('blackflowerproart').select('*').eq('user_id', user.id).single();
 
-            const user = session.user;
+                    if (!profile) {
+                        const name = user.user_metadata.full_name || user.email.split('@')[0];
+                        const { data: newProfile } = await _supabase.from('blackflowerproart').insert([{ user_id: user.id, username: name, balance: 0 }]).select().single();
+                        profile = newProfile;
+                    }
 
-            try {
-                // 2. التحقق من وجود المستخدم في جدول البيانات
-                let { data: profile, error: profileError } = await _supabase
-                    .from('blackflowerproart')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single();
-
-                // 3. إذا كان المستخدم غير موجود (مثل أول دخول عبر جوجل)
-                if (!profile) {
-                    const extractedName = user.user_metadata.full_name || user.email.split('@')[0];
-                    
-                    const { data: newProfile, error: insertError } = await _supabase
-                        .from('blackflowerproart')
-                        .insert([{ 
-                            user_id: user.id, 
-                            username: extractedName, 
-                            balance: 0 
-                        }])
-                        .select()
-                        .single();
-
-                    if (insertError) throw insertError;
-                    profile = newProfile;
+                    document.getElementById('user-name').innerText = profile.username.toUpperCase();
+                    document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+                    document.body.style.visibility = "visible";
+                    await loadAds(user.id);
+                } else {
+                    window.location.replace("login.html");
                 }
-
-                // 4. تحديث الواجهة بالبيانات
-                document.getElementById('user-name').innerText = profile.username.toUpperCase();
-                document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
-
-                // إظهار الصفحة بعد تجهيز البيانات
-                document.body.style.visibility = "visible";
-
-                // 5. تحميل الإعلانات
-                await loadAds(user.id);
-
-            } catch (err) {
-                console.error("Initialization Error:", err);
-                alert("Error loading profile. Please try logging in again.");
-                handleLogout();
-            }
+            });
         }
 
         async function loadAds(userId) {
             const adsList = document.getElementById('ads-list');
             const now = new Date().toISOString();
-            const freezeLimit = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-            try {
-                const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
-                const { data: views } = await _supabase.from('ad_views').select('ad_id').eq('user_id', userId).gt('viewed_at', freezeLimit);
-
-                const viewedIds = views ? views.map(v => v.ad_id) : [];
-                const availableAds = ads ? ads.filter(ad => !viewedIds.includes(ad.id)) : [];
-
-                if (availableAds.length > 0) {
-                    adsList.innerHTML = '';
-                    availableAds.forEach(ad => {
-                        const duration = ad.duration || 10;
-                        const reward = (duration >= 20) ? 15 : 8;
-                        const item = document.createElement('div');
-                        item.className = 'ad-item';
-                        item.onclick = () => {
-                            localStorage.setItem('active_ad', JSON.stringify({ id: ad.id, url: ad.url, reward: reward, seconds: duration }));
-                            window.location.href = 'viewer.html';
-                        };
-                        item.innerHTML = `
-                            <div><b>${ad.title}</b><br><span style="font-size:0.7rem; color:#555">EARN REWARD</span></div>
-                            <div style="text-align:right"><span class="reward-val">+${reward} BFP</span><br><span style="font-size:0.7rem; color:#555">${duration} SEC</span></div>
-                        `;
-                        adsList.appendChild(item);
-                    });
-                } else {
-                    adsList.innerHTML = '<div style="color:#444">No campaigns available for now.</div>';
-                }
-            } catch (err) {
-                adsList.innerHTML = '<div style="color:#ff4444">Error loading ads.</div>';
+            const { data: ads } = await _supabase.from('ads').select('*').gt('expiry_at', now);
+            
+            if (ads && ads.length > 0) {
+                adsList.innerHTML = '';
+                ads.forEach(ad => {
+                    const item = document.createElement('div');
+                    item.className = 'ad-item';
+                    item.innerHTML = `<div><b>${ad.title}</b></div><div class="reward-val">VIEW</div>`;
+                    adsList.appendChild(item);
+                });
+            } else {
+                adsList.innerHTML = '<div style="color:#444">No ads.</div>';
             }
         }
 
         async function handleLogout() {
             await _supabase.auth.signOut();
-            window.location.replace("index.html");
+            window.location.replace("login.html");
         }
 
-        // بدء التشغيل عند تحميل الصفحة
         window.onload = init;
     </script>
 </body>
