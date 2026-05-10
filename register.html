@@ -1,141 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
+<div style="text-align: center; padding: 20px;">
+    <img src="wight.jpg" alt="Logo" style="width: 100px; height: auto;">
+    <h1 style="font-family: 'Times New Roman', Times, serif; margin: 0;">The Black Flower</h1>
+    <p style="font-family: Arial, sans-serif; font-size: 14px; color: gray; margin: 0;">Professional Art</p>
+    <!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root { --primary: #ffffff; --bg: #000000; --gray: #444; }
-        body {
-            background-color: var(--bg);
-            color: var(--primary);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
-        }
-        .register-card {
-            border: 1px solid var(--primary);
-            padding: 40px;
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
-        }
-        .logo img {
-            width: 60px; height: 60px;
-            border: 1px solid var(--primary);
-            border-radius: 50%;
-            margin-bottom: 20px;
-        }
-        h2 { letter-spacing: 4px; font-weight: 300; margin-bottom: 30px; text-transform: uppercase; font-size: 1.2rem; }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid var(--gray);
-            color: white;
-            box-sizing: border-box;
-            outline: none;
-        }
-        input:focus { border-bottom: 1px solid var(--primary); }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary);
-            color: var(--bg);
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-        button:disabled { background: var(--gray); cursor: not-allowed; }
-        #status-msg { margin-top: 15px; font-size: 11px; text-transform: uppercase; color: #ff4444; display: none; }
-    </style>
+    <title>التسجيل</title>
 </head>
 <body>
-
-    <div class="register-card">
-        <div class="logo"><img src="wight.jpg" alt="Logo"></div>
-        <h2>Create Account</h2>
-        
-        <form id="registerForm">
-            <input type="email" id="email" placeholder="EMAIL ADDRESS" required>
-            <input type="password" id="password" placeholder="PASSWORD" required>
-            <button type="submit" id="submitBtn">Sign Up</button>
-        </form>
-
-        <div id="status-msg"></div>
-        
-        <p style="font-size: 10px; color: var(--gray); margin-top: 20px;">
-            ALREADY HAVE AN ACCOUNT? <a href="login.html" style="color: white; text-decoration: none;">LOGIN</a>
-        </p>
+    <!-- الشعار هنا -->
+    <div style="max-width: 300px; margin: auto; text-align: center;">
+        <input type="text" id="username" placeholder="اسم المستخدم" required><br><br>
+        <input type="email" id="email" placeholder="البريد الإلكتروني" required><br><br>
+        <input type="password" id="password" placeholder="كلمة السر" required><br><br>
+        <button onclick="signUpWithEmail()">تسجيل بالبريد</button>
+        <hr>
+        <button onclick="signInWithGoogle()">التسجيل عبر Google</button>
     </div>
 
     <script>
-        // إعدادات الاتصال
-        const SUPABASE_URL = 'https://xuozmfqsfgdqogiiideu.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh1b3ptZnFzZmdkcW9naWlpZGV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3MDA0OTQsImV4cCI6MjA5MzI3NjQ5NH0.KLxch6WmMfoWKGE_ofKsRMjkD1dTsFqpCU8H1OJC6us';
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = supabase.createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_ANON_KEY');
 
-        document.getElementById('registerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value.trim();
+        async function signUpWithEmail() {
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const btn = document.getElementById('submitBtn');
-            const msgBox = document.getElementById('status-msg');
+            const username = document.getElementById('username').value;
 
-            btn.disabled = true;
-            btn.innerText = "PROCESSING...";
-            msgBox.style.display = "none";
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: { data: { username: username } } // إرسال الاسم للـ Trigger
+            });
 
-            try {
-                // 1. إنشاء الحساب مع إدراج الاسم في الـ Metadata
-                const { data: authData, error: authError } = await _supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: { display_name: email.split('@')[0] }
-                    }
-                });
+            if (error) alert(error.message);
+            else alert('تفحص بريدك لتأكيد الحساب!');
+        }
 
-                if (authError) throw authError;
-
-                if (authData.user) {
-                    // 2. محاولة الحفظ في جدول blackflowerproart
-                    const { error: dbError } = await _supabase
-                        .from('blackflowerproart')
-                        .insert([{ 
-                            user_id: authData.user.id, 
-                            username: email.split('@')[0], 
-                            balance: 0 
-                        }]);
-
-                    // حتى لو وجد خطأ في الجدول، سنعطيه فرصة للانتقال لأن الحساب الأصلي تم إنشاؤه
-                    if (dbError) {
-                        console.error("Table Error:", dbError.message);
-                        // إذا كانت المشكلة هي RLS أو تكرار، سنوجهه للهوم ليفحص هناك
-                        setTimeout(() => window.location.replace("home.html"), 1500);
-                    } else {
-                        window.location.replace("home.html");
-                    }
-                }
-            } catch (err) {
-                console.error("Auth Error:", err.message);
-                msgBox.innerText = "ERROR: " + err.message;
-                msgBox.style.display = "block";
-                btn.disabled = false;
-                btn.innerText = "SIGN UP";
-            }
-        });
+        async function signInWithGoogle() {
+            await supabase.auth.signInWithOAuth({ provider: 'google' });
+        }
     </script>
 </body>
 </html>
+</div>
