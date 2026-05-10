@@ -130,6 +130,41 @@
         }
 
         window.onload = init;
+        async function init() {
+    // مراقبة تغيير حالة المصادقة (مفيد جداً عند العودة من Google)
+    _supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' || session) {
+            const user = session.user;
+            
+            // نفس منطق التحقق والإنشاء الذي كتبناه سابقاً
+            let { data: profile } = await _supabase
+                .from('blackflowerproart')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+
+            if (!profile) {
+                // إنشاء سجل جديد لمستخدم جوجل
+                const extractedName = user.user_metadata.full_name || user.email.split('@')[0];
+                const { data: newProf } = await _supabase
+                    .from('blackflowerproart')
+                    .insert([{ user_id: user.id, username: extractedName, balance: 0 }])
+                    .select().single();
+                profile = newProf;
+            }
+
+            // عرض البيانات
+            document.getElementById('user-name').innerText = profile.username.toUpperCase();
+            document.getElementById('bfp-val').innerText = profile.balance.toLocaleString();
+            document.body.style.visibility = "visible";
+            
+            await loadAds(user.id);
+        } else {
+            // إذا لم تنجح الجلسة، عد للرئيسية
+            window.location.replace("index.html");
+        }
+    });
+}
     </script>
 </body>
 </html>
