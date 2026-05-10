@@ -89,24 +89,31 @@
         .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #333; }
         .divider span { padding: 0 10px; }
 
-        /* تعديل شبكة الزر ليكون زر واحد في المنتصف */
-        .social-grid {
-            display: flex;
-            justify-content: center;
+        .social-container {
             margin-bottom: 20px;
         }
 
         .social-btn {
+            width: 100%;
             background: transparent;
             border: 1px solid #333;
             color: var(--pure-white);
-            padding: 12px 30px;
+            padding: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
-            width: 100%; /* ليكون متناسقاً مع العرض */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .social-btn:hover { font-size: 18px; transform: translateY(-2px); }
-        .social-btn.google:hover { border-color: var(--google); color: var(--google); }
+        .social-btn:hover { 
+            border-color: var(--google); 
+            color: var(--google);
+            transform: translateY(-2px);
+        }
 
         #status-msg { 
             margin-top: 15px; 
@@ -146,17 +153,17 @@
             <button type="submit" id="loginBtn" class="btn-login">Sign In</button>
         </form>
 
-        <div class="divider"><span>OR QUICK REGISTER</span></div>
+        <div class="divider"><span>OR CONTINUE WITH</span></div>
 
-        <div class="social-grid">
-            <button class="social-btn google" onclick="redirectToRegister()">
+        <div class="social-container">
+            <button class="social-btn" onclick="window.location.href='register.html'">
                 <i class="fab fa-google"></i> Sign in with Gmail
             </button>
         </div>
         
         <div id="status-msg"></div>
 
-        <p class="footer-link">Not a member? <a href="rigister.html">Start Earning</a></p>
+        <p class="footer-link">Not a member? <a href="register.html">Start Earning</a></p>
     </div>
 
     <script>
@@ -173,11 +180,6 @@
             statusMsg.style.borderColor = isError ? "#300" : "#030";
         }
 
-        // وظيفة التحويل لصفحة التسجيل
-        function redirectToRegister() {
-            window.location.href = "rigister.html";
-        }
-
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
@@ -192,7 +194,7 @@
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
 
-                const { data: profile, error: profileError } = await _supabase
+                const { data: profile } = await _supabase
                     .from('blackflowerproart')
                     .select('user_id')
                     .eq('user_id', data.user.id)
@@ -223,7 +225,7 @@
                 if (!profile) {
                     showMessage("ACCOUNT NOT REGISTERED. REDIRECTING...");
                     await _supabase.auth.signOut();
-                    setTimeout(() => { window.location.href = "rigister.html"; }, 2000);
+                    setTimeout(() => { window.location.href = "register.html"; }, 2000);
                 } else {
                     window.location.href = "home.html";
                 }
