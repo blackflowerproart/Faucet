@@ -202,19 +202,25 @@
             }
         });
 
-        async function socialLogin(provider) {
-            try {
-                const { error } = await _supabase.auth.signInWithOAuth({
-                    provider: provider,
-                    options: {
-                        redirectTo: window.location.origin + window.location.pathname.replace('rigister.html', 'home.html')
-                    }
-                });
-                if (error) throw error;
-            } catch (err) {
-                alert(err.message);
+  async function socialLogin(provider) {
+    try {
+        // تحديد الرابط الحالي وتغيير نهايته إلى home.html ديناميكياً
+        const currentPath = window.location.pathname;
+        const redirectUrl = window.location.origin + currentPath.replace(/\/[^/]*$/, '/home.html');
+
+        const { error } = await _supabase.auth.signInWithOAuth({
+            provider: provider,
+            options: {
+                redirectTo: redirectUrl // هذا هو السطر الأهم
             }
-        }
+        });
+
+        if (error) throw error;
+    } catch (err) {
+        console.error("Social Login Error:", err.message);
+        alert("Login failed: " + err.message);
+    }
+}
     </script>
 </body>
 </html>
