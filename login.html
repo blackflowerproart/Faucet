@@ -12,9 +12,6 @@
             --pure-white: #ffffff;
             --light-gray: #888888;
             --google: #db4437;
-            --discord: #7289da;
-            --facebook: #1877f2;
-            --linkedin: #0077b5;
         }
 
         body {
@@ -27,7 +24,6 @@
             min-height: 100vh;
             margin: 0;
             background: radial-gradient(circle at center, #111 0%, #000 100%);
-            /* أزلنا الاختفاء لتجنب الشاشة السوداء */
         }
 
         .login-container {
@@ -93,10 +89,10 @@
         .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #333; }
         .divider span { padding: 0 10px; }
 
+        /* تعديل شبكة الزر ليكون زر واحد في المنتصف */
         .social-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            display: flex;
+            justify-content: center;
             margin-bottom: 20px;
         }
 
@@ -104,15 +100,13 @@
             background: transparent;
             border: 1px solid #333;
             color: var(--pure-white);
-            padding: 12px;
+            padding: 12px 30px;
             cursor: pointer;
             transition: all 0.3s ease;
+            width: 100%; /* ليكون متناسقاً مع العرض */
         }
         .social-btn:hover { font-size: 18px; transform: translateY(-2px); }
         .social-btn.google:hover { border-color: var(--google); color: var(--google); }
-        .social-btn.discord:hover { border-color: var(--discord); color: var(--discord); }
-        .social-btn.facebook:hover { border-color: var(--facebook); color: var(--facebook); }
-        .social-btn.linkedin:hover { border-color: var(--linkedin); color: var(--linkedin); }
 
         #status-msg { 
             margin-top: 15px; 
@@ -152,13 +146,12 @@
             <button type="submit" id="loginBtn" class="btn-login">Sign In</button>
         </form>
 
-        <div class="divider"><span>OR LOG IN WITH</span></div>
+        <div class="divider"><span>OR QUICK REGISTER</span></div>
 
         <div class="social-grid">
-            <button class="social-btn google" onclick="socialLogin('google')"><i class="fab fa-google"></i></button>
-            <button class="social-btn discord" onclick="socialLogin('discord')"><i class="fab fa-discord"></i></button>
-            <button class="social-btn facebook" onclick="socialLogin('facebook')"><i class="fab fa-facebook-f"></i></button>
-            <button class="social-btn linkedin" onclick="socialLogin('linkedin')"><i class="fab fa-linkedin-in"></i></button>
+            <button class="social-btn google" onclick="redirectToRegister()">
+                <i class="fab fa-google"></i> Sign in with Gmail
+            </button>
         </div>
         
         <div id="status-msg"></div>
@@ -180,6 +173,11 @@
             statusMsg.style.borderColor = isError ? "#300" : "#030";
         }
 
+        // وظيفة التحويل لصفحة التسجيل
+        function redirectToRegister() {
+            window.location.href = "rigister.html";
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('loginBtn');
@@ -194,7 +192,6 @@
                 const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
 
-                // التحقق من وجود المستخدم في جدولك الخاص
                 const { data: profile, error: profileError } = await _supabase
                     .from('blackflowerproart')
                     .select('user_id')
@@ -213,20 +210,6 @@
                 btn.disabled = false;
             }
         });
-
-        async function socialLogin(provider) {
-            try {
-                const { error } = await _supabase.auth.signInWithOAuth({
-                    provider: provider,
-                    options: {
-                        redirectTo: window.location.origin + window.location.pathname.replace('login.html', 'home.html')
-                    }
-                });
-                if (error) throw error;
-            } catch (err) {
-                showMessage(err.message);
-            }
-        }
 
         async function checkSession() {
             const { data: { session } } = await _supabase.auth.getSession();
