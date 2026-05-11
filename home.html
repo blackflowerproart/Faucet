@@ -54,24 +54,33 @@
             document.getElementById('user-welcome').innerText = "مرحباً: " + (profile ? profile.username : "User");
             document.getElementById('user-balance').innerText = wallet ? wallet.balance : "0.00";
 
-            // جلب الإعلانات
-            const { data: ads } = await _supabase.from('ads').select('*');
-            const list = document.getElementById('ads-list');
-            list.innerHTML = "";
+          // استبدل جزء جلب الإعلانات في صفحة home.html بهذا الكود
+async function loadAds() {
+    const now = new Date().toISOString();
+    // جلب الإعلانات التي تاريخ انتهائها أكبر من "الآن"
+    const { data: ads, error } = await _supabase
+        .from('ads')
+        .select('*')
+        .gt('expiry_date', now);
 
-            if(ads && ads.length > 0) {
-                ads.forEach(ad => {
-                    list.innerHTML += `
-                        <div class="ad-card">
-                            <h4>${ad.title}</h4>
-                            <span class="reward">اربح ${ad.reward_amount}$</span>
-                            <button class="btn-view" onclick="alert('سيتم فتح الإعلان...')">شاهد الآن</button>
-                        </div>
-                    `;
-                });
-            } else {
-                list.innerHTML = "<p>لا توجد إعلانات حالياً.</p>";
-            }
+    const list = document.getElementById('ads-list');
+    list.innerHTML = "";
+
+    if(ads && ads.length > 0) {
+        ads.forEach(ad => {
+            list.innerHTML += `
+                <div class="ad-card">
+                    <h4>${ad.title}</h4>
+                    <span class="reward">مكافأة المشاهدة: ${ad.reward_amount} BFP</span>
+                    <p style="color:#888">المدة: ${ad.duration_seconds} ثانية</p>
+                    <button class="btn-view" onclick="startWatching('${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
+                </div>
+            `;
+        });
+    } else {
+        list.innerHTML = "<p>لا توجد إعلانات نشطة حالياً.</p>";
+    }
+}
         }
         loadData();
     </script>
