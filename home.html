@@ -28,6 +28,13 @@
         <p style="font-family: Arial; font-weight: bold; color: #888;">Professional art</p>
         <button class="logout" onclick="_supabase.auth.signOut().then(()=>location.href='index.html')">خروج</button>
     </div>
+    <!-- أضف هذا الزر في صفحة home.html -->
+<div style="margin: 20px 0; text-align: center;">
+    <button onclick="window.location.href='create-ad.html'" 
+            style="padding: 15px 30px; background: #28a745; color: #fff; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);">
+        📢 أنشئ إعلانك الآن
+    </button>
+</div>
 
     <div class="balance-card">
         <h3 id="user-welcome">مرحباً...</h3>
