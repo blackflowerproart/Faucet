@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء إعلان - BFP</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #000; color: #fff; font-family: Arial; text-align: center; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #111; padding: 30px; border-radius: 20px; border: 1px solid #333; }
+        select, input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 1.1rem; box-sizing: border-box; }
+        .price-tag { background: #28a745; color: #fff; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 1.3rem; font-weight: bold; }
+        button { width: 100%; padding: 18px; background: #fff; color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.2rem; }
+        button:disabled { background: #444; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>إنشاء حملة إعلانية</h1>
+    <div class="container">
+        <input type="text" id="ad-title" placeholder="عنوان الإعلان">
+        <input type="url" id="ad-link" placeholder="رابط الإعلان (https://...)">
+        
+        <label>نوع الإعلان:</label>
+        <select id="ad-type" onchange="calculateTotal()">
+            <option value="10">10 ثوانٍ (التكلفة: 50 BFP / يوم)</option>
+            <option value="20">20 ثانية (التكلفة: 100 BFP / يوم)</option>
+        </select>
+
+        <label>مدة العرض:</label>
+        <select id="ad-duration" onchange="calculateTotal()">
+            <option value="1">يوم واحد</option>
+            <option value="7">أسبوع (7 أيام)</option>
+            <option value="30">شهر (30 يوم)</option>
+        </select>
+
+        <div class="price-tag">التكلفة الإجمالية: <span id="total-price">50</span> BFP</div>
+        <button id="create-btn" onclick="submitAd()">إنشاء الإعلان الآن</button>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'YOUR_ANON_KEY';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function calculateTotal() {
+            const type = document.getElementById('ad-type').value;
+            const days = document.getElementById('ad-duration').value;
+            const total = (type == "10" ? 50 : 100) * days;
+            document.getElementById('total-price').innerText = total;
+        }
+
+        async function submitAd() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return alert("سجل دخولك أولاً");
+
+            const title = document.getElementById('ad-title').value;
+            const link = document.getElementById('ad-link').value;
+            const dur = document.getElementById('ad-type').value;
+            const days = document.getElementById('ad-duration').value;
+            const cost = (dur == "10" ? 50 : 100) * days;
+            const reward = (dur == "10" ? 8 : 15);
+
+            if(!title || !link) return alert("اكمل البيانات");
+
+            const { error } = await _supabase.rpc('create_ad_and_deduct', {
+                user_id: user.id,
+                ad_title: title,
+                ad_url: link,
+                dur: parseInt(dur),
+                reward: reward,
+                cost: cost,
+                days: parseInt(days)
+            });
+
+            if (error) alert(error.message);
+            else {
+                alert("تم إنشاء الإعلان وخصم الرصيد بنجاح!");
+                window.location.href = 'home.html';
+            }
+        }
+    </script>
+</body>
+</html>
