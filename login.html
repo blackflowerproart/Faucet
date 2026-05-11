@@ -3,24 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>تسجيل الدخول - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #000; color: #fff; font-family: Arial; text-align: center; padding: 20px; }
-        .login-box { max-width: 400px; margin: auto; background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; }
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 1.1rem; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; margin-top: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header img { width: 120px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
+        .header h1 { font-family: 'Times New Roman', serif; font-size: 2.8rem; margin: 0; }
+        .header p { font-family: Arial; font-size: 1.1rem; color: #888; text-transform: uppercase; font-weight: bold; }
+
+        .login-container { 
+            background: #111; 
+            padding: 35px; 
+            border-radius: 20px; 
+            border: 1px solid #333; 
+            width: 100%; 
+            max-width: 400px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+        }
+
+        h2 { font-size: 1.6rem; margin-bottom: 25px; color: #28a745; text-align: center; }
+
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            border: 1px solid #444; 
+            background: #1a1a1a; 
+            color: #fff; 
+            font-size: 1.1rem; 
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .login-btn { 
+            width: 100%; 
+            padding: 16px; 
+            background: #fff; 
+            color: #000; 
+            border: none; 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        .google-btn { 
+            width: 100%; 
+            padding: 15px; 
+            background: #4285F4; 
+            color: #fff; 
+            border: none; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .error-msg { color: #ff4444; margin-top: 15px; display: none; text-align: center; }
+        
+        .footer-link { margin-top: 20px; color: #888; font-size: 0.9rem; }
+        .footer-link a { color: #28a745; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <img src="wight.jpg" width="100">
-    <h1 style="font-family: 'Times New Roman'; font-size: 2.5rem;">The Black Flower</h1>
-    <div class="login-box">
+
+    <div class="header">
+        <img src="wight.jpg" alt="Logo">
+        <h1>The Black Flower</h1>
+        <p>Professional art</p>
+    </div>
+
+    <div class="login-container">
         <h2>تسجيل الدخول</h2>
         <input type="email" id="email" placeholder="البريد الإلكتروني">
         <input type="password" id="password" placeholder="كلمة السر">
-        <button style="background: #fff; color: #000;" onclick="login()">دخول</button>
-        <button style="background: #4285F4; color: #fff; border:none;" onclick="google()">دخول بـ Google</button>
+        
+        <p id="error-display" class="error-msg"></p>
+
+        <button class="login-btn" onclick="handleLogin()">دخول</button>
+        
+        <div style="text-align: center; margin: 15px 0; color: #444;">أو</div>
+        
+        <button class="google-btn" onclick="handleGoogleSignIn()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" style="background: white; border-radius: 2px; padding: 2px;">
+            الدخول بواسطة Google
+        </button>
+    </div>
+
+    <div class="footer-link">
+        ليس لديك حساب؟ <a href="register.html">ابدأ الكسب الآن</a>
     </div>
 
     <script>
@@ -28,14 +120,35 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function login() {
-            const { error } = await _supabase.auth.signInWithPassword({
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
-            });
-            if (error) alert(error.message); else window.location.href='home.html';
+        // الرابط الذي سيتوجه إليه المستخدم في كل الأحوال
+        const REDIRECT_URL = "https://blackflowerproart.github.io/Faucet/home.html";
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDisplay = document.getElementById('error-display');
+
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorDisplay.innerText = "بيانات الدخول غير صحيحة";
+                errorDisplay.style.display = "block";
+            } else {
+                window.location.href = REDIRECT_URL;
+            }
         }
-        async function google() { await _supabase.auth.signInWithOAuth({ provider: 'google' }); }
+
+        async function handleGoogleSignIn() {
+            // جوجل سيقوم بالتحقق: إذا كان الإيميل جديداً سيفتح له حساباً، وإذا كان قديماً سيدخله
+            // وفي الحالتين سيعيده إلى صفحة الهوم
+            const { error } = await _supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: REDIRECT_URL
+                }
+            });
+            if (error) alert("خطأ في الاتصال بجوجل: " + error.message);
+        }
     </script>
 </body>
 </html>
