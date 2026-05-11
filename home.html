@@ -3,47 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - Black Flower</title>
+    <title>الرئيسية - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background-color: #000; color: #fff; font-family: Arial; text-align: center; margin: 0; padding-bottom: 50px; }
-        .header-section { padding: 30px; background: #111; border-bottom: 2px solid #28a745; margin-bottom: 30px; }
-        .balance-card { background: linear-gradient(45deg, #111, #222); padding: 25px; border-radius: 20px; border: 1px solid #28a745; display: inline-block; min-width: 280px; margin: 20px; }
-        .balance-card h3 { font-size: 1.5rem; color: #bbb; margin: 0; }
-        .balance-card span { font-size: 3rem; font-weight: bold; color: #28a745; }
-        .ads-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 20px; max-width: 1200px; margin: auto; }
-        .ad-card { background: #1a1a1a; padding: 20px; border-radius: 15px; border: 1px solid #333; transition: 0.3s; }
-        .ad-card:hover { border-color: #28a745; }
-        .ad-card h4 { font-size: 1.4rem; margin-bottom: 10px; }
-        .reward { color: #28a745; font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; display: block; }
-        .btn-view { background: #28a745; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; font-size: 1.1rem; }
-        .logout { color: #ff4444; background: none; border: 1px solid #ff4444; padding: 5px 15px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+
+        /* شريط علوي احترافي */
+        .top-bar {
+            width: 100%;
+            padding: 15px 25px;
+            background: #111;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-sizing: border-box;
+        }
+
+        .user-info { display: flex; flex-direction: column; align-items: flex-start; }
+        .user-info span { font-size: 0.85rem; color: #888; margin-bottom: 5px; }
+
+        .balance-box {
+            background: linear-gradient(45deg, #28a745, #1e7e34);
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .nav-buttons { display: flex; gap: 10px; align-items: center; }
+
+        .create-ad-btn {
+            background: #fff;
+            color: #000;
+            padding: 10px 15px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+
+        /* قائمة الإعلانات */
+        .ads-container {
+            width: 95%;
+            max-width: 700px;
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 50px;
+        }
+
+        .ad-card {
+            background: #111;
+            border: 1px solid #222;
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .ad-card h3 { margin: 0 0 5px 0; font-size: 1.2rem; color: #28a745; }
+        .ad-card p { margin: 0; color: #aaa; font-size: 0.9rem; }
+
+        .view-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .view-btn:hover { background: #218838; transform: scale(1.05); }
+
+        /* نافذة المشاهدة */
+        #video-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        #timer-display { font-size: 4rem; color: #28a745; margin-bottom: 10px; font-weight: bold; }
+        iframe { width: 90%; height: 70%; border: 1px solid #333; border-radius: 10px; background: #000; }
+
     </style>
 </head>
 <body>
 
-    <div class="header-section">
-        <img src="wight.jpg" width="80">
-        <h1 style="font-family: 'Times New Roman'; margin: 5px 0;">The Black Flower</h1>
-        <p style="font-family: Arial; font-weight: bold; color: #888;">Professional art</p>
-        <button class="logout" onclick="_supabase.auth.signOut().then(()=>location.href='index.html')">خروج</button>
-    </div>
-    <!-- أضف هذا الزر في صفحة home.html -->
-<div style="margin: 20px 0; text-align: center;">
-    <button onclick="window.location.href='create-ad.html'" 
-            style="padding: 15px 30px; background: #28a745; color: #fff; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);">
-        📢 أنشئ إعلانك الآن
-    </button>
-</div>
-
-    <div class="balance-card">
-        <h3 id="user-welcome">مرحباً...</h3>
-        <span>$</span><span id="user-balance">0.00</span>
+    <div class="top-bar">
+        <div class="user-info">
+            <span id="user-display">جاري التحميل...</span>
+            <div class="balance-box"><span id="balance">0</span> BFP</div>
+        </div>
+        <div class="nav-buttons">
+            <a href="create-ad.html" class="create-ad-btn">📢 أنشئ إعلان</a>
+            <button onclick="handleLogout()" style="background:none; border:1px solid #444; color:#fff; cursor:pointer; padding:8px; border-radius:8px;">خروج</button>
+        </div>
     </div>
 
-    <h2 style="margin-top: 40px;">الإعلانات المتاحة لك الآن</h2>
-    <div id="ads-list" class="ads-grid">
-        <p>جاري التحقق من الإعلانات الجديدة...</p>
+    <div class="ads-container" id="ads-list">
+        <p style="text-align: center; color: #555;">جاري البحث عن إعلانات...</p>
+    </div>
+
+    <!-- نافذة المشاهدة -->
+    <div id="video-overlay">
+        <div id="timer-display">0</div>
+        <p style="color: #888; margin-bottom: 15px;">انتظر حتى انتهاء العداد للحصول على المكافأة</p>
+        <iframe id="ad-frame" src=""></iframe>
     </div>
 
     <script>
@@ -51,45 +141,118 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        async function loadData() {
+        let currentUserId = null;
+
+        // تشغيل الوظائف عند التحميل
+        window.onload = async function() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) { window.location.href = 'login.html'; return; }
+            
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
 
-            const { data: profile } = await _supabase.from('profiles').select('username').eq('id', user.id).single();
-            const { data: wallet } = await _supabase.from('wallets').select('balance').eq('id', user.id).single();
+            currentUserId = user.id;
+            console.log("Logged in user ID:", currentUserId);
+            
+            loadUserData();
+            loadAds();
+        };
 
-            document.getElementById('user-welcome').innerText = "مرحباً: " + (profile ? profile.username : "User");
-            document.getElementById('user-balance').innerText = wallet ? wallet.balance : "0.00";
+        // جلب بيانات المستخدم
+        async function loadUserData() {
+            const { data, error } = await _supabase
+                .from('profiles')
+                .select('username, wallets(balance)')
+                .eq('id', currentUserId)
+                .single();
 
-          // استبدل جزء جلب الإعلانات في صفحة home.html بهذا الكود
-async function loadAds() {
-    const now = new Date().toISOString();
-    // جلب الإعلانات التي تاريخ انتهائها أكبر من "الآن"
-    const { data: ads, error } = await _supabase
-        .from('ads')
-        .select('*')
-        .gt('expiry_date', now);
-
-    const list = document.getElementById('ads-list');
-    list.innerHTML = "";
-
-    if(ads && ads.length > 0) {
-        ads.forEach(ad => {
-            list.innerHTML += `
-                <div class="ad-card">
-                    <h4>${ad.title}</h4>
-                    <span class="reward">مكافأة المشاهدة: ${ad.reward_amount} BFP</span>
-                    <p style="color:#888">المدة: ${ad.duration_seconds} ثانية</p>
-                    <button class="btn-view" onclick="startWatching('${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
-                </div>
-            `;
-        });
-    } else {
-        list.innerHTML = "<p>لا توجد إعلانات نشطة حالياً.</p>";
-    }
-}
+            if (data) {
+                document.getElementById('user-display').innerText = "مرحباً: " + data.username;
+                document.getElementById('balance').innerText = data.wallets.balance;
+            }
         }
-        loadData();
+
+        // جلب الإعلانات (محدثة لضمان الظهور)
+        async function loadAds() {
+            console.log("Attempting to fetch ads...");
+            
+            // جلب الإعلانات بدون شرط التاريخ مؤقتاً للتأكد من أنها تظهر
+            const { data: ads, error } = await _supabase
+                .from('ads')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("Supabase Error:", error.message);
+                document.getElementById('ads-list').innerHTML = `<p style="color:red">خطأ: ${error.message}</p>`;
+                return;
+            }
+
+            console.log("Ads retrieved from DB:", ads);
+
+            const list = document.getElementById('ads-list');
+            list.innerHTML = "";
+
+            if (ads && ads.length > 0) {
+                ads.forEach(ad => {
+                    list.innerHTML += `
+                        <div class="ad-card">
+                            <div class="ad-info">
+                                <h3>${ad.title}</h3>
+                                <p>المدة: ${ad.duration_seconds} ثانية | المكافأة: <b style="color:#28a745">${ad.reward_amount} BFP</b></p>
+                            </div>
+                            <button class="view-btn" onclick="startWatching('${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
+                        </div>
+                    `;
+                });
+            } else {
+                list.innerHTML = "<p style='text-align:center; color:#555;'>لا توجد إعلانات منشورة حتى الآن.</p>";
+            }
+        }
+
+        // نظام المشاهدة والمكافأة
+        function startWatching(url, seconds, reward) {
+            const overlay = document.getElementById('video-overlay');
+            const timerText = document.getElementById('timer-display');
+            const frame = document.getElementById('ad-frame');
+            
+            overlay.style.display = 'flex';
+            frame.src = url;
+            let timeLeft = seconds;
+            timerText.innerText = timeLeft;
+
+            const countdown = setInterval(async () => {
+                timeLeft--;
+                timerText.innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    overlay.style.display = 'none';
+                    frame.src = ""; // تنظيف الإطار
+                    await addReward(reward);
+                }
+            }, 1000);
+        }
+
+        async function addReward(amount) {
+            const { error } = await _supabase.rpc('increment_balance', { 
+                user_id: currentUserId, 
+                amount: amount 
+            });
+
+            if (error) {
+                alert("خطأ في المكافأة: " + error.message);
+            } else {
+                alert(`أحسنت! أضيف لبرصيدك ${amount} BFP`);
+                loadUserData(); // تحديث الرصيد فوراً
+            }
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            window.location.href = 'login.html';
+        }
     </script>
 </body>
 </html>
