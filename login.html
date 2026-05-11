@@ -6,6 +6,7 @@
     <title>تسجيل الدخول - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* التنسيق العام المتجاوب */
         body { 
             background-color: #000; 
             color: #fff; 
@@ -47,7 +48,25 @@
             font-size: 1.1rem; 
             box-sizing: border-box;
             outline: none;
+            transition: 0.3s;
         }
+
+        input:focus { border-color: #28a745; }
+
+        .forgot-link {
+            text-align: left;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .forgot-link a {
+            color: #888;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .forgot-link a:hover { color: #28a745; }
 
         .login-btn { 
             width: 100%; 
@@ -59,9 +78,10 @@
             font-weight: bold; 
             border-radius: 10px; 
             cursor: pointer; 
-            margin-top: 10px;
             transition: 0.3s;
         }
+
+        .login-btn:hover { background: #e6e6e6; transform: translateY(-2px); }
 
         .google-btn { 
             width: 100%; 
@@ -78,9 +98,12 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            transition: 0.3s;
         }
 
-        .error-msg { color: #ff4444; margin-top: 15px; display: none; text-align: center; }
+        .google-btn:hover { opacity: 0.9; }
+
+        .error-msg { color: #ff4444; margin-top: 15px; display: none; text-align: center; font-size: 1rem; }
         
         .footer-link { margin-top: 20px; color: #888; font-size: 0.9rem; }
         .footer-link a { color: #28a745; text-decoration: none; font-weight: bold; }
@@ -96,14 +119,19 @@
 
     <div class="login-container">
         <h2>تسجيل الدخول</h2>
+        
         <input type="email" id="email" placeholder="البريد الإلكتروني">
         <input type="password" id="password" placeholder="كلمة السر">
+        
+        <div class="forgot-link">
+            <a href="#" onclick="handleForgotPassword()">نسيت كلمة المرور؟</a>
+        </div>
         
         <p id="error-display" class="error-msg"></p>
 
         <button class="login-btn" onclick="handleLogin()">دخول</button>
         
-        <div style="text-align: center; margin: 15px 0; color: #444;">أو</div>
+        <div style="text-align: center; margin: 15px 0; color: #444; font-size: 0.9rem;">أو عبر</div>
         
         <button class="google-btn" onclick="handleGoogleSignIn()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" style="background: white; border-radius: 2px; padding: 2px;">
@@ -112,17 +140,20 @@
     </div>
 
     <div class="footer-link">
-        ليس لديك حساب؟ <a href="register.html">ابدأ الكسب الآن</a>
+        ليس لديك حساب؟ <a href="register.html">انضم إلينا الآن</a>
     </div>
 
     <script>
+        // إعدادات الربط الخاصة بك
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // الرابط الذي سيتوجه إليه المستخدم في كل الأحوال
-        const REDIRECT_URL = "https://blackflowerproart.github.io/Faucet/home.html";
+        // الروابط الخاصة بموقعك على GitHub Pages
+        const HOME_URL = "https://blackflowerproart.github.io/Faucet/home.html";
+        const RESET_URL = "https://blackflowerproart.github.io/Faucet/reset-password.html";
 
+        // 1. تسجيل الدخول العادي
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -131,23 +162,41 @@
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                errorDisplay.innerText = "بيانات الدخول غير صحيحة";
+                errorDisplay.innerText = "خطأ: " + error.message;
                 errorDisplay.style.display = "block";
             } else {
-                window.location.href = REDIRECT_URL;
+                window.location.href = HOME_URL;
             }
         }
 
+        // 2. الدخول بواسطة جوجل
         async function handleGoogleSignIn() {
-            // جوجل سيقوم بالتحقق: إذا كان الإيميل جديداً سيفتح له حساباً، وإذا كان قديماً سيدخله
-            // وفي الحالتين سيعيده إلى صفحة الهوم
             const { error } = await _supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: REDIRECT_URL
+                    redirectTo: HOME_URL
                 }
             });
-            if (error) alert("خطأ في الاتصال بجوجل: " + error.message);
+            if (error) alert("خطأ جوجل: " + error.message);
+        }
+
+        // 3. نسيان كلمة المرور
+        async function handleForgotPassword() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert("يرجى كتابة بريدك الإلكتروني في الخانة أولاً لإرسال رابط الاستعادة.");
+                return;
+            }
+
+            const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: RESET_URL,
+            });
+
+            if (error) {
+                alert("خطأ: " + error.message);
+            } else {
+                alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك. تفقد صندوق الوارد.");
+            }
         }
     </script>
 </body>
