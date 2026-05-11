@@ -6,7 +6,6 @@
     <title>إنشاء حساب - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* التنسيق المتجاوب والخلفية السوداء */
         body { 
             background-color: #000; 
             color: #fff; 
@@ -21,31 +20,31 @@
         }
 
         .header { text-align: center; margin-bottom: 30px; }
-        .header img { width: 120px; border-radius: 10px; margin-bottom: 10px; }
+        .header img { width: 120px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
         .header h1 { font-family: 'Times New Roman', serif; font-size: 2.8rem; margin: 0; }
-        .header p { font-family: Arial; font-size: 1.1rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .header p { font-family: Arial; font-size: 1.1rem; color: #888; text-transform: uppercase; font-weight: bold; }
 
         .form-container { 
             background: #111; 
-            padding: 40px; 
+            padding: 35px; 
             border-radius: 20px; 
             border: 1px solid #333; 
             width: 100%; 
             max-width: 450px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
         }
 
-        h2 { font-size: 1.8rem; margin-bottom: 25px; color: #28a745; }
+        h2 { font-size: 1.6rem; margin-bottom: 25px; color: #28a745; text-align: center; }
 
         input { 
             width: 100%; 
-            padding: 18px; 
-            margin: 12px 0; 
+            padding: 16px; 
+            margin: 10px 0; 
             border-radius: 10px; 
             border: 1px solid #444; 
             background: #1a1a1a; 
             color: #fff; 
-            font-size: 1.2rem; 
+            font-size: 1.1rem; 
             box-sizing: border-box;
             outline: none;
         }
@@ -54,11 +53,11 @@
 
         .reg-btn { 
             width: 100%; 
-            padding: 18px; 
+            padding: 16px; 
             background: #28a745; 
             color: white; 
             border: none; 
-            font-size: 1.3rem; 
+            font-size: 1.2rem; 
             font-weight: bold; 
             border-radius: 10px; 
             cursor: pointer; 
@@ -66,11 +65,11 @@
             transition: 0.3s;
         }
 
-        .reg-btn:hover { background: #218838; transform: scale(1.02); }
+        .reg-btn:hover { background: #218838; }
 
         .google-btn { 
             width: 100%; 
-            padding: 16px; 
+            padding: 15px; 
             background: #fff; 
             color: #000; 
             border: none; 
@@ -85,14 +84,7 @@
             gap: 10px;
         }
 
-        .error-msg { color: #ff4444; margin-top: 10px; display: none; font-size: 1rem; }
-
-        /* للهواتف الصغيرة */
-        @media (max-width: 480px) {
-            .header h1 { font-size: 2.2rem; }
-            .form-container { padding: 25px; }
-            input, .reg-btn { font-size: 1.1rem; padding: 15px; }
-        }
+        .error-msg { color: #ff4444; margin-top: 15px; display: none; font-size: 1rem; text-align: center; }
     </style>
 </head>
 <body>
@@ -111,28 +103,28 @@
         
         <p id="error-display" class="error-msg"></p>
 
-        <button class="reg-btn" id="btn-text" onclick="handleSignUp()">تسجيل ودخول مباشر</button>
+        <button class="reg-btn" id="submit-btn" onclick="handleSignUp()">تسجيل ودخول مباشر</button>
         
-        <div style="margin: 20px 0; color: #444;">أو</div>
+        <div style="text-align: center; margin: 15px 0; color: #444;">أو</div>
         
-        <button class="google-btn" onclick="handleGoogle()">
+        <button class="google-btn" onclick="handleGoogleSignIn()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
-            التسجيل عبر Google
+            الدخول بواسطة Google
         </button>
     </div>
 
     <script>
-        // إعدادات Supabase الخاصة بك
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const REDIRECT_URL = "https://blackflowerproart.github.io/Faucet/home.html";
 
         async function handleSignUp() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const username = document.getElementById('username').value;
             const errorDisplay = document.getElementById('error-display');
-            const btn = document.getElementById('btn-text');
 
             if (!username || !email || !password) {
                 errorDisplay.innerText = "يرجى ملء جميع الحقول";
@@ -140,33 +132,25 @@
                 return;
             }
 
-            btn.innerText = "جاري المعالجة...";
-            btn.disabled = true;
-
             const { data, error } = await _supabase.auth.signUp({
                 email,
                 password,
-                options: { 
-                    data: { username: username } 
-                }
+                options: { data: { username: username } }
             });
 
             if (error) {
-                errorDisplay.innerText = "خطأ: " + error.message;
+                errorDisplay.innerText = error.message;
                 errorDisplay.style.display = "block";
-                btn.innerText = "تسجيل ودخول مباشر";
-                btn.disabled = false;
             } else {
-                // بما أن التأكيد معطل، سينتقل فوراً لصفحة الهوم
-                window.location.href = 'home.html';
+                window.location.href = REDIRECT_URL;
             }
         }
 
-        async function handleGoogle() {
+        async function handleGoogleSignIn() {
             const { error } = await _supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: window.location.origin + '/home.html'
+                    redirectTo: REDIRECT_URL
                 }
             });
             if (error) alert(error.message);
