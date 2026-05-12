@@ -3,147 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الرئيسية - The Black Flower</title>
+    <title>لوحة التحكم - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { 
-            background-color: #000; 
-            color: #fff; 
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh; 
+        :root {
+            --primary-color: #28a745;
+            --bg-dark: #000000;
+            --sidebar-bg: #111111;
+            --card-bg: #161616;
+            --text-main: #ffffff;
+            --text-dim: #888888;
         }
 
-        /* شريط علوي احترافي */
-        .top-bar {
-            width: 100%;
-            padding: 15px 25px;
-            background: #111;
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        /* القائمة الجانبية على اليسار */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-left: 1px solid #222;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            flex-direction: column;
+            padding: 30px 20px;
             box-sizing: border-box;
         }
 
-        .user-info { display: flex; flex-direction: column; align-items: flex-start; }
-        .user-info span { font-size: 0.85rem; color: #888; margin-bottom: 5px; }
-
-        .balance-box {
-            background: linear-gradient(45deg, #28a745, #1e7e34);
-            padding: 8px 18px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        .profile-section {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
-        .nav-buttons { display: flex; gap: 10px; align-items: center; }
-
-        .create-ad-btn {
-            background: #fff;
-            color: #000;
-            padding: 10px 15px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 0.85rem;
-            transition: 0.3s;
+        .profile-section img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            margin-bottom: 15px;
+            object-fit: cover;
         }
 
-        /* قائمة الإعلانات */
-        .ads-container {
-            width: 95%;
-            max-width: 700px;
-            margin-top: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding-bottom: 50px;
-        }
+        .username { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); }
+        .user-email { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px; word-break: break-all; }
 
-        .ad-card {
-            background: #111;
-            border: 1px solid #222;
+        .balance-card {
+            background: linear-gradient(135deg, #1e7e34, #28a745);
             padding: 20px;
             border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        }
+        .balance-card span { font-size: 0.9rem; display: block; margin-bottom: 5px; }
+        .balance-card b { font-size: 1.8rem; }
+
+        .edit-profile-box {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .edit-profile-box input {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            outline: none;
+        }
+        .edit-profile-box button {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .edit-profile-box button:hover { background: var(--primary-color); }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            flex-grow: 1;
+            padding: 40px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .header-title {
+            border-bottom: 1px solid #222;
+            padding-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
 
-        .ad-card h3 { margin: 0 0 5px 0; font-size: 1.2rem; color: #28a745; }
-        .ad-card p { margin: 0; color: #aaa; font-size: 0.9rem; }
+        .sections-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
 
-        .view-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
+        .content-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid #222;
+            min-height: 400px;
+        }
+
+        .content-card h2 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ستايل الإعلانات داخل الكارد */
+        .ad-item {
+            background: #1f1f1f;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             transition: 0.2s;
         }
+        .ad-item:hover { border-color: var(--primary-color); background: #252525; }
+        
+        .ad-info b { color: var(--primary-color); display: block; margin-bottom: 4px; }
+        .ad-info small { color: var(--text-dim); }
 
-        .view-btn:hover { background: #218838; transform: scale(1.05); }
-
-        /* نافذة المشاهدة */
-        #video-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+        .btn-view {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
-        #timer-display { font-size: 4rem; color: #28a745; margin-bottom: 10px; font-weight: bold; }
-        iframe { width: 90%; height: 70%; border: 1px solid #333; border-radius: 10px; background: #000; }
+        /* ستايل المهام (قيد الإنشاء) */
+        .tasks-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 250px;
+            color: #444;
+            text-align: center;
+        }
+
+        .logout-btn {
+            margin-top: auto;
+            background: none;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .logout-btn:hover { background: #ff4444; color: white; }
 
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="user-info">
-            <span id="user-display">جاري التحميل...</span>
-            <div class="balance-box"><span id="balance">0</span> BFP</div>
+    <!-- القائمة الجانبية (Sidebar) -->
+    <div class="sidebar">
+        <div class="profile-section">
+            <img src="wight.jpg" alt="User Profile" onerror="this.src='https://via.placeholder.com/90'">
+            <div class="username" id="display-name">جاري التحميل...</div>
+            <div class="user-email" id="display-email">...</div>
+            
+            <div class="balance-card">
+                <span>رصيدك الحالي</span>
+                <b id="balance">0.00</b> <small>BFP</small>
+            </div>
         </div>
-        <div class="nav-buttons">
-            <a href="create-ad.html" class="create-ad-btn">📢 أنشئ إعلان</a>
-            <button onclick="handleLogout()" style="background:none; border:1px solid #444; color:#fff; cursor:pointer; padding:8px; border-radius:8px;">خروج</button>
+
+        <div class="edit-profile-box">
+            <label style="font-size: 0.8rem; color: #666;">تحديث اسم المستخدم:</label>
+            <input type="text" id="new-username" placeholder="اكتب الاسم الجديد">
+            <button onclick="updateUserName()">حفظ التغييرات</button>
         </div>
+
+        <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
     </div>
 
-    <div class="ads-container" id="ads-list">
-        <p style="text-align: center; color: #555;">جاري البحث عن إعلانات...</p>
-    </div>
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <div class="header-title">
+            <h1>لوحة التحكم الرئيسية</h1>
+            <a href="create-ad.html" style="color: var(--primary-color); text-decoration: none; font-weight: bold;">+ إضافة إعلان جديد</a>
+        </div>
 
-    <!-- نافذة المشاهدة -->
-    <div id="video-overlay">
-        <div id="timer-display">0</div>
-        <p style="color: #888; margin-bottom: 15px;">انتظر حتى انتهاء العداد للحصول على المكافأة</p>
-        <iframe id="ad-frame" src=""></iframe>
+        <div class="sections-grid">
+            <!-- قسم مشاهدة الإعلانات -->
+            <div class="content-card">
+                <h2 style="color: #28a745;">📺 إعلانات متوفرة</h2>
+                <div id="ads-list">
+                    <p style="color:#555; text-align:center;">جاري البحث عن إعلانات...</p>
+                </div>
+            </div>
+
+            <!-- قسم المهام -->
+            <div class="content-card">
+                <h2 style="color: #ffc107;">🛠️ المهام اليومية</h2>
+                <div class="tasks-placeholder">
+                    <p>قسـم المهام قيد التطوير حالياً<br>انتظرونا في التحديث القادم!</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
+        // إعدادات Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let currentUserId = null;
 
-        // تشغيل الوظائف عند التحميل
         window.onload = async function() {
             const { data: { user } } = await _supabase.auth.getUser();
             
@@ -153,100 +246,75 @@
             }
 
             currentUserId = user.id;
-            console.log("Logged in user ID:", currentUserId);
-            
-            loadUserData();
-            loadAds();
+            fetchUserProfile();
+            fetchAds();
         };
 
-        // جلب بيانات المستخدم
-        async function loadUserData() {
+        // جلب بيانات البروفايل والرصيد
+        async function fetchUserProfile() {
             const { data, error } = await _supabase
                 .from('profiles')
-                .select('username, wallets(balance)')
+                .select('username, email, wallets(balance)')
                 .eq('id', currentUserId)
                 .single();
 
             if (data) {
-                document.getElementById('user-display').innerText = "مرحباً: " + data.username;
-                document.getElementById('balance').innerText = data.wallets.balance;
+                document.getElementById('display-name').innerText = data.username;
+                document.getElementById('display-email').innerText = data.email;
+                document.getElementById('balance').innerText = data.wallets ? data.wallets.balance : "0.00";
             }
         }
 
-        // جلب الإعلانات (محدثة لضمان الظهور)
-        async function loadAds() {
-            console.log("Attempting to fetch ads...");
-            
-            // جلب الإعلانات بدون شرط التاريخ مؤقتاً للتأكد من أنها تظهر
+        // تحديث اسم المستخدم
+        async function updateUserName() {
+            const newName = document.getElementById('new-username').value;
+            if (!newName) return alert("الرجاء إدخال اسم");
+
+            const { error } = await _supabase.rpc('update_username', { 
+                user_id: currentUserId, 
+                new_name: newName 
+            });
+
+            if (error) {
+                alert("خطأ أثناء التحديث: " + error.message);
+            } else {
+                alert("تم تحديث الاسم بنجاح");
+                fetchUserProfile();
+                document.getElementById('new-username').value = "";
+            }
+        }
+
+        // جلب الإعلانات من القاعدة
+        async function fetchAds() {
             const { data: ads, error } = await _supabase
                 .from('ads')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            if (error) {
-                console.error("Supabase Error:", error.message);
-                document.getElementById('ads-list').innerHTML = `<p style="color:red">خطأ: ${error.message}</p>`;
-                return;
-            }
-
-            console.log("Ads retrieved from DB:", ads);
-
-            const list = document.getElementById('ads-list');
-            list.innerHTML = "";
+            const listContainer = document.getElementById('ads-list');
+            listContainer.innerHTML = "";
 
             if (ads && ads.length > 0) {
                 ads.forEach(ad => {
-                    list.innerHTML += `
-                        <div class="ad-card">
+                    listContainer.innerHTML += `
+                        <div class="ad-item">
                             <div class="ad-info">
-                                <h3>${ad.title}</h3>
-                                <p>المدة: ${ad.duration_seconds} ثانية | المكافأة: <b style="color:#28a745">${ad.reward_amount} BFP</b></p>
+                                <b>${ad.title}</b>
+                                <small>${ad.duration_seconds} ثانية | مكافأة ${ad.reward_amount} BFP</small>
                             </div>
-                            <button class="view-btn" onclick="startWatching('${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
+                            <button class="btn-view" onclick="openAdViewer('${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
                         </div>
                     `;
                 });
             } else {
-                list.innerHTML = "<p style='text-align:center; color:#555;'>لا توجد إعلانات منشورة حتى الآن.</p>";
+                listContainer.innerHTML = "<p style='text-align:center; color:#555;'>لا توجد إعلانات نشطة حالياً.</p>";
             }
         }
 
-        // نظام المشاهدة والمكافأة
-        function startWatching(url, seconds, reward) {
-            const overlay = document.getElementById('video-overlay');
-            const timerText = document.getElementById('timer-display');
-            const frame = document.getElementById('ad-frame');
-            
-            overlay.style.display = 'flex';
-            frame.src = url;
-            let timeLeft = seconds;
-            timerText.innerText = timeLeft;
-
-            const countdown = setInterval(async () => {
-                timeLeft--;
-                timerText.innerText = timeLeft;
-
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    overlay.style.display = 'none';
-                    frame.src = ""; // تنظيف الإطار
-                    await addReward(reward);
-                }
-            }, 1000);
-        }
-
-        async function addReward(amount) {
-            const { error } = await _supabase.rpc('increment_balance', { 
-                user_id: currentUserId, 
-                amount: amount 
-            });
-
-            if (error) {
-                alert("خطأ في المكافأة: " + error.message);
-            } else {
-                alert(`أحسنت! أضيف لبرصيدك ${amount} BFP`);
-                loadUserData(); // تحديث الرصيد فوراً
-            }
+        // الانتقال لصفحة المشاهدة الجديدة
+        function openAdViewer(url, sec, rew) {
+            // نمرر البيانات عبر الـ URL لصفحة viewer.html
+            window.location.href = `viewer.html?url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
         }
 
         async function handleLogout() {
