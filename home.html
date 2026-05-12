@@ -2,127 +2,53 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - The Blackflower Pro Art</title>
+    <title>لوحة التحكم - TheBlackflower Pro Art</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #28a745; --bg: #000; --sidebar: #111; --card: #161616; --text: #fff; }
-        
-        body { 
-            background-color: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', sans-serif; margin: 0; 
-            display: flex; height: 100vh; overflow: hidden;
-        }
-
-        /* إصلاح القائمة الجانبية لضمان تفاعلها */
-        .sidebar {
-            width: 280px; background-color: var(--sidebar);
-            border-left: 1px solid #222; display: flex;
-            flex-direction: column; padding: 30px 20px;
-            box-sizing: border-box;
-            position: relative; 
-            z-index: 9999; /* رفع القائمة فوق أي عنصر آخر */
-        }
-
-        .profile-section { text-align: center; margin-bottom: 30px; }
-        .profile-section img {
-            width: 80px; height: 80px; border-radius: 50%;
-            border: 2px solid var(--primary); margin-bottom: 10px;
-        }
-
-        .balance-card {
-            background: linear-gradient(135deg, #1e7e34, #28a745);
-            padding: 15px; border-radius: 12px; text-align: center;
-        }
-
-        /* زر الإعدادات المحدث */
-        .settings-link {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: #1a1a1a; color: white; border: 1px solid #333;
-            padding: 12px; border-radius: 10px; text-decoration: none;
-            margin-top: 25px; transition: 0.3s;
-            position: relative; z-index: 10000; /* تأكيد إضافي */
-            cursor: pointer !important;
-        }
-        .settings-link:hover { border-color: var(--primary); background: #222; }
-
-        .main-content { 
-            flex-grow: 1; padding: 40px; overflow-y: auto; 
-            position: relative; z-index: 1; /* خفض طبقة المحتوى */
-        }
-
-        .sections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .content-card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid #222; min-height: 400px; }
-
-        .logout-btn { margin-top: auto; border: 1px solid #ff4444; color: #ff4444; background: none; padding: 10px; border-radius: 8px; cursor: pointer; }
+        :root { --primary: #28a745; --bg: #000; --sidebar: #111; --text: #fff; }
+        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; display: flex; height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar); padding: 20px; display: flex; flex-direction: column; border-left: 1px solid #222; }
+        .balance-card { background: var(--primary); padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; }
+        .nav-btn { background: #1a1a1a; padding: 12px; border-radius: 8px; cursor: pointer; text-align: center; border: 1px solid #333; transition: 0.3s; }
+        .nav-btn:hover { border-color: var(--primary); }
+        .main { flex-grow: 1; padding: 40px; }
     </style>
 </head>
 <body>
+    <div class="sidebar">
+        <h3 id="display-name">جاري التحميل...</h3>
+        <div class="balance-card">الرصيد: <b id="balance">0.00</b> BFP</div>
+        
+        <!-- الزر الذي يوجه المستخدم حسب نوعه -->
+        <div class="nav-btn" onclick="goToCorrectSettings()">⚙️ إعدادات الحساب</div>
+    </div>
 
-    <aside class="sidebar">
-        <div class="profile-section">
-            <img src="wight.jpg" alt="Profile" onerror="this.src='https://via.placeholder.com/80'">
-            <div id="display-name" style="font-weight: bold; color: var(--primary);">جاري التحميل...</div>
-            <div id="display-email" style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">...</div>
-            
-            <div class="balance-card">
-                <small>رصيدك الشخصي</small><br>
-                <b id="balance" style="font-size: 1.5rem;">0.00</b> <span>BFP</span>
-            </div>
-        </div>
-
-        <!-- تم استخدام رابط مباشر A HREF وهو الحل الأضمن -->
-        <a href="settings.html" class="settings-link">
-            <span>⚙️</span> إعدادات الحساب
-        </a>
-
-        <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
-    </aside>
-
-    <main class="main-content">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1>لوحة التحكم</h1>
-            <a href="create-ad.html" style="color: var(--primary); text-decoration: none; border: 1px solid var(--primary); padding: 8px 15px; border-radius: 8px;">+ إضافة إعلان</a>
-        </header>
-
-        <div class="sections-grid">
-            <div class="content-card">
-                <h3>📺 إعلانات متوفرة</h3>
-                <div id="ads-list">جاري التحميل...</div>
-            </div>
-            <div class="content-card">
-                <h3>🛠️ مهام مخصصة</h3>
-                <p style="color: #444; text-align: center; margin-top: 50px;">قريباً</p>
-            </div>
-        </div>
-    </main>
+    <div class="main">
+        <h1>مرحباً بك في مشروع Faucet</h1>
+    </div>
 
     <script>
-        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const _supabase = supabase.createClient('https://qxtubfnbbqnxteoocqrg.supabase.co', 'YOUR_KEY_HERE');
 
         window.onload = async () => {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) { window.location.href = 'login.html'; return; }
+            if (!user) window.location.href = 'login.html';
 
-            // جلب البيانات مع ضمان استقلالية المستخدم
-            const { data: profile } = await _supabase
-                .from('profiles')
-                .select('username, email, wallets(balance)')
-                .eq('id', user.id)
-                .single();
-
+            const { data: profile } = await _supabase.from('profiles').select('username, wallets(balance)').eq('id', user.id).single();
             if (profile) {
                 document.getElementById('display-name').innerText = profile.username;
-                document.getElementById('display-email').innerText = profile.email;
-                document.getElementById('balance').innerText = profile.wallets ? profile.wallets.balance.toFixed(2) : "0.00";
+                document.getElementById('balance').innerText = profile.wallets?.balance.toFixed(2) || "0.00";
             }
         };
 
-        async function handleLogout() {
-            await _supabase.auth.signOut();
-            window.location.href = 'login.html';
+        async function goToCorrectSettings() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            // الفحص: إذا كان جيميل يذهب لـ settings، إذا كان يدوي يذهب لـ user_settings
+            if (user.app_metadata.provider === 'google') {
+                window.location.href = 'settings.html';
+            } else {
+                window.location.href = 'user_settings.html';
+            }
         }
     </script>
 </body>
