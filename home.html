@@ -2,53 +2,236 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة التحكم - TheBlackflower Pro Art</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - The Blackflower Pro Art</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #28a745; --bg: #000; --sidebar: #111; --text: #fff; }
-        body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; display: flex; height: 100vh; }
-        .sidebar { width: 260px; background: var(--sidebar); padding: 20px; display: flex; flex-direction: column; border-left: 1px solid #222; }
-        .balance-card { background: var(--primary); padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; }
-        .nav-btn { background: #1a1a1a; padding: 12px; border-radius: 8px; cursor: pointer; text-align: center; border: 1px solid #333; transition: 0.3s; }
-        .nav-btn:hover { border-color: var(--primary); }
-        .main { flex-grow: 1; padding: 40px; }
+        :root {
+            --primary-color: #28a745;
+            --bg-dark: #000000;
+            --sidebar-bg: #111111;
+            --card-bg: #161616;
+            --text-main: #ffffff;
+            --text-dim: #888888;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+
+        /* القائمة الجانبية */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            border-left: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 20px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .profile-section { text-align: center; margin-bottom: 30px; }
+        .profile-section img {
+            width: 90px; height: 90px;
+            border-radius: 50%; border: 2px solid var(--primary-color);
+            margin-bottom: 15px; object-fit: cover;
+        }
+
+        .username { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 5px; }
+        .user-email { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px; }
+
+        .balance-card {
+            background: linear-gradient(135deg, #1e7e34, #28a745);
+            padding: 20px; border-radius: 15px; text-align: center;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        }
+        .balance-card b { font-size: 1.8rem; }
+
+        /* تعديل زر الإعدادات لضمان العمل */
+        .settings-btn-container { margin-top: 30px; }
+        .settings-link {
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #333;
+            padding: 12px;
+            border-radius: 10px;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .settings-link:hover {
+            border-color: var(--primary-color);
+            background: #222;
+        }
+
+        /* المحتوى الرئيسي */
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; position: relative; }
+        .sections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px; }
+        .content-card {
+            background-color: var(--card-bg); border-radius: 20px;
+            padding: 25px; border: 1px solid #222; min-height: 450px;
+        }
+
+        /* ستايل الإعلانات */
+        .ad-item {
+            background: #1f1f1f; padding: 18px; border-radius: 12px;
+            margin-bottom: 12px; display: flex; justify-content: space-between;
+            align-items: center; border: 1px solid transparent; transition: 0.3s;
+        }
+        .ad-item.frozen { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+        
+        .btn-view {
+            background: var(--primary-color); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+
+        .logout-btn { 
+            margin-top: auto; 
+            background: none; 
+            border: 1px solid #ff4444; 
+            color: #ff4444; 
+            padding: 10px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: 0.3s; 
+        }
+        .logout-btn:hover { background: #ff4444; color: white; }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
-        <h3 id="display-name">جاري التحميل...</h3>
-        <div class="balance-card">الرصيد: <b id="balance">0.00</b> BFP</div>
-        
-        <!-- الزر الذي يوجه المستخدم حسب نوعه -->
-        <div class="nav-btn" onclick="goToCorrectSettings()">⚙️ إعدادات الحساب</div>
+        <div class="profile-section">
+            <img src="wight.jpg" alt="Profile" onerror="this.src='https://via.placeholder.com/90'">
+            <div class="username" id="display-name">جاري التحميل...</div>
+            <div class="user-email" id="display-email">...</div>
+            
+            <div class="balance-card">
+                <span>رصيدك الحالي</span><br>
+                <b id="balance">0.00</b> <small>BFP</small>
+            </div>
+        </div>
+
+        <div class="settings-btn-container">
+            <a href="settings.html" class="settings-link">
+                <span>⚙️</span> إعدادات الحساب
+            </a>
+        </div>
+
+        <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
     </div>
 
-    <div class="main">
-        <h1>مرحباً بك في مشروع Faucet</h1>
+    <div class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="margin: 0;">لوحة التحكم</h1>
+            <a href="create-ad.html" style="color: var(--primary-color); text-decoration: none; font-weight: bold; border: 1px solid var(--primary-color); padding: 8px 15px; border-radius: 8px;">+ إضافة إعلان</a>
+        </div>
+
+        <div class="sections-grid">
+            <div class="content-card">
+                <h2 style="color: var(--primary-color); margin-top: 0;">📺 إعلانات متوفرة</h2>
+                <div id="ads-list">جاري تحميل الإعلانات...</div>
+            </div>
+
+            <div class="content-card">
+                <h2 style="color: #ffc107; margin-top: 0;">🛠️ المهام اليومية</h2>
+                <div style="text-align: center; color: #444; margin-top: 100px;">
+                    <p>قريباً في التحديث القادم</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const _supabase = supabase.createClient('https://qxtubfnbbqnxteoocqrg.supabase.co', 'YOUR_KEY_HERE');
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        window.onload = async () => {
+        let currentUserId = null;
+
+        window.onload = async function() {
             const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) window.location.href = 'login.html';
-
-            const { data: profile } = await _supabase.from('profiles').select('username, wallets(balance)').eq('id', user.id).single();
-            if (profile) {
-                document.getElementById('display-name').innerText = profile.username;
-                document.getElementById('balance').innerText = profile.wallets?.balance.toFixed(2) || "0.00";
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
             }
+            currentUserId = user.id;
+            
+            fetchUserProfile();
+            fetchAdsWithStatus();
         };
 
-        async function goToCorrectSettings() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            // الفحص: إذا كان جيميل يذهب لـ settings، إذا كان يدوي يذهب لـ user_settings
-            if (user.app_metadata.provider === 'google') {
-                window.location.href = 'settings.html';
-            } else {
-                window.location.href = 'user_settings.html';
+        async function fetchUserProfile() {
+            // جلب البيانات حصراً للمستخدم الحالي لضمان استقلالية الرصيد
+            const { data, error } = await _supabase
+                .from('profiles')
+                .select('username, email, wallets(balance)')
+                .eq('id', currentUserId)
+                .single();
+
+            if (data) {
+                document.getElementById('display-name').innerText = data.username || "مستخدم";
+                document.getElementById('display-email').innerText = data.email;
+                // عرض رصيد المحفظة المرتبطة بالمستخدم بدقة
+                document.getElementById('balance').innerText = data.wallets ? data.wallets.balance.toFixed(2) : "0.00";
             }
+        }
+
+        async function fetchAdsWithStatus() {
+            const listContainer = document.getElementById('ads-list');
+            
+            const { data: ads } = await _supabase.from('ads').select('*').order('created_at', { ascending: false });
+
+            const past24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { data: views } = await _supabase
+                .from('ad_views')
+                .select('ad_id')
+                .eq('user_id', currentUserId)
+                .gt('viewed_at', past24Hours);
+
+            const viewedIds = views ? views.map(v => v.ad_id) : [];
+
+            listContainer.innerHTML = "";
+
+            if (ads) {
+                ads.forEach(ad => {
+                    const isFrozen = viewedIds.includes(ad.id);
+                    
+                    listContainer.innerHTML += `
+                        <div class="ad-item ${isFrozen ? 'frozen' : ''}">
+                            <div class="ad-info">
+                                <b>${ad.title} ${isFrozen ? '🔒' : ''}</b>
+                                <small style="display:block; color:var(--text-dim)">${ad.duration_seconds}ث | ${ad.reward_amount} BFP</small>
+                            </div>
+                            <button class="btn-view" 
+                                ${isFrozen ? 'disabled' : ''} 
+                                onclick="openAdViewer('${ad.id}', '${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">
+                                ${isFrozen ? 'مكتمل' : 'مشاهدة'}
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function openAdViewer(id, url, sec, rew) {
+            window.location.href = `viewer.html?id=${id}&url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
+        }
+
+        async function handleLogout() {
+            await _supabase.auth.signOut();
+            window.location.href = 'login.html';
         }
     </script>
 </body>
