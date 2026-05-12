@@ -2,163 +2,31 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - The Blackflower Pro Art</title>
+    <title>إعدادات Google</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #28a745; --bg: #000; --sidebar: #111; --card: #161616; --text: #fff; }
-        
-        body { 
-            background-color: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', sans-serif; margin: 0; 
-            display: flex; height: 100vh; overflow: hidden;
-        }
-
-        /* القائمة الجانبية */
-        .sidebar {
-            width: 280px; background-color: var(--sidebar);
-            border-left: 1px solid #222; display: flex;
-            flex-direction: column; padding: 30px 20px;
-            box-sizing: border-box; position: relative; z-index: 1000;
-        }
-
-        .profile-section { text-align: center; margin-bottom: 30px; }
-        .profile-section img {
-            width: 80px; height: 80px; border-radius: 50%;
-            border: 2px solid var(--primary); margin-bottom: 10px;
-            object-fit: cover;
-        }
-
-        .balance-card {
-            background: linear-gradient(135deg, #1e7e34, #28a745);
-            padding: 15px; border-radius: 12px; text-align: center;
-            margin-top: 15px;
-        }
-
-        /* زر الإعدادات الذكي */
-        .settings-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            background: #1a1a1a; color: white; border: 1px solid #333;
-            padding: 12px; border-radius: 10px; text-decoration: none;
-            margin-top: 25px; transition: 0.3s; cursor: pointer;
-            font-size: 0.95rem; font-weight: 500;
-        }
-        .settings-btn:hover { border-color: var(--primary); background: #222; }
-
-        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
-
-        .sections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .content-card { 
-            background: var(--card); border-radius: 15px; padding: 20px; 
-            border: 1px solid #222; min-height: 350px; 
-        }
-
-        .logout-btn { 
-            margin-top: auto; border: 1px solid #ff4444; color: #ff4444; 
-            background: none; padding: 10px; border-radius: 8px; cursor: pointer; 
-        }
-        .logout-btn:hover { background: #ff4444; color: white; }
-
-        #display-name { font-size: 1.1rem; margin-top: 5px; }
+        body { background: #000; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #111; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #4285F4; }
     </style>
 </head>
 <body>
-
-    <aside class="sidebar">
-        <div class="profile-section">
-            <img src="wight.jpg" alt="Profile" id="user-avatar" onerror="this.src='https://via.placeholder.com/80'">
-            <div id="display-name" style="font-weight: bold; color: var(--primary);">جاري التحميل...</div>
-            <div id="display-email" style="font-size: 0.8rem; color: #888;">...</div>
-            
-            <div class="balance-card">
-                <small>رصيدك الحالي</small><br>
-                <b id="balance" style="font-size: 1.5rem;">0.00</b> <span style="font-size: 0.8rem;">BFP</span>
-            </div>
-        </div>
-
-        <!-- زر الإعدادات يستدعي وظيفة جافا سكريبت للتحويل الذكي -->
-        <div class="settings-btn" onclick="redirectToSettings()">
-            <span>⚙️</span> إعدادات الحساب
-        </div>
-
-        <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
-    </aside>
-
-    <main class="main-content">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <h1>مرحباً بك في لوحة التحكم</h1>
-            <a href="create-ad.html" style="color: var(--primary); text-decoration: none; border: 1px solid var(--primary); padding: 8px 15px; border-radius: 8px; font-weight: bold;">+ إعلان جديد</a>
-        </header>
-
-        <div class="sections-grid">
-            <div class="content-card">
-                <h3>📺 الإعلانات المتاحة</h3>
-                <div id="ads-list" style="color: #666; text-align: center; padding-top: 50px;">لا توجد إعلانات حالياً</div>
-            </div>
-            <div class="content-card">
-                <h3>📊 إحصائيات سريعة</h3>
-                <p style="color: #444; text-align: center; padding-top: 50px;">قيد التطوير...</p>
-            </div>
-        </div>
-    </main>
+    <div class="card">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_Color_Icon.svg" width="50">
+        <h2>حساب متصل بـ Google</h2>
+        <p style="color:#888;">يتم إدارة أمان هذا الحساب وكلمة المرور عبر إعدادات Google مباشرة.</p>
+        <a href="home.html" style="color:#4285F4; text-decoration:none; font-weight:bold;">العودة للرئيسية</a>
+    </div>
 
     <script>
-        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
+        const _supabase = supabase.createClient('https://qxtubfnbbqnxteoocqrg.supabase.co', 'YOUR_KEY_HERE');
+        
         window.onload = async () => {
             const { data: { user } } = await _supabase.auth.getUser();
-            
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // جلب بيانات البروفايل والرصيد
-            const { data: profile, error } = await _supabase
-                .from('profiles')
-                .select('username, email, wallets(balance)')
-                .eq('id', user.id)
-                .single();
-
-            if (profile) {
-                document.getElementById('display-name').innerText = profile.username || "مستخدم جديد";
-                document.getElementById('display-email').innerText = profile.email;
-                
-                // تحديث الصورة إذا كانت مخزنة في بيانات المستخدم (اختياري)
-                if(user.user_metadata.avatar_url) {
-                    document.getElementById('user-avatar').src = user.user_metadata.avatar_url;
-                }
-
-                if (profile.wallets) {
-                    document.getElementById('balance').innerText = profile.wallets.balance.toFixed(2);
-                }
+            // حماية إضافية: إذا دخل مستخدم يدوي لهذه الصفحة بالخطأ، يتم تحويله للرئيسية
+            if (user && user.app_metadata.provider !== 'google') {
+                window.location.href = 'home.html';
             }
         };
-
-        // الوظيفة الذكية للتحويل لصفحة الإعدادات المناسبة
-        async function redirectToSettings() {
-            const { data: { user } } = await _supabase.auth.getUser();
-            
-            if (!user) return;
-
-            // التحقق من مزود الخدمة (Provider)
-            const provider = user.app_metadata.provider;
-
-            if (provider === 'google') {
-                // مستخدم جيميل يذهب لصفحة Google Settings
-                window.location.href = 'settings.html';
-            } else {
-                // مستخدم يدوي يذهب لصفحة التعديل اليدوي
-                window.location.href = 'user_settings.html';
-            }
-        }
-
-        async function handleLogout() {
-            await _supabase.auth.signOut();
-            window.location.href = 'login.html';
-        }
     </script>
 </body>
 </html>
