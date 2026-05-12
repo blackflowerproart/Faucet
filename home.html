@@ -53,7 +53,7 @@
         }
         .balance-card b { font-size: 1.8rem; }
 
-        /* زر الإعدادات الجديد */
+        /* زر الإعدادات المطور */
         .settings-btn-container {
             margin-top: 30px;
         }
@@ -85,7 +85,6 @@
             padding: 25px; border: 1px solid #222; min-height: 450px;
         }
 
-        /* ستايل الإعلانات */
         .ad-item {
             background: #1f1f1f; padding: 18px; border-radius: 12px;
             margin-bottom: 12px; display: flex; justify-content: space-between;
@@ -118,7 +117,8 @@
         </div>
 
         <div class="settings-btn-container">
-            <button class="settings-link-btn" onclick="window.location.href='settings.html'">
+            <!-- تم تعديل الـ onclick هنا -->
+            <button class="settings-link-btn" onclick="goToCorrectSettings()">
                 <span>⚙️</span> إعدادات الحساب
             </button>
         </div>
@@ -167,8 +167,21 @@
             fetchAdsWithStatus();
         };
 
+        // دالة التوجيه الذكي للإعدادات
+        async function goToCorrectSettings() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return;
+
+            // إذا كان المستخدم سجل بواسطة جوجل
+            if (user.app_metadata.provider === 'google') {
+                window.location.href = 'settings.html';
+            } else {
+                // إذا كان تسجيلاً يدوياً
+                window.location.href = 'user_settings.html';
+            }
+        }
+
         async function fetchUserProfile() {
-            // جلب البيانات مع الرصيد من جدول wallets المرتبط
             const { data, error } = await _supabase
                 .from('profiles')
                 .select('username, email, wallets(balance)')
@@ -184,14 +197,11 @@
 
         async function fetchAdsWithStatus() {
             const listContainer = document.getElementById('ads-list');
-            
-            // 1. جلب الإعلانات
             const { data: ads } = await _supabase
                 .from('ads')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            // 2. جلب سجلات المشاهدة لآخر 24 ساعة
             const past24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             const { data: views } = await _supabase
                 .from('ad_views')
@@ -200,13 +210,11 @@
                 .gt('viewed_at', past24Hours);
 
             const viewedIds = views ? views.map(v => v.ad_id) : [];
-
             listContainer.innerHTML = "";
 
             if (ads && ads.length > 0) {
                 ads.forEach(ad => {
                     const isFrozen = viewedIds.includes(ad.id);
-                    
                     listContainer.innerHTML += `
                         <div class="ad-item ${isFrozen ? 'frozen' : ''}">
                             <div class="ad-info">
@@ -231,7 +239,7 @@
         }
 
         async function handleLogout() {
-            const { error } = await _supabase.auth.signOut();
+            await _supabase.auth.signOut();
             window.location.href = 'login.html';
         }
     </script>
