@@ -3,129 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعدادات الحساب | TheBlackflower Pro Art</title>
+    <title>إعدادات الحساب - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #000000; --accent: #6366f1; --bg: #f1f5f9; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
-        h2 { text-align: center; color: var(--primary); margin-bottom: 1.5rem; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: bold; }
-        input { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button:disabled { background: #94a3b8; }
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+        .container { 
+            background: #111; 
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid #333; 
+            width: 100%; 
+            max-width: 400px; 
+            text-align: center;
+        }
+        h2 { color: #28a745; margin-bottom: 20px; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border: 1px solid #444; 
+            background: #1a1a1a; 
+            color: #fff; 
+            box-sizing: border-box;
+            outline: none;
+        }
+        input:focus { border-color: #28a745; }
+        .btn { 
+            width: 100%; 
+            padding: 12px; 
+            background: #fff; 
+            color: #000; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 10px;
+        }
+        .btn:hover { background: #e6e6e6; }
+        .btn-verify { background: #28a745; color: #fff; }
         .hidden { display: none; }
-        .status { margin-top: 1rem; text-align: center; font-size: 0.85rem; color: #ef4444; }
+        .status { margin-top: 15px; font-size: 0.9rem; min-height: 20px; }
+        .error { color: #ff4444; }
+        .success { color: #28a745; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="stage-1">
-        <h2>تعديل الإعدادات</h2>
-        <div class="form-group">
-            <label>الاسم الجديد</label>
-            <input type="text" id="full_name" placeholder="أدخل اسمك هنا">
-        </div>
-        <button id="btn-save" onclick="handleSave()">حفظ وإرسال الرمز</button>
+<div class="container">
+    <!-- المرحلة 1: إدخال البيانات -->
+    <div id="stage-input">
+        <h2>إعدادات الحساب</h2>
+        <input type="text" id="new_name" placeholder="الاسم الجديد">
+        <button class="btn" id="btn-save" onclick="handleInitialSave()">حفظ وإرسال الرمز</button>
     </div>
 
-    <div id="stage-2" class="hidden">
+    <!-- المرحلة 2: تأكيد الرمز -->
+    <div id="stage-otp" class="hidden">
         <h2>تأكيد الرمز</h2>
-        <p style="text-align: center; font-size: 0.8rem;">أدخل الرمز المكون من 6 أرقام المرسل لبريدك</p>
-        <div class="form-group">
-            <input type="text" id="otp_input" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
-        </div>
-        <button id="btn-verify" onclick="handleVerify()">تأكيد التحديث</button>
+        <p style="color: #888; font-size: 0.8rem;">أدخل الرمز المكون من 6 أرقام المرسل لبريدك</p>
+        <input type="text" id="otp_input" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+        <button class="btn btn-verify" id="btn-confirm" onclick="handleVerify()">تأكيد التحديث</button>
     </div>
 
     <div id="status-msg" class="status"></div>
 </div>
 
 <script>
-    // بياناتك الحقيقية التي زودتني بها
-    const SUPABASE_URL = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
-    const RESEND_KEY = 're_ChvyWsPX_MRNrxw6YYGbqgREPfaZB9pL4';
+    // 1. إعدادات الربط (ببيانات مشروعك الحقيقية)
+    const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+    const resendApiKey = 're_ChvyWsPX_MRNrxw6YYGbqgREPfaZB9pL4';
 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  async function handleSave() {
-    const msg = document.getElementById('status-msg');
-    
-    // 1. جلب المستخدم بحذر
-    const { data: { user }, error: authError } = await _supabase.auth.getUser();
+    // 2. وظيفة الحفظ وإرسال الرمز
+    async function handleInitialSave() {
+        const nameInput = document.getElementById('new_name').value;
+        const msg = document.getElementById('status-msg');
+        const btn = document.getElementById('btn-save');
 
-    // 2. التحقق من وجود المستخدم قبل محاولة قراءة id
-    if (authError || !user) {
-        msg.style.color = "red";
-        msg.innerText = "خطأ: يجب تسجيل الدخول أولاً لتعديل البيانات.";
-        console.error("لم يتم العثور على جلسة دخول نشطة");
-        return; // توقف هنا ولا تكمل بقية الكود
-    }
+        if (!nameInput) {
+            msg.className = "status error";
+            msg.innerText = "يرجى إدخال الاسم أولاً";
+            return;
+        }
 
-    // 3. الآن الكود آمن لاستخدام user.id
-    console.log("جاري الحفظ للمستخدم:", user.id);
-    
-    // تكملة كود الحفظ وإرسال الإيميل...
-}
+        // --- الفحص الحرج لهوية المستخدم ---
+        const { data: { user }, error: authError } = await _supabase.auth.getUser();
 
+        if (authError || !user) {
+            msg.className = "status error";
+            msg.innerText = "خطأ: يجب تسجيل الدخول أولاً (غير مصرح)";
+            console.error("User not logged in");
+            return;
+        }
+
+        btn.disabled = true;
+        msg.className = "status";
+        msg.innerText = "جاري الحفظ وإرسال الرمز...";
+
+        try {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-            // 1. الحفظ في جدول الانتظار
+            // أ- حفظ في جدول الانتظار
             const { error: dbError } = await _supabase
                 .from('pending_updates')
-                .insert([{ user_id: user.id, payload: { full_name: name }, otp_code: otp }]);
+                .insert([{ 
+                    user_id: user.id, 
+                    payload: { full_name: nameInput }, 
+                    otp_code: otp 
+                }]);
 
             if (dbError) throw dbError;
 
-            // 2. إرسال الإيميل عبر Resend
+            // ب- إرسال البريد عبر Resend
             const emailRes = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+                headers: { 
+                    'Authorization': `Bearer ${resendApiKey}`, 
+                    'Content-Type': 'application/json' 
+                },
                 body: JSON.stringify({
                     from: 'TheBlackflower <onboarding@resend.dev>',
                     to: user.email,
-                    subject: 'رمز التحقق الخاص بك',
-                    html: `رمزك هو: <strong>${otp}</strong>`
+                    subject: 'رمز تأكيد التعديل',
+                    html: `رمز التحقق الخاص بك هو: <strong>${otp}</strong>`
                 })
             });
 
             if (!emailRes.ok) throw new Error("فشل إرسال الإيميل");
 
-            document.getElementById('stage-1').classList.add('hidden');
-            document.getElementById('stage-2').classList.remove('hidden');
+            // نجاح العملية الأولى
+            document.getElementById('stage-input').classList.add('hidden');
+            document.getElementById('stage-otp').classList.remove('hidden');
             msg.innerText = "";
+
         } catch (err) {
+            msg.className = "status error";
             msg.innerText = "حدث خطأ: " + err.message;
+            btn.disabled = false;
         }
     }
 
+    // 3. وظيفة التحقق النهائي (RPC)
     async function handleVerify() {
         const otpVal = document.getElementById('otp_input').value;
         const msg = document.getElementById('status-msg');
+        const btn = document.getElementById('btn-confirm');
+
+        btn.disabled = true;
+        msg.innerText = "جاري التحقق...";
 
         try {
             const { data: { user } } = await _supabase.auth.getUser();
-            
-            // تشغيل الدالة الذكية (RPC) في قاعدة البيانات
+
             const { data, error } = await _supabase.rpc('verify_and_update_settings', {
                 input_user_id: user.id,
                 input_otp: otpVal
             });
 
-            if (data?.success) {
-                msg.style.color = "green";
-                msg.innerText = "تم تحديث بياناتك بنجاح!";
+            if (data && data.success) {
+                msg.className = "status success";
+                msg.innerText = "تم تحديث البيانات بنجاح!";
                 setTimeout(() => location.reload(), 2000);
             } else {
-                msg.innerText = data?.message || "الرمز خطأ";
+                msg.className = "status error";
+                msg.innerText = data ? data.message : "الرمز غير صحيح";
+                btn.disabled = false;
             }
         } catch (err) {
-            msg.innerText = "خطأ: " + err.message;
+            msg.className = "status error";
+            msg.innerText = "خطأ تقني: " + err.message;
+            btn.disabled = false;
         }
     }
 </script>
+
 </body>
 </html>
