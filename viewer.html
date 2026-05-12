@@ -23,7 +23,6 @@
             height: 100vh; 
         }
         
-        /* شريط التحكم العلوي */
         .viewer-header { 
             background: var(--header-bg); 
             padding: 0 40px; 
@@ -66,7 +65,7 @@
             transition: 0.2s;
         }
         #confirm-btn:hover { background: #218838; transform: scale(1.03); }
-        #confirm-btn:disabled { background: #555; cursor: not-allowed; }
+        #confirm-btn:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
 
         .ad-container { flex-grow: 1; width: 100%; background: #fff; }
         iframe { width: 100%; height: 100%; border: none; }
@@ -82,7 +81,7 @@
         
         <div class="control-panel">
             <div id="timer-display">--</div>
-            <button id="confirm-btn" onclick="claimReward()">✅ تأكيد واستلام المكافأة</button>
+            <button id="confirm-btn" onclick="handleClaim()">✅ تأكيد واستلام المكافأة</button>
         </div>
     </header>
 
@@ -95,18 +94,18 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // جلب البيانات من الرابط
         const params = new URLSearchParams(window.location.search);
-        const adId = params.get('id'); // المعرف المهم للتجميد
+        const adId = params.get('id'); 
         const targetUrl = params.get('url');
         const duration = parseInt(params.get('sec')) || 15;
-        const reward = parseFloat(params.get('rew')) || 0;
+        const rewardAmount = parseFloat(params.get('rew')) || 0;
 
         const timerEl = document.getElementById('timer-display');
         const btnEl = document.getElementById('confirm-btn');
         const frameEl = document.getElementById('ad-frame');
 
         let secondsLeft = duration;
+        let currentUser = null;
 
         window.onload = async () => {
             const { data: { user } } = await _supabase.auth.getUser();
@@ -114,6 +113,7 @@
                 window.location.href = 'login.html';
                 return;
             }
+            currentUser = user;
 
             if (targetUrl) frameEl.src = targetUrl;
 
@@ -128,24 +128,33 @@
             }, 1000);
         };
 
-       async function claimReward(amount) {
-    // استدعاء الدالة التي أنشأناها في SQL
-    const { data, error } = await _supabase.rpc('add_reward', { 
-        ad_reward_amount: amount 
-    });
+        async function handleClaim() {
+            try {
+                btnEl.disabled = true;
+                btnEl.innerText = "جاري المعالجة...";
 
-    if (error) {
-        console.error("خطأ أثناء استلام المكافأة:", error.message);
-        alert("حدث خطأ، يرجى المحاولة لاحقاً.");
-    } else {
-        alert("✅ تم إضافة المكافأة بنجاح! \n Reward added to your wallet.");
-        // العودة للرئيسية بعد النجاح
-        window.location.href = 'home.html';
-    }
-}
+                // 1. إضافة المكافأة عبر الدالة المخزنة في SQL
+                const { error: rewardError } = await _supabase.rpc('add_reward', { 
+                    ad_reward_amount: rewardAmount 
+                });
+
+                if (rewardError) throw rewardError;
+
+                // 2. تسجيل المشاهدة لتجميد الإعلان لمدة 24 ساعة
+                const { error: viewError } = await _supabase
+                    .from('ad_views')
+                    .insert([
+                        { user_id: currentUser.id, ad_id: adId }
+                    ]);
+
+                if (viewError) console.warn("ملاحظة: فشل تسجيل تجميد الإعلان ولكن تمت إضافة الرصيد.");
+
+                alert(`✅ تم استلام ${rewardAmount} BFP بنجاح!`);
+                window.location.href = 'home.html';
 
             } catch (err) {
-                alert("خطأ: " + err.message);
+                console.error("Error:", err.message);
+                alert("حدث خطأ أثناء استلام المكافأة: " + err.message);
                 btnEl.disabled = false;
                 btnEl.innerText = "✅ تأكيد واستلام المكافأة";
             }
