@@ -51,22 +51,25 @@
 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function handleSave() {
-        const name = document.getElementById('full_name').value;
-        const msg = document.getElementById('status-msg');
-        if (!name) return alert("يرجى إدخال اسم");
+  async function handleSave() {
+    const msg = document.getElementById('status-msg');
+    
+    // 1. جلب المستخدم بحذر
+    const { data: { user }, error: authError } = await _supabase.auth.getUser();
 
-        msg.style.color = "blue";
-        msg.innerText = "جاري الاتصال بالسيرفر...";
+    // 2. التحقق من وجود المستخدم قبل محاولة قراءة id
+    if (authError || !user) {
+        msg.style.color = "red";
+        msg.innerText = "خطأ: يجب تسجيل الدخول أولاً لتعديل البيانات.";
+        console.error("لم يتم العثور على جلسة دخول نشطة");
+        return; // توقف هنا ولا تكمل بقية الكود
+    }
 
-        try {
-            // جلب بيانات المستخدم المسجل دخوله
-            const { data: { user }, error: userError } = await _supabase.auth.getUser();
-            
-            if (userError || !user) {
-                msg.innerText = "خطأ: يجب أن تكون مسجلاً للدخول لتغيير إعداداتك.";
-                return;
-            }
+    // 3. الآن الكود آمن لاستخدام user.id
+    console.log("جاري الحفظ للمستخدم:", user.id);
+    
+    // تكملة كود الحفظ وإرسال الإيميل...
+}
 
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
