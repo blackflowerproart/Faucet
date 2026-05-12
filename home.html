@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - The Black Flower</title>
+    <title>لوحة التحكم - The Blackflower Pro Art</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -18,14 +18,14 @@
         body { 
             background-color: var(--bg-dark); 
             color: var(--text-main); 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
             margin: 0; 
             display: flex; 
             height: 100vh; 
             overflow: hidden;
         }
 
-        /* القائمة الجانبية على اليسار */
+        /* القائمة الجانبية */
         .sidebar {
             width: 280px;
             background-color: var(--sidebar-bg);
@@ -36,201 +36,119 @@
             box-sizing: border-box;
         }
 
-        .profile-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
+        .profile-section { text-align: center; margin-bottom: 30px; }
         .profile-section img {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            border: 2px solid var(--primary-color);
-            margin-bottom: 15px;
-            object-fit: cover;
+            width: 90px; height: 90px;
+            border-radius: 50%; border: 2px solid var(--primary-color);
+            margin-bottom: 15px; object-fit: cover;
         }
 
-        .username { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); }
-        .user-email { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px; word-break: break-all; }
+        .username { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 5px; }
+        .user-email { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px; }
 
         .balance-card {
             background: linear-gradient(135deg, #1e7e34, #28a745);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
+            padding: 20px; border-radius: 15px; text-align: center;
             box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
         }
-        .balance-card span { font-size: 0.9rem; display: block; margin-bottom: 5px; }
         .balance-card b { font-size: 1.8rem; }
 
-        .edit-profile-box {
+        /* زر الإعدادات الجديد */
+        .settings-btn-container {
             margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
         }
-        .edit-profile-box input {
+        .settings-link-btn {
+            width: 100%;
             background: #1a1a1a;
+            color: white;
             border: 1px solid #333;
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            outline: none;
-        }
-        .edit-profile-box button {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: 0.3s;
-        }
-        .edit-profile-box button:hover { background: var(--primary-color); }
-
-        /* المحتوى الرئيسي */
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
+            font-size: 0.95rem;
             display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .header-title {
-            border-bottom: 1px solid #222;
-            padding-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .sections-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
-
-        .content-card {
-            background-color: var(--card-bg);
-            border-radius: 20px;
-            padding: 25px;
-            border: 1px solid #222;
-            min-height: 400px;
-        }
-
-        .content-card h2 {
-            margin-top: 0;
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* ستايل الإعلانات داخل الكارد */
-        .ad-item {
-            background: #1f1f1f;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.2s;
-        }
-        .ad-item:hover { border-color: var(--primary-color); background: #252525; }
-        
-        .ad-info b { color: var(--primary-color); display: block; margin-bottom: 4px; }
-        .ad-info small { color: var(--text-dim); }
-
-        .btn-view {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* ستايل المهام (قيد الإنشاء) */
-        .tasks-placeholder {
-            display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 250px;
-            color: #444;
-            text-align: center;
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            background: none;
-            border: 1px solid #ff4444;
-            color: #ff4444;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
+            gap: 10px;
             transition: 0.3s;
         }
-        .logout-btn:hover { background: #ff4444; color: white; }
+        .settings-link-btn:hover {
+            border-color: var(--primary-color);
+            background: #222;
+        }
 
+        /* المحتوى الرئيسي */
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .sections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px; }
+        .content-card {
+            background-color: var(--card-bg); border-radius: 20px;
+            padding: 25px; border: 1px solid #222; min-height: 450px;
+        }
+
+        /* ستايل الإعلانات */
+        .ad-item {
+            background: #1f1f1f; padding: 18px; border-radius: 12px;
+            margin-bottom: 12px; display: flex; justify-content: space-between;
+            align-items: center; border: 1px solid transparent; transition: 0.3s;
+        }
+        .ad-item.frozen { opacity: 0.4; border-color: #333; pointer-events: none; }
+        
+        .btn-view {
+            background: var(--primary-color); color: white; border: none;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+        .btn-view:disabled { background: #444; cursor: not-allowed; }
+
+        .logout-btn { margin-top: auto; background: none; border: 1px solid #ff4444; color: #ff4444; padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+        .logout-btn:hover { background: #ff4444; color: white; }
     </style>
 </head>
 <body>
 
-    <!-- القائمة الجانبية (Sidebar) -->
     <div class="sidebar">
         <div class="profile-section">
-            <img src="wight.jpg" alt="User Profile" onerror="this.src='https://via.placeholder.com/90'">
+            <img src="wight.jpg" alt="Profile" onerror="this.src='https://via.placeholder.com/90?text=User'">
             <div class="username" id="display-name">جاري التحميل...</div>
             <div class="user-email" id="display-email">...</div>
             
             <div class="balance-card">
-                <span>رصيدك الحالي</span>
+                <span>رصيدك الحالي</span><br>
                 <b id="balance">0.00</b> <small>BFP</small>
             </div>
         </div>
 
-        <div class="edit-profile-box">
-            <label style="font-size: 0.8rem; color: #666;">تحديث اسم المستخدم:</label>
-            <input type="text" id="new-username" placeholder="اكتب الاسم الجديد">
-            <button onclick="updateUserName()">حفظ التغييرات</button>
+        <div class="settings-btn-container">
+            <button class="settings-link-btn" onclick="window.location.href='settings.html'">
+                <span>⚙️</span> إعدادات الحساب
+            </button>
         </div>
 
         <button class="logout-btn" onclick="handleLogout()">تسجيل الخروج</button>
     </div>
 
-    <!-- المحتوى الرئيسي -->
     <div class="main-content">
-        <div class="header-title">
-            <h1>لوحة التحكم الرئيسية</h1>
-            <a href="create-ad.html" style="color: var(--primary-color); text-decoration: none; font-weight: bold;">+ إضافة إعلان جديد</a>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="margin: 0;">مرحباً بك في لوحة التحكم</h1>
+            <a href="create-ad.html" style="color: var(--primary-color); text-decoration: none; font-weight: bold; border: 1px solid var(--primary-color); padding: 8px 15px; border-radius: 8px;">+ إضافة إعلان جديد</a>
         </div>
 
         <div class="sections-grid">
-            <!-- قسم مشاهدة الإعلانات -->
             <div class="content-card">
-                <h2 style="color: #28a745;">📺 إعلانات متوفرة</h2>
-                <div id="ads-list">
-                    <p style="color:#555; text-align:center;">جاري البحث عن إعلانات...</p>
-                </div>
+                <h2 style="color: var(--primary-color); margin-top: 0;">📺 إعلانات متوفرة</h2>
+                <div id="ads-list">جاري تحميل الإعلانات...</div>
             </div>
 
-            <!-- قسم المهام -->
             <div class="content-card">
-                <h2 style="color: #ffc107;">🛠️ المهام اليومية</h2>
-                <div class="tasks-placeholder">
-                    <p>قسـم المهام قيد التطوير حالياً<br>انتظرونا في التحديث القادم!</p>
+                <h2 style="color: #ffc107; margin-top: 0;">🛠️ المهام اليومية</h2>
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80%; color: #444;">
+                    <span style="font-size: 3rem;">🔜</span>
+                    <p>قريباً في التحديث القادم</p>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // إعدادات Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -239,19 +157,18 @@
 
         window.onload = async function() {
             const { data: { user } } = await _supabase.auth.getUser();
-            
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
             }
-
             currentUserId = user.id;
+            
             fetchUserProfile();
-            fetchAds();
+            fetchAdsWithStatus();
         };
 
-        // جلب بيانات البروفايل والرصيد
         async function fetchUserProfile() {
+            // جلب البيانات مع الرصيد من جدول wallets المرتبط
             const { data, error } = await _supabase
                 .from('profiles')
                 .select('username, email, wallets(balance)')
@@ -259,66 +176,62 @@
                 .single();
 
             if (data) {
-                document.getElementById('display-name').innerText = data.username;
+                document.getElementById('display-name').innerText = data.username || "مستخدم جديد";
                 document.getElementById('display-email').innerText = data.email;
-                document.getElementById('balance').innerText = data.wallets ? data.wallets.balance : "0.00";
+                document.getElementById('balance').innerText = data.wallets ? data.wallets.balance.toFixed(2) : "0.00";
             }
         }
 
-        // تحديث اسم المستخدم
-        async function updateUserName() {
-            const newName = document.getElementById('new-username').value;
-            if (!newName) return alert("الرجاء إدخال اسم");
-
-            const { error } = await _supabase.rpc('update_username', { 
-                user_id: currentUserId, 
-                new_name: newName 
-            });
-
-            if (error) {
-                alert("خطأ أثناء التحديث: " + error.message);
-            } else {
-                alert("تم تحديث الاسم بنجاح");
-                fetchUserProfile();
-                document.getElementById('new-username').value = "";
-            }
-        }
-
-        // جلب الإعلانات من القاعدة
-        async function fetchAds() {
-            const { data: ads, error } = await _supabase
+        async function fetchAdsWithStatus() {
+            const listContainer = document.getElementById('ads-list');
+            
+            // 1. جلب الإعلانات
+            const { data: ads } = await _supabase
                 .from('ads')
                 .select('*')
                 .order('created_at', { ascending: false });
 
-            const listContainer = document.getElementById('ads-list');
+            // 2. جلب سجلات المشاهدة لآخر 24 ساعة
+            const past24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { data: views } = await _supabase
+                .from('ad_views')
+                .select('ad_id')
+                .eq('user_id', currentUserId)
+                .gt('viewed_at', past24Hours);
+
+            const viewedIds = views ? views.map(v => v.ad_id) : [];
+
             listContainer.innerHTML = "";
 
             if (ads && ads.length > 0) {
                 ads.forEach(ad => {
+                    const isFrozen = viewedIds.includes(ad.id);
+                    
                     listContainer.innerHTML += `
-                        <div class="ad-item">
+                        <div class="ad-item ${isFrozen ? 'frozen' : ''}">
                             <div class="ad-info">
-                                <b>${ad.title}</b>
-                                <small>${ad.duration_seconds} ثانية | مكافأة ${ad.reward_amount} BFP</small>
+                                <b style="display: block; font-size: 1.1rem;">${ad.title} ${isFrozen ? '<span style="font-size: 0.8rem; color: #ff4444;">(مجمد 🔒)</span>' : ''}</b>
+                                <small style="color: var(--text-dim);">${ad.duration_seconds} ثانية | ${ad.reward_amount} BFP</small>
                             </div>
-                            <button class="btn-view" onclick="openAdViewer('${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
+                            <button class="btn-view" 
+                                ${isFrozen ? 'disabled' : ''} 
+                                onclick="openAdViewer('${ad.id}', '${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">
+                                ${isFrozen ? 'انتظر 24س' : 'مشاهدة'}
+                            </button>
                         </div>
                     `;
                 });
             } else {
-                listContainer.innerHTML = "<p style='text-align:center; color:#555;'>لا توجد إعلانات نشطة حالياً.</p>";
+                listContainer.innerHTML = "<p style='color: #444; text-align: center;'>لا توجد إعلانات متوفرة حالياً</p>";
             }
         }
 
-        // الانتقال لصفحة المشاهدة الجديدة
-        function openAdViewer(url, sec, rew) {
-            // نمرر البيانات عبر الـ URL لصفحة viewer.html
-            window.location.href = `viewer.html?url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
+        function openAdViewer(id, url, sec, rew) {
+            window.location.href = `viewer.html?id=${id}&url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
         }
 
         async function handleLogout() {
-            await _supabase.auth.signOut();
+            const { error } = await _supabase.auth.signOut();
             window.location.href = 'login.html';
         }
     </script>
