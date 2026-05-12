@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات الحساب - The Blackflower Pro Art</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #28a745;
+            --bg-dark: #000000;
+            --card-bg: #111111;
+            --text-main: #ffffff;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .settings-container {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #222;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .logo-section img {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 2px solid var(--primary-color);
+        }
+
+        h2 { margin-bottom: 30px; color: var(--primary-color); }
+
+        .input-group {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #888; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        input:focus { border-color: var(--primary-color); }
+
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .save-btn:hover { background: #218838; }
+
+        .footer-links {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .footer-links a { color: #888; text-decoration: none; transition: 0.3s; }
+        .footer-links a:hover { color: var(--primary-color); }
+
+        .back-link { display: block; margin-top: 20px; color: var(--primary-color) !important; }
+    </style>
+</head>
+<body>
+
+    <div class="settings-container">
+        <div class="logo-section">
+            <img src="wight.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/80'">
+            <h2>إعدادات الحساب</h2>
+        </div>
+
+        <!-- تحديث الاسم -->
+        <div class="input-group">
+            <label>الاسم الجديد:</label>
+            <input type="text" id="new-username" placeholder="أدخل اسم المستخدم الجديد">
+        </div>
+
+        <!-- تحديث كلمة المرور -->
+        <div class="input-group">
+            <label>كلمة المرور الجديدة (اختياري):</label>
+            <input type="password" id="new-password" placeholder="اتركها فارغة إذا لم ترد التغيير">
+        </div>
+
+        <button class="save-btn" onclick="handleUpdate()">حفظ التغييرات</button>
+
+        <div class="footer-links">
+            <a href="#" onclick="forgotPassword()">هل نسيت كلمة المرور؟</a>
+            <a href="home.html" class="back-link">← العودة للرئيسية</a>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function handleUpdate() {
+            const newName = document.getElementById('new-username').value;
+            const newPass = document.getElementById('new-password').value;
+            const { data: { user } } = await _supabase.auth.getUser();
+
+            if (!user) return alert("انتهت الجلسة، سجل دخولك مرة أخرى");
+
+            // 1. تحديث الاسم في جدول Profiles
+            if (newName) {
+                const { error: nameError } = await _supabase.rpc('update_username', { 
+                    user_id: user.id, 
+                    new_name: newName 
+                });
+                if (nameError) return alert("خطأ في تحديث الاسم: " + nameError.message);
+            }
+
+            // 2. تحديث كلمة المرور في Supabase Auth
+            if (newPass) {
+                if (newPass.length < 6) return alert("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+                const { error: passError } = await _supabase.auth.updateUser({ password: newPass });
+                if (passError) return alert("خطأ في تحديث كلمة المرور: " + passError.message);
+            }
+
+            alert("تم تحديث بياناتك بنجاح!");
+            window.location.href = 'home.html';
+        }
+
+        async function forgotPassword() {
+            const { data: { user } } = await _supabase.auth.getUser();
+            let email = "";
+            
+            if (user) {
+                email = user.email;
+            } else {
+                email = prompt("الرجاء إدخال بريدك الإلكتروني لإرسال رابط الاستعادة:");
+            }
+
+            if (email) {
+                const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + '/settings.html',
+                });
+                if (error) alert("خطأ: " + error.message);
+                else alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك.");
+            }
+        }
+    </script>
+</body>
+</html>
