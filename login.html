@@ -6,37 +6,196 @@
     <title>تسجيل الدخول - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #000; color: #fff; font-family: Arial; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .login-card { background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; width: 100%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: #fff; box-sizing: border-box; }
-        .btn { width: 100%; padding: 12px; background: #28a745; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .error { color: #ff4444; font-size: 0.8rem; margin-top: 10px; display: none; }
+        /* التنسيق العام المتجاوب */
+        body { 
+            background-color: #000; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header img { width: 120px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
+        .header h1 { font-family: 'Times New Roman', serif; font-size: 2.8rem; margin: 0; }
+        .header p { font-family: Arial; font-size: 1.1rem; color: #888; text-transform: uppercase; font-weight: bold; }
+
+        .login-container { 
+            background: #111; 
+            padding: 35px; 
+            border-radius: 20px; 
+            border: 1px solid #333; 
+            width: 100%; 
+            max-width: 400px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+        }
+
+        h2 { font-size: 1.6rem; margin-bottom: 25px; color: #28a745; text-align: center; }
+
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            border: 1px solid #444; 
+            background: #1a1a1a; 
+            color: #fff; 
+            font-size: 1.1rem; 
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: #28a745; }
+
+        .forgot-link {
+            text-align: left;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .forgot-link a {
+            color: #888;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .forgot-link a:hover { color: #28a745; }
+
+        .login-btn { 
+            width: 100%; 
+            padding: 16px; 
+            background: #fff; 
+            color: #000; 
+            border: none; 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: 0.3s;
+        }
+
+        .login-btn:hover { background: #e6e6e6; transform: translateY(-2px); }
+
+        .google-btn { 
+            width: 100%; 
+            padding: 15px; 
+            background: #4285F4; 
+            color: #fff; 
+            border: none; 
+            font-size: 1.1rem; 
+            font-weight: bold; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .google-btn:hover { opacity: 0.9; }
+
+        .error-msg { color: #ff4444; margin-top: 15px; display: none; text-align: center; font-size: 1rem; }
+        
+        .footer-link { margin-top: 20px; color: #888; font-size: 0.9rem; }
+        .footer-link a { color: #28a745; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="login-card">
+
+    <div class="header">
+        <img src="wight.jpg" alt="Logo">
         <h1>The Black Flower</h1>
-        <p style="color: #888;">Professional Art</p>
+        <p>Professional art</p>
+    </div>
+
+    <div class="login-container">
+        <h2>تسجيل الدخول</h2>
+        
         <input type="email" id="email" placeholder="البريد الإلكتروني">
         <input type="password" id="password" placeholder="كلمة السر">
-        <button class="btn" onclick="handleLogin()">دخول</button>
-        <div id="error-msg" class="error"></div>
+        
+        <div class="forgot-link">
+            <a href="#" onclick="handleForgotPassword()">نسيت كلمة المرور؟</a>
+        </div>
+        
+        <p id="error-display" class="error-msg"></p>
+
+        <button class="login-btn" onclick="handleLogin()">دخول</button>
+        
+        <div style="text-align: center; margin: 15px 0; color: #444; font-size: 0.9rem;">أو عبر</div>
+        
+        <button class="google-btn" onclick="handleGoogleSignIn()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" style="background: white; border-radius: 2px; padding: 2px;">
+            الدخول بواسطة Google
+        </button>
+    </div>
+
+    <div class="footer-link">
+        ليس لديك حساب؟ <a href="register.html">انضم إلينا الآن</a>
     </div>
 
     <script>
-        const _supabase = supabase.createClient('https://qxtubfnbbqnxteoocqrg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU');
+        // إعدادات الربط الخاصة بك
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+        // الروابط الخاصة بموقعك على GitHub Pages
+        const HOME_URL = "https://blackflowerproart.github.io/Faucet/home.html";
+        const RESET_URL = "https://blackflowerproart.github.io/Faucet/reset-password.html";
+
+        // 1. تسجيل الدخول العادي
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const errorDisplay = document.getElementById('error-display');
+
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                document.getElementById('error-msg').innerText = "خطأ: " + error.message;
-                document.getElementById('error-msg').style.display = "block";
+                errorDisplay.innerText = "خطأ: " + error.message;
+                errorDisplay.style.display = "block";
             } else {
-                // عند نجاح الدخول، نتوجه للرئيسية
-                window.location.href = "home.html";
+                window.location.href = HOME_URL;
+            }
+        }
+
+        // 2. الدخول بواسطة جوجل
+        async function handleGoogleSignIn() {
+            const { error } = await _supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: HOME_URL
+                }
+            });
+            if (error) alert("خطأ جوجل: " + error.message);
+        }
+
+        // 3. نسيان كلمة المرور
+        async function handleForgotPassword() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert("يرجى كتابة بريدك الإلكتروني في الخانة أولاً لإرسال رابط الاستعادة.");
+                return;
+            }
+
+            const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: RESET_URL,
+            });
+
+            if (error) {
+                alert("خطأ: " + error.message);
+            } else {
+                alert("تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك. تفقد صندوق الوارد.");
             }
         }
     </script>
