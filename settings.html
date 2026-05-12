@@ -6,91 +6,88 @@
     <title>إعدادات الحساب | TheBlackflower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #6366f1; --bg: #f8fafc; --text: #1e293b; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { margin-top: 0; color: var(--primary); font-size: 1.5rem; text-align: center; }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; }
-        input { width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; transition: background 0.3s; }
-        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+        :root { --primary: #000000; --accent: #6366f1; --bg: #f8fafc; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border: 1px solid #e2e8f0; }
+        h2 { margin-top: 0; color: var(--primary); text-align: center; font-weight: 800; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: #64748b; }
+        input { width: 100%; padding: 0.8rem; border: 2px solid #f1f5f9; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: var(--accent); }
+        button { width: 100%; padding: 0.9rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: transform 0.2s; }
+        button:active { transform: scale(0.98); }
+        button:disabled { background: #94a3b8; }
         .hidden { display: none; }
-        .message { margin-top: 1rem; font-size: 0.85rem; text-align: center; }
-        .otp-box { text-align: center; }
-        .otp-box input { letter-spacing: 0.5rem; text-align: center; font-weight: bold; }
+        .status { margin-top: 1.5rem; text-align: center; font-size: 0.9rem; font-weight: 500; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <!-- المرحلة الأولى: نموذج الإعدادات -->
+    <!-- المرحلة الأولى -->
     <div id="settings-stage">
-        <h2>إعدادات الصفحة</h2>
+        <h2>تعديل البيانات</h2>
         <div class="form-group">
             <label>الاسم الكامل</label>
-            <input type="text" id="full_name" placeholder="أدخل اسمك الجديد">
+            <input type="text" id="full_name" placeholder="الاسم الجديد">
         </div>
         <div class="form-group">
-            <label>اللغة المفضلة</label>
-            <input type="text" id="language" placeholder="مثلاً: العربية">
+            <label>بيانات إضافية (JSON)</label>
+            <input type="text" id="extra_info" placeholder="مثلاً: المسمى الوظيفي">
         </div>
-        <button id="btn-save" onclick="handleSave()">حفظ التغييرات</button>
+        <button id="btn-save" onclick="handleSave()">إرسال رمز التأكيد</button>
     </div>
 
-    <!-- المرحلة الثانية: تأكيد الرمز -->
+    <!-- المرحلة الثانية -->
     <div id="otp-stage" class="hidden">
-        <h2>تأكيد الهوية</h2>
-        <p style="font-size: 0.8rem; text-align: center;">أدخل الرمز المرسل لبريدك الإلكتروني (صالح لـ 12 ساعة)</p>
-        <div class="form-group otp-box">
-            <input type="text" id="otp_input" maxlength="6" placeholder="000000">
+        <h2>تأكيد الرمز</h2>
+        <p style="text-align: center; color: #64748b; font-size: 0.85rem;">أدخل الرمز المكون من 6 أرقام المرسل لبريدك</p>
+        <div class="form-group">
+            <input type="text" id="otp_input" maxlength="6" style="text-align: center; letter-spacing: 0.5rem; font-size: 1.5rem;">
         </div>
-        <button id="btn-verify" onclick="handleVerify()">تأكيد الرمز</button>
-        <p style="text-align: center; margin-top: 10px;">
-            <a href="#" onclick="location.reload()" style="font-size: 0.8rem; color: #64748b;">إلغاء</a>
-        </p>
+        <button id="btn-verify" onclick="handleVerify()">تحديث قاعدة البيانات</button>
     </div>
 
-    <div id="status-msg" class="message"></div>
+    <div id="status-msg" class="status"></div>
 </div>
 
 <script>
-    // --- إعدادات Supabase و Resend ---
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const RESEND_API_KEY = 're_YOUR_RESEND_KEY'; // تأكد من حماية هذا المفتاح في الإنتاج
+    // --- إعدادات الاتصال ---
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // استبدله برابط مشروعك
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // استبدله بمفتاح مشروعك
+    const RESEND_API_KEY = 're_ChvyWsPX_MRNrxw6YYGbqgREPfaZB9pL4'; 
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // --- الوظائف ---
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function handleSave() {
-        const fullName = document.getElementById('full_name').value;
-        const lang = document.getElementById('language').value;
+        const name = document.getElementById('full_name').value;
+        const info = document.getElementById('extra_info').value;
         const btn = document.getElementById('btn-save');
         const msg = document.getElementById('status-msg');
 
-        if (!fullName || !lang) return alert("يرجى ملء الحقول");
+        if(!name) return alert("يرجى إدخال الاسم");
 
         btn.disabled = true;
-        msg.innerText = "جاري إرسال رمز التأكيد...";
+        msg.innerText = "جاري الحفظ وإرسال الرمز...";
 
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await _supabase.auth.getUser();
+            if(!user) throw new Error("يجب تسجيل الدخول أولاً");
+
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
             // 1. الحفظ في جدول الانتظار
-            const { error: dbError } = await supabase
+            const { error: dbError } = await _supabase
                 .from('pending_updates')
                 .insert([{ 
                     user_id: user.id, 
-                    payload: { full_name: fullName, language: lang }, 
+                    payload: { full_name: name, info: info }, 
                     otp_code: otp 
                 }]);
 
             if (dbError) throw dbError;
 
-            // 2. إرسال الإيميل عبر Resend API
+            // 2. إرسال الإيميل عبر Resend
             const emailRes = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
@@ -100,56 +97,54 @@
                 body: JSON.stringify({
                     from: 'TheBlackflower <onboarding@resend.dev>',
                     to: user.email,
-                    subject: 'رمز الأمان لتحديث الإعدادات',
-                    html: `<p>رمز التأكيد الخاص بك هو: <b>${otp}</b></p>`
+                    subject: 'تأكيد تعديل إعدادات الحساب',
+                    html: `رمز التأكيد الخاص بك هو: <strong>${otp}</strong>. هذا الرمز صالح لمدة 12 ساعة.`
                 })
             });
 
-            if (!emailRes.ok) throw new Error("فشل إرسال البريد");
+            if (!emailRes.ok) throw new Error("فشل إرسال البريد الإلكتروني");
 
-            // انتقل لمرحلة الرمز
             document.getElementById('settings-stage').classList.add('hidden');
             document.getElementById('otp-stage').classList.remove('hidden');
-            msg.innerText = "";
+            msg.innerText = "تم إرسال الرمز بنجاح";
+            msg.style.color = "#10b981";
 
         } catch (err) {
-            msg.innerText = "خطأ: " + err.message;
+            msg.innerText = err.message;
+            msg.style.color = "#ef4444";
             btn.disabled = false;
         }
     }
 
     async function handleVerify() {
-        const otpInput = document.getElementById('otp_input').value;
+        const otpVal = document.getElementById('otp_input').value;
         const btn = document.getElementById('btn-verify');
         const msg = document.getElementById('status-msg');
 
         btn.disabled = true;
-        msg.innerText = "جاري التحقق من الرمز...";
+        msg.innerText = "جاري التحديث النهائي...";
 
         try {
-            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { user } } = await _supabase.auth.getUser();
 
-            // استدعاء الدالة RPC التي أنشأناها في SQL
-            const { data, error } = await supabase.rpc('verify_and_update_settings', {
+            const { data, error } = await _supabase.rpc('verify_and_update_settings', {
                 input_user_id: user.id,
-                input_otp: otpInput
+                input_otp: otpVal
             });
 
-            if (data.success) {
-                msg.style.color = "green";
-                msg.innerText = "تم التحديث بنجاح! سيتم إعادة تحميل الصفحة...";
-                setTimeout(() => location.reload(), 2000);
+            if (data?.success) {
+                msg.innerText = "تم تحديث البيانات بنجاح في قاعدة البيانات!";
+                msg.style.color = "#10b981";
+                setTimeout(() => location.reload(), 3000);
             } else {
-                msg.style.color = "red";
-                msg.innerText = data.message;
-                btn.disabled = false;
+                throw new Error(data?.message || "فشل التحقق");
             }
         } catch (err) {
-            msg.innerText = "خطأ في الاتصال بقاعدة البيانات";
+            msg.innerText = err.message;
+            msg.style.color = "#ef4444";
             btn.disabled = false;
         }
     }
 </script>
-
 </body>
 </html>
