@@ -6,144 +6,162 @@
     <title>إعدادات الحساب - The Blackflower Pro Art</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #28a745; --dark: #000; --card: #111; --text: #fff; }
-        body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .container { background: var(--card); padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; border: 1px solid #222; }
-        .logo { text-align: center; margin-bottom: 20px; }
-        .logo img { width: 70px; height: 70px; border-radius: 12px; border: 2px solid var(--primary); }
-        .box { background: #0a0a0a; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #1a1a1a; }
-        h3 { margin: 0 0 15px 0; font-size: 1rem; color: var(--primary); border-bottom: 1px solid #222; padding-bottom: 10px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: #888; }
-        input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background: #151515; color: white; box-sizing: border-box; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn:hover { background: #218838; }
-        .forgot-link { font-size: 0.75rem; color: #555; text-decoration: none; display: inline-block; margin-top: -5px; margin-bottom: 10px; }
-        .forgot-link:hover { color: var(--primary); }
-        .google-msg { text-align: center; padding: 10px; color: #4285F4; font-size: 0.9rem; border: 1px dashed #4285F4; border-radius: 8px; margin-bottom: 15px; }
+        :root {
+            --primary-color: #28a745;
+            --bg-dark: #0b0b0b;
+            --card-bg: #161616;
+            --text-main: #ffffff;
+            --input-bg: #222;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .settings-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid #222;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        h2 { color: var(--primary-color); text-align: center; margin-bottom: 25px; }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #888; }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: var(--input-bg);
+            color: white;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .input-group input:focus { border-color: var(--primary-color); }
+
+        .btn-save {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-save:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link:hover { color: var(--primary-color); }
+
+        .status-msg {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.85rem;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="logo">
-        <img src="wight.jpg" alt="Logo">
-        <h2 style="color: var(--primary);">إعدادات الحساب</h2>
+    <div class="settings-container">
+        <h2>⚙️ إعدادات الحساب</h2>
+        
+        <!-- قسم تحديث الاسم -->
+        <div class="input-group">
+            <label>اسم المستخدم الجديد</label>
+            <input type="text" id="new-username" placeholder="أدخل الاسم الجديد...">
+            <button class="btn-save" onclick="updateUsername()">تحديث الاسم</button>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #333; margin: 25px 0;">
+
+        <!-- قسم تحديث كلمة المرور -->
+        <div class="input-group">
+            <label>كلمة المرور الجديدة</label>
+            <input type="password" id="new-password" placeholder="********">
+            <button class="btn-save" style="background-color: #444;" onclick="updatePassword()">تغيير كلمة المرور</button>
+        </div>
+
+        <div id="status-msg" class="status-msg"></div>
+
+        <a href="home.html" class="back-link">⬅️ العودة للوحة التحكم</a>
     </div>
 
-    <div id="google-banner" style="display:none;" class="google-banner box">
-        <p class="google-msg">لقد سجلت عبر Google. يمكنك تحديث اسمك مباشرة دون الحاجة لكلمة مرور.</p>
-    </div>
+    <script>
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    <!-- حقل كلمة المرور الحالية (يختفي لمستخدمي جوجل) -->
-    <div id="auth-check" class="box">
-        <h3>🔒 التحقق من الهوية</h3>
-        <label>كلمة المرور الحالية:</label>
-        <input type="password" id="current-password" placeholder="كلمة المرور الحالية">
-        <a href="#" onclick="forgotPassword()" class="forgot-link">هل نسيت كلمة المرور؟</a>
-    </div>
+        // تحديث اسم المستخدم
+        async function updateUsername() {
+            const newName = document.getElementById('new-username').value;
+            const status = document.getElementById('status-msg');
 
-    <!-- تحديث الاسم -->
-    <div class="box">
-        <h3>👤 اسم المستخدم</h3>
-        <input type="text" id="new-username" placeholder="الاسم الجديد">
-        <button class="btn" onclick="updateName()">تحديث الاسم</button>
-    </div>
+            if (!newName) {
+                showStatus("يرجى إدخال اسم أولاً", "orange");
+                return;
+            }
 
-    <!-- تحديث كلمة المرور (يختفي لمستخدمي جوجل) -->
-    <div id="password-box" class="box">
-        <h3>🔐 كلمة مرور جديدة</h3>
-        <label>كلمة المرور الجديدة:</label>
-        <input type="password" id="new-password" placeholder="6 أحرف على الأقل">
-        <label>تأكيد كلمة المرور:</label>
-        <input type="password" id="confirm-password" placeholder="أعد كتابة كلمة المرور">
-        <button class="btn" style="background:#333;" onclick="updatePassword()">تغيير كلمة المرور</button>
-    </div>
+            const { data: { user } } = await _supabase.auth.getUser();
 
-    <div style="text-align: center; margin-top: 15px;">
-        <a href="home.html" style="color: var(--primary); text-decoration: none; font-weight: bold;">← عودة للرئيسية</a>
-    </div>
-</div>
+            const { error } = await _supabase
+                .from('profiles')
+                .update({ username: newName })
+                .eq('id', user.id);
 
-<script>
-    const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-    const supabaseKey = 'YOUR_SUPABASE_KEY'; // استبدلها بمفتاحك
-    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    let isGoogleUser = false;
-
-    window.onload = async () => {
-        const { data: { user } } = await _supabase.auth.getUser();
-        if (!user) window.location.href = 'login.html';
-
-        isGoogleUser = user.app_metadata.provider === 'google';
-
-        if (isGoogleUser) {
-            document.getElementById('auth-check').style.display = 'none';
-            document.getElementById('password-box').style.display = 'none';
-            document.getElementById('google-banner').style.display = 'block';
+            if (error) {
+                showStatus("خطأ في التحديث: " + error.message, "red");
+            } else {
+                showStatus("✅ تم تحديث الاسم بنجاح! \n Success! Your username has been updated.", "var(--primary-color)");
+            }
         }
-    };
 
-    // وظيفة التحقق من كلمة المرور (لغير مستخدمي جوجل)
-    async function verifyCurrentPassword() {
-        if (isGoogleUser) return true;
-        const currentPass = document.getElementById('current-password').value;
-        if (!currentPass) { alert("يرجى إدخال كلمة المرور الحالية أولاً"); return false; }
+        // تحديث كلمة المرور
+        async function updatePassword() {
+            const newPass = document.getElementById('new-password').value;
 
-        const { data: { user } } = await _supabase.auth.getUser();
-        const { error } = await _supabase.auth.signInWithPassword({
-            email: user.email,
-            password: currentPass
-        });
+            if (newPass.length < 6) {
+                showStatus("كلمة المرور يجب أن تكون 6 أحرف على الأقل", "orange");
+                return;
+            }
 
-        if (error) { alert("كلمة المرور الحالية غير صحيحة"); return false; }
-        return true;
-    }
+            const { error } = await _supabase.auth.updateUser({ password: newPass });
 
-    // 1. تحديث الاسم
-    async function updateName() {
-        const newName = document.getElementById('new-username').value;
-        if (!newName) return alert("أدخل الاسم الجديد");
-
-        if (!(await verifyCurrentPassword())) return;
-
-        const { data: { user } } = await _supabase.auth.getUser();
-        const { error } = await _supabase.rpc('update_username', { user_id: user.id, new_name: newName });
-
-        if (error) alert("خطأ من النظام: " + error.message);
-        else {
-            alert("✅ استجابة النظام: تم تغيير اسم المستخدم بنجاح!");
-            location.reload();
+            if (error) {
+                showStatus("خطأ: " + error.message, "red");
+            } else {
+                showStatus("✅ تم تغيير كلمة المرور بنجاح! \n Security Alert: Password Updated.", "var(--primary-color)");
+            }
         }
-    }
 
-    // 2. تحديث كلمة المرور
-    async function updatePassword() {
-        const pass = document.getElementById('new-password').value;
-        const confirm = document.getElementById('confirm-password').value;
-
-        if (pass.length < 6) return alert("كلمة المرور قصيرة جداً");
-        if (pass !== confirm) return alert("كلمات المرور الجديدة غير متطابقة!");
-
-        if (!(await verifyCurrentPassword())) return;
-
-        const { error } = await _supabase.auth.updateUser({ password: pass });
-
-        if (error) alert("خطأ: " + error.message);
-        else {
-            alert("✅ استجابة النظام: تم تغيير كلمة المرور بنجاح!");
-            document.getElementById('current-password').value = "";
-            document.getElementById('new-password').value = "";
-            document.getElementById('confirm-password').value = "";
+        function showStatus(msg, color) {
+            const status = document.getElementById('status-msg');
+            status.style.display = "block";
+            status.innerText = msg;
+            status.style.color = color;
         }
-    }
-
-    async function forgotPassword() {
-        const { data: { user } } = await _supabase.auth.getUser();
-        const { error } = await _supabase.auth.resetPasswordForEmail(user.email);
-        if (error) alert(error.message);
-        else alert("تم إرسال رابط إعادة التعيين لبريدك الإلكتروني");
-    }
-</script>
+    </script>
 </body>
 </html>
