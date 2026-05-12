@@ -6,241 +6,38 @@
     <title>تسجيل الدخول - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* التنسيق العام المتجاوب */
-        body { 
-            background-color: #000; 
-            color: #fff; 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            min-height: 100vh; 
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .header { text-align: center; margin-bottom: 30px; }
-        .header img { width: 120px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
-        .header h1 { font-family: 'Times New Roman', serif; font-size: 2.5rem; margin: 0; letter-spacing: 2px; }
-        .header p { font-size: 1rem; color: #888; text-transform: uppercase; font-weight: bold; letter-spacing: 4px; }
-
-        .login-container { 
-            background: #111; 
-            padding: 35px; 
-            border-radius: 20px; 
-            border: 1px solid #333; 
-            width: 100%; 
-            max-width: 400px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.8);
-        }
-
-        h2 { font-size: 1.4rem; margin-bottom: 25px; color: #28a745; text-align: center; }
-
-        input { 
-            width: 100%; 
-            padding: 16px; 
-            margin: 10px 0; 
-            border-radius: 10px; 
-            border: 1px solid #444; 
-            background: #1a1a1a; 
-            color: #fff; 
-            font-size: 1rem; 
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        input:focus { border-color: #28a745; background: #222; }
-
-        .forgot-link {
-            text-align: left;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .forgot-link a {
-            color: #888;
-            font-size: 0.85rem;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-
-        .forgot-link a:hover { color: #28a745; }
-
-        .login-btn { 
-            width: 100%; 
-            padding: 16px; 
-            background: #fff; 
-            color: #000; 
-            border: none; 
-            font-size: 1.1rem; 
-            font-weight: bold; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-
-        .login-btn:hover { background: #e6e6e6; transform: translateY(-2px); }
-
-        .google-btn { 
-            width: 100%; 
-            padding: 14px; 
-            background: #fff; 
-            color: #757575; 
-            border: 1px solid #ddd; 
-            font-size: 1rem; 
-            font-weight: 500; 
-            border-radius: 10px; 
-            margin-top: 15px; 
-            cursor: pointer; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            transition: 0.3s;
-        }
-
-        .google-btn:hover { background: #f8f8f8; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        .error-msg { color: #ff4444; margin-top: 15px; display: none; text-align: center; font-size: 0.9rem; background: rgba(255,68,68,0.1); padding: 10px; border-radius: 8px; }
-        
-        .footer-link { margin-top: 25px; color: #888; font-size: 0.9rem; }
-        .footer-link a { color: #28a745; text-decoration: none; font-weight: bold; }
-
-        /* Loading Spinner */
-        .loading { opacity: 0.6; cursor: wait; }
+        body { background: #000; color: #fff; font-family: Arial; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .login-card { background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; width: 100%; max-width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #1a1a1a; color: #fff; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; background: #28a745; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .error { color: #ff4444; font-size: 0.8rem; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <img src="wight.jpg" alt="Logo">
+    <div class="login-card">
         <h1>The Black Flower</h1>
-        <p>Professional art</p>
-    </div>
-
-    <div class="login-container">
-        <h2>تسجيل الدخول</h2>
-        
+        <p style="color: #888;">Professional Art</p>
         <input type="email" id="email" placeholder="البريد الإلكتروني">
         <input type="password" id="password" placeholder="كلمة السر">
-        
-        <div class="forgot-link">
-            <a href="#" onclick="handleForgotPassword()">نسيت كلمة المرور؟</a>
-        </div>
-        
-        <div id="error-display" class="error-msg"></div>
-
-        <button id="login-btn" class="login-btn" onclick="handleLogin()">دخول</button>
-        
-        <div style="text-align: center; margin: 15px 0; color: #444; font-size: 0.8rem; position: relative;">
-            <span style="background: #111; padding: 0 10px; position: relative; z-index: 1;">أو عبر</span>
-            <hr style="position: absolute; top: 50%; width: 100%; border: 0; border-top: 1px solid #333; margin: 0;">
-        </div>
-        
-        <button class="google-btn" onclick="handleGoogleSignIn()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18">
-            متابعة باستخدام Google
-        </button>
-    </div>
-
-    <div class="footer-link">
-        ليس لديك حساب؟ <a href="register.html">انضم إلينا الآن</a>
+        <button class="btn" onclick="handleLogin()">دخول</button>
+        <div id="error-msg" class="error"></div>
     </div>
 
     <script>
-        // --- إعدادات Supabase الخاصة بك ---
-        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const _supabase = supabase.createClient('https://qxtubfnbbqnxteoocqrg.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU');
 
-        // روابط التوجيه
-        const HOME_URL = "https://blackflowerproart.github.io/Faucet/home.html";
-        const RESET_URL = "https://blackflowerproart.github.io/Faucet/reset-password.html";
-
-        // عنصر عرض الخطأ والزر
-        const errorDisplay = document.getElementById('error-display');
-        const loginBtn = document.getElementById('login-btn');
-
-        // 1. تسجيل الدخول بالبريد وكلمة السر
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-
-            if (!email || !password) {
-                showError("يرجى ملء جميع الحقول");
-                return;
-            }
-
-            setLoading(true);
-
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
-                showError("فشل الدخول: " + translateError(error.message));
-                setLoading(false);
+                document.getElementById('error-msg').innerText = "خطأ: " + error.message;
+                document.getElementById('error-msg').style.display = "block";
             } else {
-                window.location.href = HOME_URL;
+                // عند نجاح الدخول، نتوجه للرئيسية
+                window.location.href = "home.html";
             }
-        }
-
-        // 2. الدخول بواسطة جوجل
-        async function handleGoogleSignIn() {
-            const { error } = await _supabase.auth.signInWithOAuth({
-                provider: 'google',
-                options: {
-                    redirectTo: HOME_URL
-                }
-            });
-            if (error) alert("خطأ جوجل: " + error.message);
-        }
-
-        // 3. استعادة كلمة المرور
-        async function handleForgotPassword() {
-            const email = document.getElementById('email').value;
-            if (!email) {
-                alert("يرجى كتابة بريدك الإلكتروني أولاً في الخانة المخصصة.");
-                return;
-            }
-
-            const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: RESET_URL,
-            });
-
-            if (error) {
-                alert("خطأ: " + error.message);
-            } else {
-                alert("تم إرسال رابط الاستعادة! تفقد بريدك الإلكتروني.");
-            }
-        }
-
-        // دالة مساعدة لإظهار الخطأ
-        function showError(msg) {
-            errorDisplay.innerText = msg;
-            errorDisplay.style.display = "block";
-        }
-
-        // دالة مساعدة لحالة التحميل
-        function setLoading(isLoading) {
-            if (isLoading) {
-                loginBtn.innerText = "جاري الدخول...";
-                loginBtn.classList.add('loading');
-                loginBtn.disabled = true;
-            } else {
-                loginBtn.innerText = "دخول";
-                loginBtn.classList.remove('loading');
-                loginBtn.disabled = false;
-            }
-        }
-
-        // ترجمة بسيطة للأخطاء الشائعة
-        function translateError(msg) {
-            if (msg.includes("Invalid login credentials")) return "بيانات الدخول غير صحيحة";
-            if (msg.includes("Email not confirmed")) return "يرجى تأكيد البريد الإلكتروني أولاً";
-            return msg;
         }
     </script>
 </body>
