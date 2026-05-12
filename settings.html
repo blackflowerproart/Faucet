@@ -11,7 +11,7 @@
             --bg-dark: #000000;
             --card-bg: #111111;
             --text-main: #ffffff;
-            --border-color: #222;
+            --google-blue: #4285F4;
         }
 
         body {
@@ -32,7 +32,7 @@
             border-radius: 20px;
             width: 100%;
             max-width: 450px;
-            border: 1px solid var(--border-color);
+            border: 1px solid #222;
             box-shadow: 0 10px 40px rgba(0,0,0,0.7);
         }
 
@@ -42,7 +42,7 @@
             border-radius: 12px; border: 2px solid var(--primary-color);
             margin-bottom: 10px;
         }
-        h2 { margin: 0; color: var(--primary-color); font-size: 1.5rem; }
+        h2 { margin: 0; color: var(--primary-color); font-size: 1.4rem; }
 
         .setting-box {
             background: #0a0a0a;
@@ -52,15 +52,15 @@
             border: 1px solid #1a1a1a;
         }
 
-        h3 { margin-top: 0; font-size: 1rem; color: var(--primary-color); border-bottom: 1px solid #222; padding-bottom: 10px; }
+        h3 { margin-top: 0; font-size: 1rem; color: var(--primary-color); border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 15px; }
 
-        .input-group { text-align: right; margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #888; }
+        .input-group { text-align: right; margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: #888; }
 
         input {
             width: 100%; padding: 10px; border-radius: 6px;
             border: 1px solid #333; background: #151515; color: white;
-            box-sizing: border-box; outline: none; transition: 0.3s;
+            box-sizing: border-box; outline: none;
         }
         input:focus { border-color: var(--primary-color); }
 
@@ -72,11 +72,25 @@
         }
         .action-btn:hover { background: #218838; }
 
+        /* ستايل زر جوجل */
+        .google-managed-box {
+            display: none; /* يظهر فقط لمستخدمي جوجل */
+            text-align: center;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            border: 1px solid var(--google-blue);
+        }
+        .google-btn {
+            background: var(--google-blue);
+            color: white; border: none; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+        }
+
         .footer-links { text-align: center; margin-top: 20px; font-size: 0.9rem; }
         .footer-links a { color: #555; text-decoration: none; display: block; margin-bottom: 10px; }
-        .footer-links a:hover { color: var(--primary-color); }
-        
-        .back-link { font-weight: bold; color: var(--primary-color) !important; margin-top: 15px; }
+        .back-link { font-weight: bold; color: var(--primary-color) !important; }
     </style>
 </head>
 <body>
@@ -84,31 +98,47 @@
     <div class="settings-container">
         <div class="logo-section">
             <img src="wight.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/70'">
-            <h2>إعدادات الحساب</h2>
+            <h2>إعدادات الحساب الآمنة</h2>
         </div>
 
-        <!-- القسم الأول: تغيير الاسم -->
+        <!-- حقل كلمة المرور الحالية (مخفي لمستخدمي جوجل) -->
+        <div id="password-auth-section" class="setting-box">
+            <h3>🔒 تأكيد الهوية</h3>
+            <div class="input-group">
+                <label>كلمة المرور الحالية (مطلوبة للتعديل):</label>
+                <input type="password" id="current-password" placeholder="أدخل كلمة مرورك الحالية">
+            </div>
+        </div>
+
+        <!-- حالة مستخدم جوجل -->
+        <div id="google-auth-section" class="google-managed-box">
+            <p style="font-size: 0.85rem; color: #aaa;">أنت مسجل عبر Google. يتم إدارة أمانك من خلال حسابك الرسمي.</p>
+            <button class="google-btn" onclick="window.location.href='https://myaccount.google.com/'">
+                فتح إعدادات حساب Google
+            </button>
+        </div>
+
+        <!-- تعديل الاسم -->
         <div class="setting-box">
-            <h3>👤 تغيير اسم المستخدم</h3>
+            <h3>👤 تحديث الاسم</h3>
             <div class="input-group">
                 <label>الاسم الجديد:</label>
-                <input type="text" id="new-username" placeholder="أدخل الاسم الجديد">
+                <input type="text" id="new-username" placeholder="الاسم الجديد">
             </div>
-            <button class="action-btn" onclick="updateNameOnly()">تحديث الاسم</button>
+            <button class="action-btn" onclick="handleUpdate('name')">حفظ الاسم</button>
         </div>
 
-        <!-- القسم الثاني: تغيير كلمة المرور -->
-        <div class="setting-box">
-            <h3>🔐 تغيير كلمة المرور</h3>
+        <!-- تعديل كلمة المرور (يختفي لمستخدمي جوجل) -->
+        <div id="pass-change-box" class="setting-box">
+            <h3>🔐 تحديث كلمة المرور</h3>
             <div class="input-group">
                 <label>كلمة المرور الجديدة:</label>
-                <input type="password" id="new-password" placeholder="أدخل كلمة المرور الجديدة">
+                <input type="password" id="new-password" placeholder="6 أحرف على الأقل">
             </div>
-            <button class="action-btn" onclick="updatePasswordOnly()" style="background: #333;">تحديث كلمة المرور</button>
+            <button class="action-btn" onclick="handleUpdate('password')" style="background: #333;">تحديث كلمة المرور</button>
         </div>
 
         <div class="footer-links">
-            <a href="#" onclick="forgotPassword()">هل نسيت كلمة المرور؟</a>
             <a href="home.html" class="back-link">← العودة للرئيسية</a>
         </div>
     </div>
@@ -118,54 +148,66 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // وظيفة تحديث الاسم فقط
-        async function updateNameOnly() {
-            const newName = document.getElementById('new-username').value;
-            if (!newName) return alert("الرجاء إدخال الاسم أولاً");
+        let isGoogleUser = false;
 
+        window.onload = async () => {
             const { data: { user } } = await _supabase.auth.getUser();
-            
-            const { error } = await _supabase.rpc('update_username', { 
-                user_id: user.id, 
-                new_name: newName 
-            });
+            if (!user) return window.location.href = 'login.html';
 
-            if (error) {
-                alert("خطأ أثناء تحديث الاسم: " + error.message);
-            } else {
-                alert("تم تحديث اسم المستخدم بنجاح!");
-                document.getElementById('new-username').value = "";
+            // التحقق إذا كان المستخدم مسجلاً بجوجل
+            isGoogleUser = user.app_metadata.provider === 'google';
+
+            if (isGoogleUser) {
+                document.getElementById('password-auth-section').style.display = 'none';
+                document.getElementById('pass-change-box').style.display = 'none';
+                document.getElementById('google-auth-section').style.display = 'block';
             }
-        }
+        };
 
-        // وظيفة تحديث كلمة المرور فقط
-        async function updatePasswordOnly() {
-            const newPass = document.getElementById('new-password').value;
-            
-            if (!newPass || newPass.length < 6) {
-                return alert("الرجاء إدخال كلمة مرور قوية (6 أحرف على الأقل)");
-            }
-
-            const { error } = await _supabase.auth.updateUser({ password: newPass });
-
-            if (error) {
-                alert("خطأ أثناء تحديث كلمة المرور: " + error.message);
-            } else {
-                alert("تم تحديث كلمة المرور بنجاح!");
-                document.getElementById('new-password').value = "";
-            }
-        }
-
-        // استعادة كلمة المرور
-        async function forgotPassword() {
+        async function handleUpdate(type) {
             const { data: { user } } = await _supabase.auth.getUser();
-            const email = user ? user.email : prompt("أدخل بريدك الإلكتروني:");
-            
-            if (email) {
-                const { error } = await _supabase.auth.resetPasswordForEmail(email);
+            const currentPass = document.getElementById('current-password').value;
+
+            // 1. التحقق من كلمة المرور الحالية أولاً (فقط للمستخدمين العاديين)
+            if (!isGoogleUser) {
+                if (!currentPass) return alert("يجب إدخال كلمة المرور الحالية لتأكيد التغيير.");
+                
+                // محاولة تسجيل الدخول مجدداً للتأكد من كلمة المرور
+                const { error: authError } = await _supabase.auth.signInWithPassword({
+                    email: user.email,
+                    password: currentPass
+                });
+
+                if (authError) return alert("كلمة المرور الحالية غير صحيحة.");
+            }
+
+            // 2. تنفيذ التحديث بناءً على النوع
+            if (type === 'name') {
+                const newName = document.getElementById('new-username').value;
+                if (!newName) return alert("أدخل الاسم الجديد.");
+
+                const { error } = await _supabase.rpc('update_username', { 
+                    user_id: user.id, 
+                    new_name: newName 
+                });
+                
                 if (error) alert("خطأ: " + error.message);
-                else alert("تم إرسال رابط الاستعادة إلى بريدك الإلكتروني.");
+                else alert("تم تحديث الاسم بنجاح!");
+
+            } else if (type === 'password') {
+                const newPass = document.getElementById('new-password').value;
+                if (!newPass || newPass.length < 6) return alert("كلمة المرور الجديدة ضعيفة.");
+
+                const { error } = await _supabase.auth.updateUser({ password: newPass });
+                
+                if (error) alert("خطأ: " + error.message);
+                else alert("تم تحديث كلمة المرور بنجاح!");
             }
+
+            // تصفير الحقول بعد الانتهاء
+            document.getElementById('current-password').value = "";
+            document.getElementById('new-username').value = "";
+            document.getElementById('new-password').value = "";
         }
     </script>
 </body>
