@@ -2,93 +2,213 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>الإعدادات - The Black Flower</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات الحساب - The Blackflower Pro Art</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { background: #000; color: #fff; font-family: Arial; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; background: #1a1a1a; color: #fff; border: 1px solid #444; }
-        .btn { width: 100%; padding: 12px; background: #fff; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .hidden { display: none; }
-        #msg { margin-top: 15px; font-size: 0.9rem; }
+        :root {
+            --primary-color: #28a745;
+            --bg-dark: #000000;
+            --card-bg: #111111;
+            --text-main: #ffffff;
+            --google-blue: #4285F4;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .settings-container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid #222;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+        }
+
+        .logo-section { text-align: center; margin-bottom: 25px; }
+        .logo-section img {
+            width: 70px; height: 70px;
+            border-radius: 12px; border: 2px solid var(--primary-color);
+            margin-bottom: 10px;
+        }
+        h2 { margin: 0; color: var(--primary-color); font-size: 1.4rem; }
+
+        .setting-box {
+            background: #0a0a0a;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #1a1a1a;
+        }
+
+        h3 { margin-top: 0; font-size: 1rem; color: var(--primary-color); border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 15px; }
+
+        .input-group { text-align: right; margin-bottom: 12px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.8rem; color: #888; }
+
+        input {
+            width: 100%; padding: 10px; border-radius: 6px;
+            border: 1px solid #333; background: #151515; color: white;
+            box-sizing: border-box; outline: none;
+        }
+        input:focus { border-color: var(--primary-color); }
+
+        .action-btn {
+            width: 100%; padding: 12px;
+            background: var(--primary-color); color: white;
+            border: none; border-radius: 6px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; margin-top: 5px;
+        }
+        .action-btn:hover { background: #218838; }
+
+        /* ستايل زر جوجل */
+        .google-managed-box {
+            display: none; /* يظهر فقط لمستخدمي جوجل */
+            text-align: center;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            border: 1px solid var(--google-blue);
+        }
+        .google-btn {
+            background: var(--google-blue);
+            color: white; border: none; padding: 10px 20px;
+            border-radius: 5px; cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+        }
+
+        .footer-links { text-align: center; margin-top: 20px; font-size: 0.9rem; }
+        .footer-links a { color: #555; text-decoration: none; display: block; margin-bottom: 10px; }
+        .back-link { font-weight: bold; color: var(--primary-color) !important; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div id="step1">
-            <h2>تعديل البيانات</h2>
-            <input type="text" id="new_name" placeholder="الاسم الجديد">
-            <button class="btn" onclick="handleSave()">حفظ وإرسال الرمز</button>
+
+    <div class="settings-container">
+        <div class="logo-section">
+            <img src="wight.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/70'">
+            <h2>إعدادات الحساب الآمنة</h2>
         </div>
 
-        <div id="step2" class="hidden">
-            <h2>تأكيد الرمز</h2>
-            <input type="text" id="otp_code" placeholder="أدخل الرمز">
-            <button class="btn" style="background: #28a745; color: #fff;" onclick="handleVerify()">تأكيد نهائي</button>
+        <!-- حقل كلمة المرور الحالية (مخفي لمستخدمي جوجل) -->
+        <div id="password-auth-section" class="setting-box">
+            <h3>🔒 تأكيد الهوية</h3>
+            <div class="input-group">
+                <label>كلمة المرور الحالية (مطلوبة للتعديل):</label>
+                <input type="password" id="current-password" placeholder="أدخل كلمة مرورك الحالية">
+            </div>
         </div>
-        <div id="msg"></div>
+
+        <!-- حالة مستخدم جوجل -->
+        <div id="google-auth-section" class="google-managed-box">
+            <p style="font-size: 0.85rem; color: #aaa;">أنت مسجل عبر Google. يتم إدارة أمانك من خلال حسابك الرسمي.</p>
+            <button class="google-btn" onclick="window.location.href='https://myaccount.google.com/'">
+                فتح إعدادات حساب Google
+            </button>
+        </div>
+
+        <!-- تعديل الاسم -->
+        <div class="setting-box">
+            <h3>👤 تحديث الاسم</h3>
+            <div class="input-group">
+                <label>الاسم الجديد:</label>
+                <input type="text" id="new-username" placeholder="الاسم الجديد">
+            </div>
+            <button class="action-btn" onclick="handleUpdate('name')">حفظ الاسم</button>
+        </div>
+
+        <!-- تعديل كلمة المرور (يختفي لمستخدمي جوجل) -->
+        <div id="pass-change-box" class="setting-box">
+            <h3>🔐 تحديث كلمة المرور</h3>
+            <div class="input-group">
+                <label>كلمة المرور الجديدة:</label>
+                <input type="password" id="new-password" placeholder="6 أحرف على الأقل">
+            </div>
+            <button class="action-btn" onclick="handleUpdate('password')" style="background: #333;">تحديث كلمة المرور</button>
+        </div>
+
+        <div class="footer-links">
+            <a href="home.html" class="back-link">← العودة للرئيسية</a>
+        </div>
     </div>
 
     <script>
-        const config = {
-            url: 'https://qxtubfnbbqnxteoocqrg.supabase.co',
-            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU',
-            resend: 're_ChvyWsPX_MRNrxw6YYGbqgREPfaZB9pL4'
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let isGoogleUser = false;
+
+        window.onload = async () => {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return window.location.href = 'login.html';
+
+            // التحقق إذا كان المستخدم مسجلاً بجوجل
+            isGoogleUser = user.app_metadata.provider === 'google';
+
+            if (isGoogleUser) {
+                document.getElementById('password-auth-section').style.display = 'none';
+                document.getElementById('pass-change-box').style.display = 'none';
+                document.getElementById('google-auth-section').style.display = 'block';
+            }
         };
-        const _supabase = supabase.createClient(config.url, config.key);
 
-        async function handleSave() {
-            const name = document.getElementById('new_name').value;
-            const { data: { user }, error: authError } = await _supabase.auth.getUser();
+        async function handleUpdate(type) {
+            const { data: { user } } = await _supabase.auth.getUser();
+            const currentPass = document.getElementById('current-password').value;
 
-            if (authError || !user) {
-                document.getElementById('msg').innerHTML = "<span style='color:red'>خطأ: سجل دخولك أولاً!</span>";
-                return;
+            // 1. التحقق من كلمة المرور الحالية أولاً (فقط للمستخدمين العاديين)
+            if (!isGoogleUser) {
+                if (!currentPass) return alert("يجب إدخال كلمة المرور الحالية لتأكيد التغيير.");
+                
+                // محاولة تسجيل الدخول مجدداً للتأكد من كلمة المرور
+                const { error: authError } = await _supabase.auth.signInWithPassword({
+                    email: user.email,
+                    password: currentPass
+                });
+
+                if (authError) return alert("كلمة المرور الحالية غير صحيحة.");
             }
 
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            
-            // حفظ في الانتظار
-            await _supabase.from('pending_updates').insert([{ user_id: user.id, payload: { full_name: name }, otp_code: otp }]);
+            // 2. تنفيذ التحديث بناءً على النوع
+            if (type === 'name') {
+                const newName = document.getElementById('new-username').value;
+                if (!newName) return alert("أدخل الاسم الجديد.");
 
-            // إرسال الإيميل
-            await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${config.resend}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    from: 'TheBlackflower <onboarding@resend.dev>',
-                    to: user.email,
-                    subject: 'رمز التحقق',
-                    html: `رمزك هو: ${otp}`
-                })
-            });
+                const { error } = await _supabase.rpc('update_username', { 
+                    user_id: user.id, 
+                    new_name: newName 
+                });
+                
+                if (error) alert("خطأ: " + error.message);
+                else alert("تم تحديث الاسم بنجاح!");
 
-            document.getElementById('step1').classList.add('hidden');
-            document.getElementById('step2').classList.remove('hidden');
-        }
+            } else if (type === 'password') {
+                const newPass = document.getElementById('new-password').value;
+                if (!newPass || newPass.length < 6) return alert("كلمة المرور الجديدة ضعيفة.");
 
-        async function handleVerify() {
-            const otp = document.getElementById('otp_code').value;
-            const { data: { user } } = await _supabase.auth.getUser();
-
-            const { data, error } = await _supabase.rpc('verify_and_update_settings', {
-                input_user_id: user.id,
-                input_otp: otp
-            });
-
-            if (data?.success) {
-                alert("تم التحديث!");
-                window.location.href = "home.html";
-            } else {
-                alert("الرمز خطأ");
+                const { error } = await _supabase.auth.updateUser({ password: newPass });
+                
+                if (error) alert("خطأ: " + error.message);
+                else alert("تم تحديث كلمة المرور بنجاح!");
             }
-        }
 
-        // التتبع (Presence) في صفحة الإعدادات أيضاً
-        setInterval(async () => {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if(user) await _supabase.from('user_presence').upsert({ user_id: user.id, last_seen: new Date().toISOString() });
-        }, 30000);
+            // تصفير الحقول بعد الانتهاء
+            document.getElementById('current-password').value = "";
+            document.getElementById('new-username').value = "";
+            document.getElementById('new-password').value = "";
+        }
     </script>
 </body>
 </html>
