@@ -23,7 +23,7 @@
             height: 100vh; 
         }
         
-        /* شريط التحكم العلوي (الهيدر) */
+        /* شريط التحكم العلوي */
         .viewer-header { 
             background: var(--header-bg); 
             padding: 0 40px; 
@@ -32,17 +32,15 @@
             align-items: center; 
             border-bottom: 3px solid var(--primary-green);
             height: 90px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             z-index: 10;
         }
 
         .site-logo { display: flex; align-items: center; gap: 15px; }
         .site-logo img { width: 55px; height: 55px; border-radius: 8px; border: 1px solid #333; }
-        .site-logo h2 { margin: 0; font-size: 1.3rem; letter-spacing: 1px; color: #fff; }
+        .site-logo h2 { margin: 0; font-size: 1.3rem; color: #fff; }
 
         .control-panel { display: flex; align-items: center; gap: 25px; }
         
-        /* تصميم العداد */
         #timer-display { 
             font-size: 2.5rem; 
             font-weight: 900; 
@@ -55,7 +53,6 @@
             text-align: center;
         }
         
-        /* زر التأكيد */
         #confirm-btn { 
             background: var(--primary-green); 
             color: #fff; 
@@ -64,41 +61,28 @@
             border-radius: 10px; 
             font-weight: bold; 
             cursor: pointer; 
-            display: none; /* يظهر بعد انتهاء الوقت */
+            display: none; 
             font-size: 1.2rem; 
-            box-shadow: 0 0 15px rgba(40, 167, 69, 0.4);
-            transition: transform 0.2s, background 0.2s;
+            transition: 0.2s;
         }
         #confirm-btn:hover { background: #218838; transform: scale(1.03); }
         #confirm-btn:disabled { background: #555; cursor: not-allowed; }
 
-        /* حاوية الإعلان (الإطار العريض) */
-        .ad-container { 
-            flex-grow: 1; 
-            width: 100%; 
-            background: #fff; 
-            position: relative;
-        }
-        iframe { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-            background: #fff;
-        }
+        .ad-container { flex-grow: 1; width: 100%; background: #fff; }
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
     <header class="viewer-header">
         <div class="site-logo">
-            <!-- تأكد من وجود ملف الصورة wight.jpg في مجلد المشروع -->
-            <img src="wight.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/55?text=BFP'">
+            <img src="wight.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/55'">
             <h2>The Blackflower Pro Art</h2>
         </div>
         
         <div class="control-panel">
             <div id="timer-display">--</div>
-            <button id="confirm-btn" onclick="claimReward()">✅ تأكيد المكافأة الآن</button>
+            <button id="confirm-btn" onclick="claimReward()">✅ تأكيد واستلام المكافأة</button>
         </div>
     </header>
 
@@ -107,13 +91,13 @@
     </main>
 
     <script>
-        // إعدادات Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // استخراج البيانات من الرابط (URL Parameters)
+        // جلب البيانات من الرابط
         const params = new URLSearchParams(window.location.search);
+        const adId = params.get('id'); // المعرف المهم للتجميد
         const targetUrl = params.get('url');
         const duration = parseInt(params.get('sec')) || 15;
         const reward = parseFloat(params.get('rew')) || 0;
@@ -125,58 +109,48 @@
         let secondsLeft = duration;
 
         window.onload = async () => {
-            // 1. التحقق من هوية المستخدم
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) {
-                alert("يجب تسجيل الدخول أولاً!");
                 window.location.href = 'login.html';
                 return;
             }
 
-            // 2. تحميل موقع الإعلان داخل الإطار
-            if (targetUrl) {
-                frameEl.src = targetUrl;
-            } else {
-                alert("رابط الإعلان غير صالح");
-            }
+            if (targetUrl) frameEl.src = targetUrl;
 
-            // 3. تشغيل العداد التنازلي
             const countdown = setInterval(() => {
                 secondsLeft--;
                 timerEl.innerText = secondsLeft;
-
                 if (secondsLeft <= 0) {
                     clearInterval(countdown);
-                    timerEl.style.display = 'none'; // إخفاء العداد
-                    btnEl.style.display = 'block'; // إظهار زر التأكيد
+                    timerEl.style.display = 'none';
+                    btnEl.style.display = 'block';
                 }
             }, 1000);
         };
 
-        // دالة إضافة المكافأة
         async function claimReward() {
             btnEl.disabled = true;
-            btnEl.innerText = "جاري المعالجة...";
+            btnEl.innerText = "جاري الحفظ وتجميد الإعلان...";
 
             try {
                 const { data: { user } } = await _supabase.auth.getUser();
 
-                // استدعاء دالة الـ SQL بالترتيب الصحيح للمدخلات
+                // استدعاء الدالة مع إضافة target_ad_id لتسجيل المشاهدة وتجميدها
                 const { error } = await _supabase.rpc('increment_balance', { 
                     user_id: user.id, 
-                    amount: reward 
+                    amount: reward,
+                    target_ad_id: adId 
                 });
 
                 if (error) throw error;
 
-                alert(`تم بنجاح! حصلت على ${reward} BFP`);
-                window.location.href = 'home.html'; // العودة للرئيسية لتحديث الرصيد
+                alert(`ممتاز! تمت إضافة ${reward} BFP لرصيدك وتجميد الإعلان لـ 24 ساعة.`);
+                window.location.href = 'home.html';
 
             } catch (err) {
-                console.error("Error claiming reward:", err);
-                alert("حدث خطأ: " + err.message);
+                alert("خطأ: " + err.message);
                 btnEl.disabled = false;
-                btnEl.innerText = "✅ تأكيد المكافأة الآن";
+                btnEl.innerText = "✅ تأكيد واستلام المكافأة";
             }
         }
     </script>
