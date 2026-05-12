@@ -2,158 +2,93 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعدادات الحساب - The Black Flower</title>
+    <title>الإعدادات - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #28a745; --bg: #000; --card-bg: #111; --text: #fff; }
-        body { 
-            background-color: var(--bg); color: var(--text); 
-            font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; 
-            display: flex; justify-content: center; align-items: center; min-height: 100vh; 
-        }
-        .container { 
-            background: var(--card-bg); padding: 30px; border-radius: 20px; 
-            border: 1px solid #333; width: 100%; max-width: 420px; text-align: center;
-        }
-        .user-status-bar {
-            background: #1a1a1a; padding: 10px; border-radius: 10px; margin-bottom: 20px;
-            font-size: 0.85rem; border: 1px dashed #444; display: flex; justify-content: space-around;
-        }
-        .online-dot { color: var(--primary); font-weight: bold; }
-        h2 { color: var(--primary); margin-bottom: 20px; font-family: 'Times New Roman', serif; }
-        input { 
-            width: 100%; padding: 14px; margin: 10px 0; border-radius: 10px; 
-            border: 1px solid #444; background: #1a1a1a; color: #fff; box-sizing: border-box;
-        }
-        input:focus { border-color: var(--primary); outline: none; }
-        .btn { 
-            width: 100%; padding: 14px; background: #fff; color: #000; 
-            border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px;
-        }
-        .btn-verify { background: var(--primary); color: #fff; }
+        body { background: #000; color: #fff; font-family: Arial; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #111; padding: 30px; border-radius: 15px; border: 1px solid #333; width: 350px; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; background: #1a1a1a; color: #fff; border: 1px solid #444; }
+        .btn { width: 100%; padding: 12px; background: #fff; color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .hidden { display: none; }
-        #status-msg { margin-top: 15px; font-size: 0.9rem; min-height: 20px; }
+        #msg { margin-top: 15px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
+    <div class="card">
+        <div id="step1">
+            <h2>تعديل البيانات</h2>
+            <input type="text" id="new_name" placeholder="الاسم الجديد">
+            <button class="btn" onclick="handleSave()">حفظ وإرسال الرمز</button>
+        </div>
 
-<div class="container">
-    <!-- شريط حالة التواجد -->
-    <div class="user-status-bar">
-        <span>الحالة: <span class="online-dot">● متصل الآن</span></span>
-        <span>مدة الجلسة: <span id="stay-duration">0 ثانية</span></span>
+        <div id="step2" class="hidden">
+            <h2>تأكيد الرمز</h2>
+            <input type="text" id="otp_code" placeholder="أدخل الرمز">
+            <button class="btn" style="background: #28a745; color: #fff;" onclick="handleVerify()">تأكيد نهائي</button>
+        </div>
+        <div id="msg"></div>
     </div>
 
-    <!-- المرحلة 1: تعديل البيانات -->
-    <div id="stage-1">
-        <h2>تعديل البيانات</h2>
-        <input type="text" id="new_name" placeholder="الاسم الجديد">
-        <button class="btn" onclick="handleInitialSave()">إرسال رمز التأكيد</button>
-    </div>
+    <script>
+        const config = {
+            url: 'https://qxtubfnbbqnxteoocqrg.supabase.co',
+            key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU',
+            resend: 're_ChvyWsPX_MRNrxw6YYGbqgREPfaZB9pL4'
+        };
+        const _supabase = supabase.createClient(config.url, config.key);
 
-    <!-- المرحلة 2: تأكيد الرمز -->
-    <div id="stage-2" class="hidden">
-        <h2>تأكيد الرمز</h2>
-        <p style="font-size: 0.8rem; color: #888;">أدخل الرمز المرسل لبريدك الإلكتروني</p>
-        <input type="text" id="otp_input" maxlength="6" style="text-align: center; font-size: 1.5rem; letter-spacing: 5px;">
-        <button class="btn btn-verify" onclick="handleVerify()">تأكيد التحديث النهائي</button>
-    </div>
+        async function handleSave() {
+            const name = document.getElementById('new_name').value;
+            const { data: { user }, error: authError } = await _supabase.auth.getUser();
 
-    <div id="status-msg"></div>
-</div>
+            if (authError || !user) {
+                document.getElementById('msg').innerHTML = "<span style='color:red'>خطأ: سجل دخولك أولاً!</span>";
+                return;
+            }
 
-<script>
-    // --- بيانات الربط ---
-    const SUPABASE_URL = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
-    const RESEND_KEY = 're_ChvyWsPX_MRNrxw6YYGbqgREPfaZB9pL4';
-
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    let sessionStartTime = new Date();
-
-    // 1. نظام تتبع التواجد (Online Presence)
-    async function trackPresence() {
-        const { data: { user } } = await _supabase.auth.getUser();
-        if (!user) return;
-
-        // تحديث جدول التواجد في قاعدة البيانات
-        await _supabase.from('user_presence').upsert({ 
-            user_id: user.id, 
-            last_seen: new Date().toISOString(),
-            is_online: true 
-        });
-
-        // تحديث عداد مدة المكوث في الواجهة
-        setInterval(() => {
-            const now = new Date();
-            const diffSeconds = Math.floor((now - sessionStartTime) / 1000);
-            const mins = Math.floor(diffSeconds / 60);
-            const secs = diffSeconds % 60;
-            document.getElementById('stay-duration').innerText = `${mins} د و ${secs} ث`;
-        }, 1000);
-    }
-
-    // 2. إرسال رمز التأكيد (Stage 1)
-    async function handleInitialSave() {
-        const name = document.getElementById('new_name').value;
-        const msg = document.getElementById('status-msg');
-
-        if(!name) return alert("يرجى إدخال الاسم");
-
-        const { data: { user }, error: authError } = await _supabase.auth.getUser();
-        if (authError || !user) {
-            msg.innerHTML = "<span style='color:red'>خطأ: يجب تسجيل الدخول أولاً!</span>";
-            return;
-        }
-
-        msg.innerText = "جاري إرسال الرمز...";
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-        try {
-            // حفظ الرمز في جدول الانتظار
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            
+            // حفظ في الانتظار
             await _supabase.from('pending_updates').insert([{ user_id: user.id, payload: { full_name: name }, otp_code: otp }]);
 
             // إرسال الإيميل
             await fetch('https://api.resend.com/emails', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+                headers: { 'Authorization': `Bearer ${config.resend}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     from: 'TheBlackflower <onboarding@resend.dev>',
                     to: user.email,
-                    subject: 'تأكيد تغيير الإعدادات',
-                    html: `رمز التحقق الخاص بك هو: <b>${otp}</b>`
+                    subject: 'رمز التحقق',
+                    html: `رمزك هو: ${otp}`
                 })
             });
 
-            document.getElementById('stage-1').classList.add('hidden');
-            document.getElementById('stage-2').classList.remove('hidden');
-            msg.innerText = "";
-        } catch (e) {
-            msg.innerText = "فشل الإرسال: " + e.message;
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
         }
-    }
 
-    // 3. التحقق النهائي (Stage 2)
-    async function handleVerify() {
-        const otpVal = document.getElementById('otp_input').value;
-        const { data: { user } } = await _supabase.auth.getUser();
+        async function handleVerify() {
+            const otp = document.getElementById('otp_code').value;
+            const { data: { user } } = await _supabase.auth.getUser();
 
-        const { data, error } = await _supabase.rpc('verify_and_update_settings', {
-            input_user_id: user.id,
-            input_otp: otpVal
-        });
+            const { data, error } = await _supabase.rpc('verify_and_update_settings', {
+                input_user_id: user.id,
+                input_otp: otp
+            });
 
-        if (data?.success) {
-            alert("تم تحديث بياناتك بنجاح!");
-            location.reload();
-        } else {
-            alert("الرمز غير صحيح أو انتهت صلاحيته.");
+            if (data?.success) {
+                alert("تم التحديث!");
+                window.location.href = "home.html";
+            } else {
+                alert("الرمز خطأ");
+            }
         }
-    }
 
-    // تشغيل التتبع عند فتح الصفحة
-    trackPresence();
-</script>
+        // التتبع (Presence) في صفحة الإعدادات أيضاً
+        setInterval(async () => {
+            const { data: { user } } = await _supabase.auth.getUser();
+            if(user) await _supabase.from('user_presence').upsert({ user_id: user.id, last_seen: new Date().toISOString() });
+        }, 30000);
+    </script>
 </body>
 </html>
