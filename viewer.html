@@ -128,24 +128,21 @@
             }, 1000);
         };
 
-        async function claimReward() {
-            btnEl.disabled = true;
-            btnEl.innerText = "جاري الحفظ وتجميد الإعلان...";
+       async function claimReward(amount) {
+    // استدعاء الدالة التي أنشأناها في SQL
+    const { data, error } = await _supabase.rpc('add_reward', { 
+        ad_reward_amount: amount 
+    });
 
-            try {
-                const { data: { user } } = await _supabase.auth.getUser();
-
-                // استدعاء الدالة مع إضافة target_ad_id لتسجيل المشاهدة وتجميدها
-                const { error } = await _supabase.rpc('increment_balance', { 
-                    user_id: user.id, 
-                    amount: reward,
-                    target_ad_id: adId 
-                });
-
-                if (error) throw error;
-
-                alert(`ممتاز! تمت إضافة ${reward} BFP لرصيدك وتجميد الإعلان لـ 24 ساعة.`);
-                window.location.href = 'home.html';
+    if (error) {
+        console.error("خطأ أثناء استلام المكافأة:", error.message);
+        alert("حدث خطأ، يرجى المحاولة لاحقاً.");
+    } else {
+        alert("✅ تم إضافة المكافأة بنجاح! \n Reward added to your wallet.");
+        // العودة للرئيسية بعد النجاح
+        window.location.href = 'home.html';
+    }
+}
 
             } catch (err) {
                 alert("خطأ: " + err.message);
