@@ -80,15 +80,18 @@
             document.getElementById('user-display-email').innerText = user.email;
             
             // جلب البيانات من جدول profiles حسب "جدول 1.jpg"
-            const { data: profile } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
-            if (profile) {
-                document.getElementById('user-display-name').innerText = profile.username || "مستخدم جديد";
-                document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
-                
-                // ملاحظة: جدول profiles في الصورة لا يحتوي على عمود balance، تأكد من وجوده أو جلب الرصيد من جدول wallets
-                const balance = profile.balance || 0; 
-                document.getElementById('bfp-val').innerText = balance.toFixed(2);
-                document.getElementById('usd-val').innerText = `≈ $${(balance * CONVERSION_RATE).toFixed(6)}`;
+          // استبدل جزء جلب البروفايل بهذا
+const { data: wallet } = await _supabase
+    .from('wallets')
+    .select('balance')
+    .eq('user_id', userId)
+    .single();
+
+if (wallet) {
+    const balance = wallet.balance || 0;
+    document.getElementById('bfp-val').innerText = balance.toFixed(2);
+    document.getElementById('usd-val').innerText = `≈ $${(balance * CONVERSION_RATE).toFixed(6)}`;
+}
             }
 
             // جلب الإعلانات حسب "جدول 2.jpg"
