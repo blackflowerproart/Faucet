@@ -195,45 +195,53 @@
             loadAds();
         };
 
-        async function loadUserData(userId) {
-            const { data: profile } = await _supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+     window.onload = async () => {
+    // 1. الحصول على بيانات الجلسة الحالية (المستخدم المسجل)
+    const { data: { user } } = await _supabase.auth.getUser();
+    
+    if (!user) { 
+        window.location.href = 'login.html'; 
+        return; 
+    }
 
-            if (profile) {
-                const balance = profile.balance || 0;
-                const usdValue = balance * CONVERSION_RATE;
+    // عرض البريد الإلكتروني فوراً من بيانات Auth
+    document.getElementById('user-display-email').innerText = user.email;
+    document.getElementById('avatar-char').innerText = user.email.charAt(0).toUpperCase();
 
-                document.getElementById('bfp-val').innerText = balance.toFixed(2);
-                document.getElementById('usd-val').innerText = `≈ $${usdValue.toFixed(6)}`;
-                document.getElementById('user-display-name').innerText = profile.full_name || 'مستخدم جديد';
-            }
+    // 2. جلب بيانات البروفايل (الاسم والرصيد) بناءً على المعرف الفريد المرتبط بالإيميل
+    loadUserData(user.id);
+    loadAds();
+};
+
+async function loadUserData(userId) {
+    try {
+        // جلب البيانات من جدول profiles حيث المعرف يساوي معرف المستخدم الحالي
+        const { data: profile, error } = await _supabase
+            .from('profiles')
+            .select('full_name, balance')
+            .eq('id', userId)
+            .single();
+
+        if (error) throw error;
+
+        if (profile) {
+            // تحديث الاسم من قاعدة البيانات
+            // إذا كان الاسم فارغاً في قاعدة البيانات، سنعرض الجزء الأول من الإيميل كاسم افتراضي
+            const displayName = profile.full_name || document.getElementById('user-display-email').innerText.split('@')[0];
+            document.getElementById('user-display-name').innerText = displayName;
+
+            // تحديث الرصيد والحسابات المالية
+            const balance = profile.balance || 0;
+            const usdValue = balance * CONVERSION_RATE;
+
+            document.getElementById('bfp-val').innerText = balance.toFixed(2);
+            document.getElementById('usd-val').innerText = `≈ $${usdValue.toFixed(6)}`;
         }
-
-        async function loadAds() {
-            const { data: ads } = await _supabase.from('ads').select('*');
-            const grid = document.getElementById('ads-grid');
-            grid.innerHTML = '';
-
-            if (ads && ads.length > 0) {
-                ads.forEach(ad => {
-                    grid.innerHTML += `
-                        <div class="card">
-                            <h3>${ad.title}</h3>
-                            <p style="color: var(--primary); font-weight: bold;">+ ${ad.reward} BFP</p>
-                            <p style="font-size: 0.8rem; color: #666;">المدة: ${ad.duration} ثانية</p>
-                            <button class="action-btn" onclick="goToViewer('${ad.id}', '${ad.url}', ${ad.duration}, ${ad.reward})">
-                                مشاهدة وكسب
-                            </button>
-                        </div>
-                    `;
-                });
-            } else {
-                grid.innerHTML = '<p>لا توجد إعلانات متاحة حالياً.</p>';
-            }
-        }
+    } catch (err) {
+        console.error("خطأ في جلب بيانات المستخدم:", err.message);
+        document.getElementById('user-display-name').innerText = "مستخدم";
+    }
+}
 
         function goToViewer(id, url, sec, rew) {
             window.location.href = `viewer.html?id=${id}&url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
