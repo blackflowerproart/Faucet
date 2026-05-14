@@ -7,149 +7,50 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #28a745;
-            --dark-bg: #050505;
-            --sidebar-bg: #111;
-            --card-bg: #1a1a1a;
-            --text-main: #ffffff;
-        }
-
-        body {
-            background-color: var(--dark-bg);
-            color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            margin: 0;
-            display: flex; /* لتقسيم الصفحة لجانب ومحتوى */
-            height: 100vh;
-        }
-
-        /* الشريط الجانبي (على اليسار) */
-        .sidebar {
-            width: 280px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid #222;
-            display: flex;
-            flex-direction: column;
-            padding: 30px 20px;
-            box-sizing: border-box;
-            order: 2; /* جعلها تظهر على اليسار في RTL */
-        }
-
-        .user-profile {
-            text-align: center;
-            padding-bottom: 30px;
-            border-bottom: 1px solid #222;
-            margin-bottom: 30px;
-        }
-
-        .user-avatar {
-            width: 80px;
-            height: 80px;
-            background: var(--primary);
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-        }
-
-        .balance-box {
-            background: #000;
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid var(--primary);
-            margin-bottom: 20px;
-        }
-
+        :root { --primary: #28a745; --dark-bg: #050505; --sidebar-bg: #111; --card-bg: #1a1a1a; --text-main: #ffffff; }
+        body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; height: 100vh; }
+        
+        .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 30px 20px; box-sizing: border-box; order: 2; }
+        .user-profile { text-align: center; padding-bottom: 30px; border-bottom: 1px solid #222; margin-bottom: 30px; }
+        .user-avatar { width: 80px; height: 80px; background: var(--primary); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; }
+        
+        .balance-box { background: #000; padding: 20px; border-radius: 15px; border: 1px solid var(--primary); margin-bottom: 20px; }
         .balance-box h3 { margin: 0; font-size: 0.8rem; color: #888; }
         .balance-box .bfp-amount { font-size: 1.8rem; font-weight: bold; color: var(--primary); display: block; }
         .balance-box .usd-amount { font-size: 0.9rem; color: #aaa; }
 
-        .nav-links { list-style: none; padding: 0; }
-        .nav-links li { margin-bottom: 10px; }
-        .nav-links a {
-            color: #fff;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            border-radius: 8px;
-            transition: 0.3s;
-        }
-        .nav-links a:hover { background: #222; }
+        .create-ad-btn { background: #fff; color: #000; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; display: block; }
+        .nav-links { list-style: none; padding: 0; flex-grow: 1; }
+        .nav-links a { color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; }
+        .nav-links a.active { background: #222; border-right: 3px solid var(--primary); }
 
-        /* المحتوى الرئيسي (في الوسط) */
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            order: 1;
-        }
-
-        .section-title {
-            border-bottom: 2px solid var(--primary);
-            display: inline-block;
-            margin-bottom: 25px;
-            padding-bottom: 5px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 50px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid #333;
-        }
-
-        .action-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .logout-btn {
-            margin-top: auto;
-            color: #ff4444;
-            cursor: pointer;
-            text-align: center;
-            padding: 10px;
-        }
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; order: 1; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 50px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; justify-content: space-between; }
+        .action-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        .logout-btn { color: #ff4444; cursor: pointer; text-align: center; padding: 10px; border-top: 1px solid #222; }
     </style>
 </head>
 <body>
 
-    <!-- الشريط الجانبي -->
     <aside class="sidebar">
         <div class="user-profile">
-            <div class="user-avatar" id="avatar-char">U</div>
-            <h3 id="user-display-name" style="margin: 10px 0 5px;">تحميل...</h3>
+            <div class="user-avatar" id="avatar-char">?</div>
+            <h3 id="user-display-name">جاري التحميل...</h3>
             <span id="user-display-email" style="font-size: 0.8rem; color: #666;"></span>
         </div>
 
         <div class="balance-box">
-            <h3>رصيدك الحالي</h3>
+            <h3>رصيدك</h3>
             <span class="bfp-amount" id="bfp-val">0.00</span>
             <span class="usd-amount" id="usd-val">≈ $0.0000</span>
         </div>
 
+        <a href="create-ad.html" class="create-ad-btn"><i class="fas fa-plus-circle"></i> إضافة إعلان جديد</a>
+
         <ul class="nav-links">
-            <li><a href="home.html" style="background: var(--primary);"><i class="fas fa-home"></i> الرئيسية</a></li>
-            <li><a href="settings.html"><i class="fas fa-user-cog"></i> إعدادات الحساب</a></li>
+            <li><a href="home.html" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
+            <li><a href="settings.html"><i class="fas fa-user-cog"></i> الإعدادات</a></li>
         </ul>
 
         <div class="logout-btn" onclick="logout()">
@@ -157,24 +58,12 @@
         </div>
     </aside>
 
-    <!-- المحتوى المركزي -->
     <main class="main-content">
-        
-        <h2 class="section-title">📺 الإعلانات المتاحة (PTC)</h2>
-        <div class="grid" id="ads-grid">
-            <p>جاري جلب الإعلانات...</p>
-        </div>
+        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom: 10px;">📺 الإعلانات المتاحة</h2>
+        <div class="grid" id="ads-grid"></div>
 
-        <h2 class="section-title">🛠️ المهام المتاحة</h2>
-        <div class="grid" id="tasks-grid">
-            <div class="card">
-                <h3>مشاركة الرابط على فيسبوك</h3>
-                <p style="color: #888; font-size: 0.9rem;">قم بنشر رابط الموقع في مجموعات عامة.</p>
-                <span style="color: var(--primary);">المكافأة: 10.00 BFP</span>
-                <button class="action-btn">تقديم إثبات</button>
-            </div>
-        </div>
-
+        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 40px;">🛠️ المهام المتاحة</h2>
+        <div class="grid" id="tasks-grid"></div>
     </main>
 
     <script>
@@ -182,75 +71,47 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const CONVERSION_RATE = 0.0005 / 15; // حساب قيمة الـ BFP الواحد بالسنت
+        const CONVERSION_RATE = 0.0005 / 15;
 
         window.onload = async () => {
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
 
             document.getElementById('user-display-email').innerText = user.email;
-            document.getElementById('avatar-char').innerText = user.email.charAt(0).toUpperCase();
+            
+            // جلب البيانات من جدول profiles حسب "جدول 1.jpg"
+            const { data: profile } = await _supabase.from('profiles').select('*').eq('id', user.id).single();
+            if (profile) {
+                document.getElementById('user-display-name').innerText = profile.username || "مستخدم جديد";
+                document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
+                
+                // ملاحظة: جدول profiles في الصورة لا يحتوي على عمود balance، تأكد من وجوده أو جلب الرصيد من جدول wallets
+                const balance = profile.balance || 0; 
+                document.getElementById('bfp-val').innerText = balance.toFixed(2);
+                document.getElementById('usd-val').innerText = `≈ $${(balance * CONVERSION_RATE).toFixed(6)}`;
+            }
 
-            loadUserData(user.id);
-            loadAds();
+            // جلب الإعلانات حسب "جدول 2.jpg"
+            const { data: ads } = await _supabase.from('ads').select('*');
+            const adsGrid = document.getElementById('ads-grid');
+            if (ads) {
+                ads.forEach(ad => {
+                    adsGrid.innerHTML += `
+                        <div class="card">
+                            <h3>${ad.title}</h3>
+                            <span style="color:var(--primary); font-weight:bold;">+ ${ad.reward_amount} BFP</span>
+                            <p style="font-size:0.8rem; color:#888;">المدة: ${ad.duration_seconds} ثانية</p>
+                            <button class="action-btn" onclick="openAd('${ad.id}', '${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
+                        </div>`;
+                });
+            }
         };
 
-     window.onload = async () => {
-    // 1. الحصول على بيانات الجلسة الحالية (المستخدم المسجل)
-    const { data: { user } } = await _supabase.auth.getUser();
-    
-    if (!user) { 
-        window.location.href = 'login.html'; 
-        return; 
-    }
-
-    // عرض البريد الإلكتروني فوراً من بيانات Auth
-    document.getElementById('user-display-email').innerText = user.email;
-    document.getElementById('avatar-char').innerText = user.email.charAt(0).toUpperCase();
-
-    // 2. جلب بيانات البروفايل (الاسم والرصيد) بناءً على المعرف الفريد المرتبط بالإيميل
-    loadUserData(user.id);
-    loadAds();
-};
-
-async function loadUserData(userId) {
-    try {
-        // جلب البيانات من جدول profiles حيث المعرف يساوي معرف المستخدم الحالي
-        const { data: profile, error } = await _supabase
-            .from('profiles')
-            .select('full_name, balance')
-            .eq('id', userId)
-            .single();
-
-        if (error) throw error;
-
-        if (profile) {
-            // تحديث الاسم من قاعدة البيانات
-            // إذا كان الاسم فارغاً في قاعدة البيانات، سنعرض الجزء الأول من الإيميل كاسم افتراضي
-            const displayName = profile.full_name || document.getElementById('user-display-email').innerText.split('@')[0];
-            document.getElementById('user-display-name').innerText = displayName;
-
-            // تحديث الرصيد والحسابات المالية
-            const balance = profile.balance || 0;
-            const usdValue = balance * CONVERSION_RATE;
-
-            document.getElementById('bfp-val').innerText = balance.toFixed(2);
-            document.getElementById('usd-val').innerText = `≈ $${usdValue.toFixed(6)}`;
-        }
-    } catch (err) {
-        console.error("خطأ في جلب بيانات المستخدم:", err.message);
-        document.getElementById('user-display-name').innerText = "مستخدم";
-    }
-}
-
-        function goToViewer(id, url, sec, rew) {
+        function openAd(id, url, sec, rew) {
             window.location.href = `viewer.html?id=${id}&url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
         }
 
-        async function logout() {
-            await _supabase.auth.signOut();
-            window.location.href = 'login.html';
-        }
+        async function logout() { await _supabase.auth.signOut(); window.location.href = 'login.html'; }
     </script>
 </body>
 </html>
