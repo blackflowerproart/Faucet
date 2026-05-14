@@ -79,7 +79,7 @@
 
             document.getElementById('user-display-email').innerText = user.email;
 
-            // 1. جلب بيانات البروفايل (الاسم والأفاتار) من جدول profiles
+            // 1. جلب بيانات البروفايل من جدول profiles حسب "جدول 1.jpg"
             const { data: profile } = await _supabase
                 .from('profiles')
                 .select('username')
@@ -91,7 +91,7 @@
                 document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
             }
 
-            // 2. جلب الرصيد من جدول wallets (التعديل الأخير)
+            // 2. جلب الرصيد من جدول wallets باستخدام عمود user_id
             const { data: wallet, error: walletError } = await _supabase
                 .from('wallets')
                 .select('balance')
@@ -102,8 +102,8 @@
                 const balance = wallet.balance || 0;
                 document.getElementById('bfp-val').innerText = balance.toFixed(2);
                 document.getElementById('usd-val').innerText = `≈ $${(balance * CONVERSION_RATE).toFixed(6)}`;
-            } else {
-                console.log("Wallet not found or error:", walletError);
+            } else if (walletError) {
+                console.error("Wallet Error:", walletError.message);
             }
 
             // 3. جلب الإعلانات من جدول ads حسب "جدول 2.jpg"
