@@ -1,164 +1,42 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاهدة الإعلان - The Blackflower Pro Art</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --primary-green: #28a745;
-            --dark-bg: #000000;
-            --header-bg: #111111;
-        }
+async function handleClaim() {
+    try {
+        btnEl.disabled = true;
+        btnEl.innerText = "جاري المعالجة...";
 
-        body { 
-            background: var(--dark-bg); 
-            color: #fff; 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-        }
-        
-        .viewer-header { 
-            background: var(--header-bg); 
-            padding: 0 40px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 3px solid var(--primary-green);
-            height: 90px;
-            z-index: 10;
-        }
+        // 1. تحديث رصيد المستخدم في جدول البروفايل (بفرض أن الجدول اسمه profiles وعمود الرصيد اسمه balance)
+        // نقوم بزيادة الرصيد للمستخدم الذي يطابق معرفه معرف المستخدم الحالي
+        const { data, error: rewardError } = await _supabase
+            .rpc('increment_balance', { 
+                user_id_input: currentUser.id, 
+                amount: rewardAmount 
+            });
 
-        .site-logo { display: flex; align-items: center; gap: 15px; }
-        .site-logo img { width: 55px; height: 55px; border-radius: 8px; border: 1px solid #333; }
-        .site-logo h2 { margin: 0; font-size: 1.3rem; color: #fff; }
+        // ملاحظة: إذا لم تكن تريد استخدام RPC (دالة SQL)، يمكنك استخدام التحديث العادي بالأسفل:
+        /*
+        const { error: rewardError } = await _supabase
+            .from('profiles')
+            .update({ balance: currentUser.balance + rewardAmount }) // يحتاج لجلب الرصيد القديم أولاً
+            .eq('id', currentUser.id);
+        */
 
-        .control-panel { display: flex; align-items: center; gap: 25px; }
-        
-        #timer-display { 
-            font-size: 2.5rem; 
-            font-weight: 900; 
-            color: var(--primary-green); 
-            background: #000;
-            padding: 5px 25px;
-            border-radius: 12px;
-            border: 2px solid #222;
-            min-width: 80px;
-            text-align: center;
-        }
-        
-        #confirm-btn { 
-            background: var(--primary-green); 
-            color: #fff; 
-            border: none; 
-            padding: 15px 45px; 
-            border-radius: 10px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            display: none; 
-            font-size: 1.2rem; 
-            transition: 0.2s;
-        }
-        #confirm-btn:hover { background: #218838; transform: scale(1.03); }
-        #confirm-btn:disabled { background: #555; cursor: not-allowed; opacity: 0.7; }
+        if (rewardError) throw rewardError;
 
-        .ad-container { flex-grow: 1; width: 100%; background: #fff; }
-        iframe { width: 100%; height: 100%; border: none; }
-    </style>
-</head>
-<body>
+        // 2. تسجيل المشاهدة لتجميد الإعلان لمدة 24 ساعة
+        const { error: viewError } = await _supabase
+            .from('ad_views')
+            .insert([
+                { user_id: currentUser.id, ad_id: adId }
+            ]);
 
-    <header class="viewer-header">
-        <div class="site-logo">
-            <img src="wight.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/55'">
-            <h2>The Blackflower Pro Art</h2>
-        </div>
-        
-        <div class="control-panel">
-            <div id="timer-display">--</div>
-            <button id="confirm-btn" onclick="handleClaim()">✅ تأكيد واستلام المكافأة</button>
-        </div>
-    </header>
+        if (viewError) console.warn("ملاحظة: فشل تسجيل تجميد الإعلان ولكن تمت إضافة الرصيد.");
 
-    <main class="ad-container">
-        <iframe id="ad-frame" src="about:blank"></iframe>
-    </main>
+        alert(`✅ تم استلام ${rewardAmount} BFP بنجاح!`);
+        window.location.href = 'home.html';
 
-    <script>
-        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-        const params = new URLSearchParams(window.location.search);
-        const adId = params.get('id'); 
-        const targetUrl = params.get('url');
-        const duration = parseInt(params.get('sec')) || 15;
-        const rewardAmount = parseFloat(params.get('rew')) || 0;
-
-        const timerEl = document.getElementById('timer-display');
-        const btnEl = document.getElementById('confirm-btn');
-        const frameEl = document.getElementById('ad-frame');
-
-        let secondsLeft = duration;
-        let currentUser = null;
-
-        window.onload = async () => {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-            currentUser = user;
-
-            if (targetUrl) frameEl.src = targetUrl;
-
-            const countdown = setInterval(() => {
-                secondsLeft--;
-                timerEl.innerText = secondsLeft;
-                if (secondsLeft <= 0) {
-                    clearInterval(countdown);
-                    timerEl.style.display = 'none';
-                    btnEl.style.display = 'block';
-                }
-            }, 1000);
-        };
-
-        async function handleClaim() {
-            try {
-                btnEl.disabled = true;
-                btnEl.innerText = "جاري المعالجة...";
-
-                // 1. إضافة المكافأة عبر الدالة المخزنة في SQL
-                const { error: rewardError } = await _supabase.rpc('add_reward', { 
-                    ad_reward_amount: rewardAmount 
-                });
-
-                if (rewardError) throw rewardError;
-
-                // 2. تسجيل المشاهدة لتجميد الإعلان لمدة 24 ساعة
-                const { error: viewError } = await _supabase
-                    .from('ad_views')
-                    .insert([
-                        { user_id: currentUser.id, ad_id: adId }
-                    ]);
-
-                if (viewError) console.warn("ملاحظة: فشل تسجيل تجميد الإعلان ولكن تمت إضافة الرصيد.");
-
-                alert(`✅ تم استلام ${rewardAmount} BFP بنجاح!`);
-                window.location.href = 'home.html';
-
-            } catch (err) {
-                console.error("Error:", err.message);
-                alert("حدث خطأ أثناء استلام المكافأة: " + err.message);
-                btnEl.disabled = false;
-                btnEl.innerText = "✅ تأكيد واستلام المكافأة";
-            }
-        }
-    </script>
-</body>
-</html>
+    } catch (err) {
+        console.error("Error:", err.message);
+        alert("حدث خطأ أثناء استلام المكافأة: " + err.message);
+        btnEl.disabled = false;
+        btnEl.innerText = "✅ تأكيد واستلام المكافأة";
+    }
+}
