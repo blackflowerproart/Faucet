@@ -78,23 +78,35 @@
             if (!user) { window.location.href = 'login.html'; return; }
 
             document.getElementById('user-display-email').innerText = user.email;
-            
-            // جلب البيانات من جدول profiles حسب "جدول 1.jpg"
-          // استبدل جزء جلب البروفايل بهذا
-const { data: wallet } = await _supabase
-    .from('wallets')
-    .select('balance')
-    .eq('user_id', userId)
-    .single();
 
-if (wallet) {
-    const balance = wallet.balance || 0;
-    document.getElementById('bfp-val').innerText = balance.toFixed(2);
-    document.getElementById('usd-val').innerText = `≈ $${(balance * CONVERSION_RATE).toFixed(6)}`;
-}
+            // 1. جلب بيانات البروفايل (الاسم والأفاتار) من جدول profiles
+            const { data: profile } = await _supabase
+                .from('profiles')
+                .select('username')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                document.getElementById('user-display-name').innerText = profile.username || "مستخدم";
+                document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
             }
 
-            // جلب الإعلانات حسب "جدول 2.jpg"
+            // 2. جلب الرصيد من جدول wallets (التعديل الأخير)
+            const { data: wallet, error: walletError } = await _supabase
+                .from('wallets')
+                .select('balance')
+                .eq('user_id', user.id)
+                .single();
+
+            if (wallet) {
+                const balance = wallet.balance || 0;
+                document.getElementById('bfp-val').innerText = balance.toFixed(2);
+                document.getElementById('usd-val').innerText = `≈ $${(balance * CONVERSION_RATE).toFixed(6)}`;
+            } else {
+                console.log("Wallet not found or error:", walletError);
+            }
+
+            // 3. جلب الإعلانات من جدول ads حسب "جدول 2.jpg"
             const { data: ads } = await _supabase.from('ads').select('*');
             const adsGrid = document.getElementById('ads-grid');
             if (ads) {
@@ -114,7 +126,10 @@ if (wallet) {
             window.location.href = `viewer.html?id=${id}&url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
         }
 
-        async function logout() { await _supabase.auth.signOut(); window.location.href = 'login.html'; }
+        async function logout() { 
+            await _supabase.auth.signOut(); 
+            window.location.href = 'login.html'; 
+        }
     </script>
 </body>
 </html>
