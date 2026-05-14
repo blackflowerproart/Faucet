@@ -64,6 +64,7 @@
             currentUser = user;
             if (targetUrl) frameEl.src = targetUrl;
 
+            timerEl.innerText = secondsLeft;
             const countdown = setInterval(() => {
                 secondsLeft--;
                 timerEl.innerText = secondsLeft;
@@ -80,7 +81,7 @@
                 btnEl.disabled = true;
                 btnEl.innerText = "جاري الحفظ...";
 
-                // استدعاء الدالة لزيادة الرصيد في قاعدة البيانات للمستخدم الحالي
+                // 1. استدعاء الدالة المحدثة لزيادة الرصيد في جدول wallets
                 const { error: rpcError } = await _supabase.rpc('increment_balance', { 
                     user_id_input: currentUser.id, 
                     amount: rewardAmount 
@@ -88,13 +89,18 @@
 
                 if (rpcError) throw rpcError;
 
-                // تسجيل أن المستخدم شاهد هذا الإعلان
-                await _supabase.from('ad_views').insert([{ user_id: currentUser.id, ad_id: adId }]);
+                // 2. تسجيل المشاهدة (تأكد أن جدول ad_views موجود ولديه هذه الأعمدة)
+                const { error: insertError } = await _supabase
+                    .from('ad_views')
+                    .insert([{ user_id: currentUser.id, ad_id: adId }]);
+                
+                if (insertError) console.warn("View log error:", insertError.message);
 
                 alert(`✅ مبروك! تمت إضافة ${rewardAmount} إلى رصيدك.`);
                 window.location.href = 'home.html';
             } catch (err) {
-                alert("خطأ: " + err.message);
+                console.error(err);
+                alert("خطأ أثناء استلام المكافأة: " + err.message);
                 btnEl.disabled = false;
                 btnEl.innerText = "✅ تأكيد واستلام المكافأة";
             }
