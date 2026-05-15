@@ -90,10 +90,9 @@
 
             if(!title || !link) return alert("يرجى ملء جميع الخانات");
 
-            // استدعاء دالة SQL التي خصمنا بها الرصيد سابقاً
-            // إذا كان الكود مجاني (cost = 0) لن يخصم شيئاً من الرصيد
+            // تم تغيير اسم البارامتر المرسل من user_id إلى p_user_id لمنع الغموض (Ambiguity) داخل دالة الـ SQL تماماً
             const { error } = await _supabase.rpc('create_ad_and_deduct', {
-                user_id: user.id,
+                p_user_id: user.id, 
                 ad_title: title,
                 ad_url: link,
                 dur: parseInt(dur),
