@@ -25,8 +25,8 @@
         
         <label>نوع الإعلان:</label>
         <select id="ad-type" onchange="calculateTotal()">
-            <option value="10">10 ثوانٍ (50 BFP / يوم)</option>
-            <option value="20">20 ثانية (100 BFP / يوم)</option>
+            <option value="10">10 ثوانٍ (50 BFP / يوم) - مكافأة المشاهدة: 8 BFP</option>
+            <option value="20">20 ثانية (100 BFP / يوم) - مكافأة المشاهدة: 15 BFP</option>
         </select>
 
         <label>مدة العرض:</label>
@@ -85,18 +85,22 @@
             const link = document.getElementById('ad-link').value;
             const dur = document.getElementById('ad-type').value;
             const days = document.getElementById('ad-duration').value;
+            
+            // حساب التكلفة بناءً على الخيارات المحددة والكود الترويجي
             const cost = isFree ? 0 : ((dur == "10" ? 50 : 100) * days);
+            
+            // التعديل الجديد: تحديد قيمة المكافأة بناءً على الثواني بدقة (8 أو 15)
             const reward = (dur == "10" ? 8 : 15);
 
             if(!title || !link) return alert("يرجى ملء جميع الخانات");
 
-            // تم تغيير اسم البارامتر المرسل من user_id إلى p_user_id لمنع الغموض (Ambiguity) داخل دالة الـ SQL تماماً
+            // إرسال البيانات المحدثة إلى دالة الـ RPC في Supabase
             const { error } = await _supabase.rpc('create_ad_and_deduct', {
                 p_user_id: user.id, 
                 ad_title: title,
                 ad_url: link,
                 dur: parseInt(dur),
-                reward: reward,
+                reward: parseInt(reward), // تمرير القيمة المعدلة هنا
                 cost: cost,
                 days: parseInt(days)
             });
