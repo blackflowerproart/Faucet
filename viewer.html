@@ -46,7 +46,14 @@
         const adId = params.get('id'); 
         const targetUrl = params.get('url');
         const duration = parseInt(params.get('sec')) || 15;
-        const rewardAmount = parseFloat(params.get('rew')) || 0;
+        
+        // التعديل هنا: تحديد المكافأة بناءً على قيمة الثواني (sec) الممررة في الرابط بشكل صارم
+        let rewardAmount = parseFloat(params.get('rew')) || 0;
+        if (duration === 10) {
+            rewardAmount = 8;
+        } else if (duration === 20) {
+            rewardAmount = 15;
+        }
 
         const timerEl = document.getElementById('timer-display');
         const btnEl = document.getElementById('confirm-btn');
@@ -81,7 +88,7 @@
                 btnEl.disabled = true;
                 btnEl.innerText = "جاري الحفظ...";
 
-                // 1. استدعاء الدالة المحدثة لزيادة الرصيد في جدول wallets
+                // 1. استدعاء الدالة لزيادة الرصيد في جدول wallets بالمكافأة المعدلة
                 const { error: rpcError } = await _supabase.rpc('increment_balance', { 
                     user_id_input: currentUser.id, 
                     amount: rewardAmount 
@@ -89,14 +96,14 @@
 
                 if (rpcError) throw rpcError;
 
-                // 2. تسجيل المشاهدة (تأكد أن جدول ad_views موجود ولديه هذه الأعمدة)
+                // 2. تسجيل المشاهدة في جدول ad_views
                 const { error: insertError } = await _supabase
                     .from('ad_views')
                     .insert([{ user_id: currentUser.id, ad_id: adId }]);
                 
                 if (insertError) console.warn("View log error:", insertError.message);
 
-                alert(`✅ مبروك! تمت إضافة ${rewardAmount} إلى رصيدك.`);
+                alert(`✅ مبروك! تمت إضافة ${rewardAmount} BFP إلى رصيدك.`);
                 window.location.href = 'home.html';
             } catch (err) {
                 console.error(err);
