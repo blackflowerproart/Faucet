@@ -22,7 +22,6 @@
         .create-ad-btn { background: #fff; color: #000; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 12px; display: block; transition: 0.2s; }
         .create-ad-btn:hover { background: #e6e6e6; }
         
-        /* زر إضافة مهام جديد متناسق مع الواجهة */
         .create-task-btn { background: var(--primary); color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; display: block; transition: 0.2s; }
         .create-task-btn:hover { background: #218838; }
 
@@ -117,9 +116,8 @@
             const { data: ads } = await _supabase.from('ads').select('*');
             const adsGrid = document.getElementById('ads-grid');
             if (ads) {
-                adsGrid.innerHTML = ''; // تنظيف الكاردات الافتراضية
+                adsGrid.innerHTML = ''; 
                 ads.forEach(ad => {
-                    // تأمين جلب المكافأة سواء مخزنة باسم reward أو reward_amount
                     const currentReward = ad.reward !== undefined ? ad.reward : (ad.reward_amount || 0);
                     
                     adsGrid.innerHTML += `
@@ -128,6 +126,22 @@
                             <span style="color:var(--primary); font-weight:bold; font-size:1.2rem; margin: 5px 0;">+ ${currentReward} BFP</span>
                             <p style="font-size:0.8rem; color:#888; margin: 5px 0 15px 0;">المدة: ${ad.duration_seconds || ad.duration || 0} ثانية</p>
                             <button class="action-btn" onclick="openAd('${ad.id}', '${ad.link || ad.ad_link}', ${ad.duration_seconds || ad.duration || 10}, ${currentReward})">مشاهدة الإعلان</button>
+                        </div>`;
+                });
+            }
+
+            // 4. التعديل الجديد: جلب المهام وعرضها في شبكة المهام المتاحة المخصصة لها
+            const { data: tasks } = await _supabase.from('tasks').select('*');
+            const tasksGrid = document.getElementById('tasks-grid');
+            if (tasks) {
+                tasksGrid.innerHTML = ''; // تنظيف العناصر القديمة
+                tasks.forEach(task => {
+                    tasksGrid.innerHTML += `
+                        <div class="card">
+                            <h3>${task.title}</h3>
+                            <span style="color:var(--primary); font-weight:bold; font-size:1.2rem; margin: 5px 0;">+ ${task.points_reward} BFP</span>
+                            <p style="font-size:0.8rem; color:#888; margin: 5px 0 15px 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${task.description || 'مهمة تفاعلية معلقة'}</p>
+                            <button class="action-btn" style="background-color: #007bff;" onclick="window.location.href='task-viewer.html?id=${task.id}'">عرض وتنفيذ المهمة</button>
                         </div>`;
                 });
             }
