@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تنفيذ المهمة - The Blackflower Pro Art</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary-green: #28a745; --dark-bg: #000000; --card-bg: #111; }
+        body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
+        .container { max-width: 600px; margin: 30px auto; background: var(--card-bg); padding: 35px; border-radius: 20px; border: 1px solid #333; text-align: right; }
+        h1 { text-align: center; color: var(--primary-green); margin-bottom: 25px; }
+        .task-detail { border-bottom: 1px solid #222; padding-bottom: 15px; margin-bottom: 15px; }
+        .task-detail span { color: #888; font-size: 0.9rem; display: block; margin-bottom: 5px; }
+        .task-detail p { margin: 0; font-size: 1.2rem; font-weight: bold; }
+        .reward-badge { display: inline-block; background: var(--primary-green); color: #fff; padding: 8px 15px; border-radius: 8px; font-weight: bold; margin-top: 5px; }
+        .task-img { width: 100%; max-height: 250px; object-fit: cover; border-radius: 10px; margin: 15px 0; border: 1px solid #333; display: none; }
+        
+        .visit-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #000; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: bold; text-align: center; margin: 20px 0; transition: 0.2s; }
+        .visit-btn:hover { background: #e6e6e6; }
+
+        .submission-form { border-top: 2px dashed #333; margin-top: 25px; padding-top: 25px; }
+        label { font-weight: bold; color: var(--primary-green); display: block; margin-bottom: 8px; }
+        input[type="text"] { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 1.1rem; box-sizing: border-box; outline: none; margin-bottom: 20px; }
+        input[type="text"]:focus { border-color: var(--primary-green); }
+
+        .file-box { background: #1a1a1a; border: 2px dashed #444; padding: 25px; border-radius: 10px; text-align: center; cursor: pointer; position: relative; margin-bottom: 25px; }
+        .file-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .preview-ss { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 15px; display: none; }
+
+        .submit-btn { width: 100%; padding: 18px; background: var(--primary-green); color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.3rem; transition: 0.3s; }
+        .submit-btn:hover { background: #218838; }
+        .submit-btn:disabled { background: #555; color: #aaa; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎯 تفاصيل وإتمام المهمة</h1>
+        
+        <div class="task-detail">
+            <span>اسم المهمة:</span>
+            <p id="task-title">جاري التحميل...</p>
+        </div>
+
+        <div class="task-detail">
+            <span>شروط ومتطلبات التنفيذ:</span>
+            <p id="task-desc" style="font-weight: normal; color: #ccc; font-size: 1.1rem; line-height: 1.6;">جاري التحميل...</p>
+        </div>
+
+        <div class="task-detail">
+            <span>المكافأة عند قبول الطلب:</span>
+            <div><span class="reward-badge" id="task-reward">0 BFP</span></div>
+        </div>
+
+        <img id="task-preview-img" class="task-img" src="" alt="صورة توضيحية للمهمة">
+
+        <a id="task-link" href="#" target="_blank" class="visit-btn" style="display: none;">
+            <i class="fas fa-external-link-alt"></i> الانتقال إلى الرابط المطلوب لتنفيذ المهمة
+        </a>
+
+        <div class="submission-form">
+            <h3>📥 تقديم إثبات العمل</h3>
+            
+            <label for="user-input">اسم حسابك (Username) الذي استخدمته في التنفيذ:</label>
+            <input type="text" id="user-input" placeholder="أدخل اسم حسابك أو الإيميل المستخدم">
+
+            <label>ارفع صورة لقطة شاشة (Screenshot) كإثبات للتنفيذ:</label>
+            <div class="file-box">
+                <span id="file-label"><i class="fas fa-image" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i> اضغط هنا لرفع السكرين شوت</span>
+                <input type="file" id="screenshot-file" accept="image/*" onchange="previewScreenshot()">
+                <img id="ss-preview" class="preview-ss" src="" alt="Screenshot Preview">
+            </div>
+
+            <button id="claim-btn" class="submit-btn" onclick="submitProof()">إرسال الطلب للمراجعة</button>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const params = new URLSearchParams(window.location.search);
+        const taskId = params.get('id');
+
+        let currentUser = null;
+
+        window.onload = async () => {
+            // التحقق من تسجيل الدخول
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) { window.location.href = 'login.html'; return; }
+            currentUser = user;
+
+            if (!taskId) { alert("مهمة غير صالحة"); window.location.href = 'home.html'; return; }
+
+            // جلب تفاصيل المهمة من جدول tasks
+            const { data: task, error } = await _supabase
+                .from('tasks')
+                .select('*')
+                .eq('id', taskId)
+                .single();
+
+            if (error || !task) {
+                alert("تعذر جلب تفاصيل المهمة.");
+                window.location.href = 'home.html';
+                return;
+            }
+
+            // عرض البيانات في الصفحة
+            document.getElementById('task-title').innerText = task.title;
+            document.getElementById('task-desc').innerText = task.description;
+            document.getElementById('task-reward').innerText = `+ ${task.points_reward} BFP`;
+
+            if (task.image_url) {
+                const img = document.getElementById('task-preview-img');
+                img.src = task.image_url;
+                img.style.display = 'block';
+            }
+
+            if (task.site_url) {
+                const linkBtn = document.getElementById('task-link');
+                linkBtn.href = task.site_url;
+                linkBtn.style.display = 'flex';
+            }
+        };
+
+        function previewScreenshot() {
+            const file = document.getElementById('screenshot-file').files[0];
+            const preview = document.getElementById('ss-preview');
+            const label = document.getElementById('file-label');
+            
+            if (file) {
+                label.innerHTML = `<i class="fas fa-check-circle" style="color:var(--primary-green);"></i> تم اختيار: ${file.name}`;
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    preview.src = reader.result;
+                    preview.style.display = "block";
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function submitProof() {
+            const btn = document.getElementById('claim-btn');
+            const submittedUsername = document.getElementById('user-input').value.trim();
+            const screenshotFile = document.getElementById('screenshot-file').files[0];
+
+            if (!submittedUsername || !screenshotFile) {
+                return alert("يرجى إدخال اسم الحساب وإرفاق صورة السكرين شوت كإثبات لتنفيذ المهمة");
+            }
+
+            try {
+                btn.disabled = true;
+                btn.innerText = "جاري رفع الإثباتات والطلب...";
+
+                // 1. رفع السكرين شوت للمخزن المخصص لها
+                const fileExt = screenshotFile.name.split('.').pop();
+                const fileName = `${currentUser.id}_${Date.now()}.${fileExt}`;
+                const filePath = `proofs/${fileName}`;
+
+                const { data: uploadData, error: uploadError } = await _supabase.storage
+                    .from('task-screenshots')
+                    .upload(filePath, screenshotFile);
+
+                if (uploadError) throw uploadError;
+
+                // جلب الرابط المباشر للصورة المرفوعة
+                const { data: { publicUrl } } = _supabase.storage
+                    .from('task-screenshots')
+                    .getPublicUrl(filePath);
+
+                // 2. إدخال الطلب المعلق بانتظار الموافقة داخل جدول task_submissions
+                const { error: insertError } = await _supabase
+                    .from('task-submissions')
+                    .insert([
+                        {
+                            task_id: taskId,
+                            user_id: currentUser.id,
+                            submitted_username: submittedUsername,
+                            screenshot_url: publicUrl,
+                            status: 'pending' -- الانتظار للموافقة
+                        }
+                    ]);
+
+                if (insertError) throw insertError;
+
+                alert("✅ تم إرسال طلبك بنجاح! يرجى الانتظار لحين مراجعة الطلب والموافقة عليه من قبل الإدارة لتحصيل المكافأة.");
+                window.location.href = 'home.html';
+
+            } catch (error) {
+                console.error(error);
+                alert("حدث خطأ أثناء إرسال الطلب: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "إرسال الطلب للمراجعة";
+            }
+        }
+    </script>
+</body>
+</html>
