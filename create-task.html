@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء مهمة جديدة - BFP</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background: #000; color: #fff; font-family: Arial; text-align: center; padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: #111; padding: 35px; border-radius: 20px; border: 1px solid #333; }
+        select, input, textarea { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 1.1rem; box-sizing: border-box; outline: none; font-family: Arial; }
+        input:focus, textarea:focus, select:focus { border-color: #28a745; }
+        textarea { height: 100px; resize: none; }
+        .file-input-container { background: #1a1a1a; border: 1px dashed #444; padding: 20px; border-radius: 10px; margin: 10px 0; cursor: pointer; position: relative; }
+        .file-input-container input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .reward-tag { background: #28a745; color: #fff; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 1.3rem; font-weight: bold; }
+        button { width: 100%; padding: 18px; background: #fff; color: #000; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        button:hover { background: #e6e6e6; }
+        button:disabled { background: #555; color: #aaa; cursor: not-allowed; }
+        .preview-img { max-width: 100%; max-height: 150px; margin-top: 10px; border-radius: 8px; display: none; }
+    </style>
+</head>
+<body>
+    <h1>إنشاء مهمة جديدة للمستخدمين</h1>
+    <div class="container">
+        <input type="text" id="task-title" placeholder="عنوان المهمة (مثال: اشترك في قناتنا)">
+        <textarea id="task-desc" placeholder="تفاصيل وشروط المهمة..."></textarea>
+        <input type="url" id="task-url" placeholder="رابط الموقع المعني بالمهمة (https://...)">
+        
+        <label>إرفاق صورة توضيحية للمهمة:</label>
+        <div class="file-input-container">
+            <span id="file-label">📸 اضغط هنا لاختيار صورة</span>
+            <input type="file" id="task-image" accept="image/*" onchange="previewFile()">
+            <img id="image-preview" class="preview-img" src="" alt="Preview">
+        </div>
+
+        <label>مكافأة إتمام المهمة:</label>
+        <select id="task-reward" onchange="updateRewardDisplay()">
+            <option value="10">مهمة عادية (10 BFP)</option>
+            <option value="25">مهمة متوسطة (25 BFP)</option>
+            <option value="50">مهمة مميزة (50 BFP)</option>
+        </select>
+
+        <div class="reward-tag">المكافأة الممنوحة: <span id="reward-price">10</span> BFP</div>
+        <button id="submit-btn" onclick="submitTask()">تأكيد ونشر المهمة</button>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function updateRewardDisplay() {
+            const reward = document.getElementById('task-reward').value;
+            document.getElementById('reward-price').innerText = reward;
+        }
+
+        function previewFile() {
+            const file = document.getElementById('task-image').files[0];
+            const preview = document.getElementById('image-preview');
+            const label = document.getElementById('file-label');
+            
+            if (file) {
+                label.innerText = `الملف المختار: ${file.name}`;
+                const reader = new FileReader();
+                reader.onloadend = function () {
+                    preview.src = reader.result;
+                    preview.style.display = "block";
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function submitTask() {
+            const btn = document.getElementById('submit-btn');
+            
+            const { data: { user } } = await _supabase.auth.getUser();
+            if (!user) return alert("يرجى تسجيل الدخول أولاً");
+
+            const title = document.getElementById('task-title').value.trim();
+            const desc = document.getElementById('task-desc').value.trim();
+            const url = document.getElementById('task-url').value.trim();
+            const reward = document.getElementById('task-reward').value;
+            const imageFile = document.getElementById('task-image').files[0];
+
+            if (!title || !desc) return alert("يرجى إدخال عنوان المهمة وتفاصيلها على الأقل");
+
+            try {
+                btn.disabled = true;
+                btn.innerText = "جاري رفع البيانات...";
+
+                let imageUrl = null;
+
+                // 1. رفع الصورة إلى الـ Storage في حال قام المستخدم بإرفاق ملف
+                if (imageFile) {
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+                    const filePath = `tasks/${fileName}`;
+
+                    const { data: uploadData, error: uploadError } = await _supabase.storage
+                        .from('task-images')
+                        .upload(filePath, imageFile);
+
+                    if (uploadError) throw uploadError;
+
+                    // جلب الرابط العام المباشر للصورة المرفوعة
+                    const { data: { publicUrl } } = _supabase.storage
+                        .from('task-images')
+                        .getPublicUrl(filePath);
+                        
+                    imageUrl = publicUrl;
+                }
+
+                // 2. إدخال بيانات المهمة بالكامل داخل جدول public.tasks
+                const { error: insertError } = await _supabase
+                    .from('tasks')
+                    .insert([
+                        {
+                            user_id: user.id,
+                            title: title,
+                            description: desc,
+                            site_url: url ? url : null,
+                            image_url: imageUrl,
+                            points_reward: parseInt(reward)
+                        }
+                    ]);
+
+                if (insertError) throw insertError;
+
+                alert("تم بنجاح! تم نشر المهمة الجديدة للمستخدمين.");
+                window.location.href = 'home.html';
+
+            } catch (error) {
+                console.error(error);
+                alert("فشل في إنشاء المهمة: " + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "تأكيد ونشر المهمة";
+            }
+        }
+    </script>
+</body>
+</html>
