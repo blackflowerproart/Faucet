@@ -19,7 +19,13 @@
         .balance-box .bfp-amount { font-size: 1.8rem; font-weight: bold; color: var(--primary); display: block; }
         .balance-box .usd-amount { font-size: 0.9rem; color: #aaa; }
 
-        .create-ad-btn { background: #fff; color: #000; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; display: block; }
+        .create-ad-btn { background: #fff; color: #000; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 12px; display: block; transition: 0.2s; }
+        .create-ad-btn:hover { background: #e6e6e6; }
+        
+        /* زر إضافة مهام جديد متناسق مع الواجهة */
+        .create-task-btn { background: var(--primary); color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; display: block; transition: 0.2s; }
+        .create-task-btn:hover { background: #218838; }
+
         .nav-links { list-style: none; padding: 0; flex-grow: 1; }
         .nav-links a { color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; }
         .nav-links a.active { background: #222; border-right: 3px solid var(--primary); }
@@ -47,6 +53,7 @@
         </div>
 
         <a href="create-ad.html" class="create-ad-btn"><i class="fas fa-plus-circle"></i> إضافة إعلان جديد</a>
+        <a href="create-task.html" class="create-task-btn"><i class="fas fa-tasks"></i> إضافة مهمة جديدة</a>
 
         <ul class="nav-links">
             <li><a href="home.html" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
@@ -79,7 +86,7 @@
 
             document.getElementById('user-display-email').innerText = user.email;
 
-            // 1. جلب بيانات البروفايل من جدول profiles حسب "جدول 1.jpg"
+            // 1. جلب بيانات البروفايل
             const { data: profile } = await _supabase
                 .from('profiles')
                 .select('username')
@@ -91,7 +98,7 @@
                 document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
             }
 
-            // 2. جلب الرصيد من جدول wallets باستخدام عمود user_id
+            // 2. جلب الرصيد من جدول المحافظ
             const { data: wallet, error: walletError } = await _supabase
                 .from('wallets')
                 .select('balance')
@@ -106,17 +113,21 @@
                 console.error("Wallet Error:", walletError.message);
             }
 
-            // 3. جلب الإعلانات من جدول ads حسب "جدول 2.jpg"
+            // 3. جلب الإعلانات وعرض المكافآت ديناميكياً أسفل كل إعلان
             const { data: ads } = await _supabase.from('ads').select('*');
             const adsGrid = document.getElementById('ads-grid');
             if (ads) {
+                adsGrid.innerHTML = ''; // تنظيف الكاردات الافتراضية
                 ads.forEach(ad => {
+                    // تأمين جلب المكافأة سواء مخزنة باسم reward أو reward_amount
+                    const currentReward = ad.reward !== undefined ? ad.reward : (ad.reward_amount || 0);
+                    
                     adsGrid.innerHTML += `
                         <div class="card">
                             <h3>${ad.title}</h3>
-                            <span style="color:var(--primary); font-weight:bold;">+ ${ad.reward_amount} BFP</span>
-                            <p style="font-size:0.8rem; color:#888;">المدة: ${ad.duration_seconds} ثانية</p>
-                            <button class="action-btn" onclick="openAd('${ad.id}', '${ad.ad_link}', ${ad.duration_seconds}, ${ad.reward_amount})">مشاهدة</button>
+                            <span style="color:var(--primary); font-weight:bold; font-size:1.2rem; margin: 5px 0;">+ ${currentReward} BFP</span>
+                            <p style="font-size:0.8rem; color:#888; margin: 5px 0 15px 0;">المدة: ${ad.duration_seconds || ad.duration || 0} ثانية</p>
+                            <button class="action-btn" onclick="openAd('${ad.id}', '${ad.link || ad.ad_link}', ${ad.duration_seconds || ad.duration || 10}, ${currentReward})">مشاهدة الإعلان</button>
                         </div>`;
                 });
             }
