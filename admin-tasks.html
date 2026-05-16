@@ -3,157 +3,388 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - مراجعة المهام</title>
+    <title>لوحة التحكم - مراجعة المهام المعلقة</title>
+    <!-- ربط مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- ربط مكتبة الأيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --primary-green: #28a745; --danger-red: #dc3545; --dark-bg: #000000; --card-bg: #111; }
-        body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: 30px auto; background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #333; }
-        h1 { text-align: center; color: var(--primary-green); margin-bottom: 30px; }
-        
-        .submissions-list { display: flex; flex-direction: column; gap: 20px; }
-        .submission-card { background: #1a1a1a; border: 1px solid #222; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        
-        .details { flex: 1; min-width: 250px; text-align: right; }
-        .details h3 { margin: 0 0 10px 0; color: #fff; }
-        .details p { margin: 5px 0; color: #aaa; font-size: 0.95rem; }
-        .details strong { color: var(--primary-green); }
+        :root {
+            --primary-green: #28a745;
+            --danger-red: #dc3545;
+            --dark-bg: #0b0b0b;
+            --card-bg: #141414;
+            --text-color: #ffffff;
+        }
 
-        .screenshot-zone { text-align: center; }
-        .screenshot-thumb { max-width: 150px; max-height: 100px; border-radius: 6px; cursor: pointer; border: 1px solid #444; transition: 0.2s; }
-        .screenshot-thumb:hover { transform: scale(1.05); }
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
 
-        .actions { display: flex; gap: 10px; }
-        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-        .btn-approve { background: var(--primary-green); color: #fff; }
-        .btn-approve:hover { background: #218838; }
-        .btn-reject { background: var(--danger-red); color: #fff; }
-        .btn-reject:hover { background: #c82333; }
-        .btn:disabled { background: #555; cursor: not-allowed; }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 20px;
+        }
 
-        .no-data { text-align: center; color: #666; padding: 40px; font-size: 1.2rem; }
-        
-        /* نافذة تكبير الصورة Modal */
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000; }
-        .modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+        .header h1 {
+            color: var(--primary-green);
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .header p {
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .no-tasks {
+            text-align: center;
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 5px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px dashed #333;
+        }
+
+        .submissions-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .submission-card {
+            background: var(--card-bg);
+            border: 1px solid #252525;
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: right;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222;
+            padding-bottom: 12px;
+        }
+
+        .task-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 0;
+        }
+
+        .reward-badge {
+            background: rgba(40, 167, 69, 0.15);
+            color: var(--primary-green);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .info-row {
+            font-size: 1rem;
+            color: #ccc;
+        }
+
+        .info-row strong {
+            color: var(--primary-green);
+        }
+
+        .proof-img-container {
+            margin-top: 10px;
+        }
+
+        .proof-img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .proof-img:hover {
+            transform: scale(1.01);
+            border-color: #555;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-approve {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #218838;
+        }
+
+        .btn-reject {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #c82333;
+        }
+
+        .btn:disabled {
+            background: #444 !important;
+            color: #aaa !important;
+            cursor: not-allowed;
+        }
+
+        /* لودر التحميل البسيط */
+        .loading-spinner {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary-green);
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1><i class="fas fa-tasks"></i> لوحة مراجعة طلبات وإثباتات المهام</h1>
-        <div id="loading" style="text-align: center; color: #888;">جاري تحميل الطلبات المعلقة...</div>
-        <div class="submissions-list" id="submissions-container"></div>
-    </div>
+        <div class="header">
+            <h1><i class="fas fa-tasks-toggle"></i> مراجعة إثباتات المهام المطلوبة</h1>
+            <p>موافقة أو رفض طلبات المستخدمين المعلقة وتحديث أرصفتهم تلقائياً</p>
+        </div>
 
-    <!-- نافذة عرض الصورة بالحجم الكامل -->
-    <div id="imageModal" class="modal" onclick="this.style.display='none'">
-        <img id="modalImg" src="" alt="Full Preview">
+        <div id="loading" class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i> جاري جلب الطلبات المعلقة...
+        </div>
+
+        <div id="submissions-container" class="submissions-grid">
+            <!-- سيتم توليد كروت الطلبات المعلقة هنا ديناميكياً -->
+        </div>
     </div>
 
     <script>
-        // إعدادات البيئة الخاصة بك
+        // إعدادات الاتصال بـ Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        window.onload = () => {
-            fetchPendingSubmissions();
+        window.onload = async () => {
+            await fetchPendingSubmissions();
         };
 
-        // جلب الطلبات التي حالتها منتظرة (pending) مع تفاصيل المهمة المرتبطة بها
+        // دالة جلب الطلبات ذات الحالة "معلق" pending
         async function fetchPendingSubmissions() {
+            const container = document.getElementById('submissions-container');
+            const loading = document.getElementById('loading');
+
             try {
-                // جلب البيانات مع عمل Join لعنوان المهمة وقيمتها من جدول tasks
-                const { data, error } = await _supabase
+                // جلب الطلبات المعلقة مع ربط تفاصيل المهمة من جدول tasks
+                const { data: submissions, error } = await _supabase
                     .from('task_submissions')
                     .select(`
-                        id, user_id, submitted_username, screenshot_url, status, created_at,
-                        tasks ( title, points_reward )
+                        id,
+                        task_id,
+                        user_id,
+                        submitted_username,
+                        screenshot_url,
+                        created_at,
+                        tasks (
+                            title,
+                            points_reward
+                        )
                     `)
                     .eq('status', 'pending')
                     .order('created_at', { ascending: true });
 
                 if (error) throw error;
 
-                const container = document.getElementById('submissions-container');
-                document.getElementById('loading').style.display = 'none';
-                container.innerHTML = '';
+                loading.style.display = 'none';
 
-                if (data.length === 0) {
-                    container.innerHTML = '<div class="no-data">🎉 لا توجد طلبات معلقة للمراجعة حالياً!</div>';
+                if (!submissions || submissions.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-tasks">
+                            <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--primary-green); margin-bottom: 15px; display: block;"></i>
+                            لا توجد أي طلبات إثبات معلقة حالياً ومحتاجة مراجعة.
+                        </div>`;
                     return;
                 }
 
-                data.forEach(sub => {
-                    const card = document.createElement('div');
-                    card.className = 'submission-card';
-                    card.id = `sub-${sub.id}`;
+                container.innerHTML = '';
 
-                    card.innerHTML = `
-                        <div class="details">
-                            <h3>المهمة: ${sub.tasks?.title || 'مهمة محذوفة'}</h3>
-                            <p><i class="fas fa-user"></i> الحساب المُرسل: <strong>${sub.submitted_username}</strong></p>
-                            <p><i class="fas fa-coins"></i> قيمة المكافأة: <strong>${sub.tasks?.points_reward || 0} BFP</strong></p>
-                            <p><i class="fas fa-id-card"></i> معرف المستخدم: <small style="color:#666">${sub.user_id}</small></p>
-                        </div>
-                        <div class="screenshot-zone">
-                            <p style="font-size:0.8rem; color:#888; margin-bottom:5px;">اضغط للتكبير</p>
-                            <img class="screenshot-thumb" src="${sub.screenshot_url}" onclick="openModal('${sub.screenshot_url}')" alt="Screenshot">
-                        </div>
-                        <div class="actions">
-                            <button class="btn btn-approve" onclick="updateStatus('${sub.id}', 'approved')">
-                                <i class="fas fa-check"></i> موافقة
-                            </button>
-                            <button class="btn btn-reject" onclick="updateStatus('${sub.id}', 'rejected')">
-                                <i class="fas fa-times"></i> رفض
-                            </button>
+                submissions.forEach(sub => {
+                    const taskInfo = sub.tasks || { title: 'مهمة غير معروفة', points_reward: 0 };
+                    const formattedDate = new Date(sub.created_at).toLocaleString('ar-EG');
+
+                    container.innerHTML += `
+                        <div class="submission-card" id="sub-${sub.id}">
+                            <div class="card-header">
+                                <h3 class="task-title">${taskInfo.title}</h3>
+                                <span class="reward-badge">+ ${taskInfo.points_reward} BFP</span>
+                            </div>
+                            
+                            <div class="info-row">
+                                <i class="fas fa-user-circle"></i> <strong>حساب تنفيذ المستخدم:</strong> ${sub.submitted_username}
+                            </div>
+                            
+                            <div class="info-row">
+                                <i class="fas fa-clock"></i> <strong>وقت التقديم:</strong> ${formattedDate}
+                            </div>
+                            
+                            <div class="proof-img-container">
+                                <div style="margin-bottom: 5px; font-weight: bold; color: #888;">صورة إثبات العمل (لقطة الشاشة):</div>
+                                <a href="${sub.screenshot_url}" target="_blank">
+                                    <img src="${sub.screenshot_url}" class="proof-img" alt="إثبات المستخدم">
+                                </a>
+                            </div>
+
+                            <div class="actions">
+                                <button class="btn btn-approve" onclick="updateStatus('${sub.id}', 'approved')">
+                                    <i class="fas fa-check"></i> موافقة وإضافة الرصيد
+                                </button>
+                                <button class="btn btn-reject" onclick="updateStatus('${sub.id}', 'rejected')">
+                                    <i class="fas fa-times"></i> رفض الطلب
+                                </button>
+                            </div>
                         </div>
                     `;
-                    container.appendChild(card);
                 });
 
             } catch (error) {
                 console.error(error);
-                alert("خطأ أثناء جلب البيانات: " + error.message);
+                loading.innerText = "حدث خطأ أثناء تحميل البيانات: " + error.message;
             }
         }
 
-        // تحديث حالة الطلب (موافقة أو رفض)
+        // دالة تحديث الحالة وزيادة الرصيد فوراً في حال الموافقة
         async function updateStatus(submissionId, newStatus) {
             const card = document.getElementById(`sub-${submissionId}`);
             const buttons = card.querySelectorAll('.btn');
             
-            // تعطيل الأزرار أثناء المعالجة
+            // تعطيل أزرار الكرت لمنع الضغط المتكرر
             buttons.forEach(b => b.disabled = true);
 
             try {
-                const { error } = await _supabase
+                // 1. جلب بيانات الطلب لمعرفة الـ user_id والـ task_id
+                const { data: submission, error: subError } = await _supabase
+                    .from('task_submissions')
+                    .select('user_id, task_id')
+                    .eq('id', submissionId)
+                    .single();
+
+                if (subError || !submission) throw new Error("تعذر العثور على بيانات هذا الطلب في قاعدة البيانات.");
+
+                // 2. تحديث حالة الطلب في جدول التقديمات (task_submissions)
+                const { error: updateError } = await _supabase
                     .from('task_submissions')
                     .update({ status: newStatus })
                     .eq('id', submissionId);
 
-                if (error) throw error;
+                if (updateError) throw updateError;
 
-                alert(newStatus === 'approved' ? "✅ تم قبول الطلب وإضافة المكافأة لرصيد المستخدم تلقائياً." : "❌ تم رفض الطلب.");
+                // 3. إذا ضغط الأدمن على "موافقة"، نقوم بزيادة المكافأة في المحفظة فوراً
+                if (newStatus === 'approved') {
+                    // جلب قيمة الجائزة الخاصة بالمهمة
+                    const { data: task, error: taskError } = await _supabase
+                        .from('tasks')
+                        .select('points_reward')
+                        .eq('id', submission.task_id)
+                        .single();
+
+                    if (taskError || !task) throw new Error("تعذر جلب مكافأة المهمة، ولكن تم تحديث حالة الطلب.");
+
+                    const reward = task.points_reward || 0;
+
+                    // جلب المحفظة الحالية للمستخدم للتأكد من وجودها
+                    const { data: wallet, error: walletFetchError } = await _supabase
+                        .from('wallets')
+                        .select('balance')
+                        .eq('user_id', submission.user_id)
+                        .single();
+
+                    // PGRST116 كود في Supabase يعني أن السطر غير موجود، سنتجاوزها لننشئ المحفظة
+                    if (walletFetchError && walletFetchError.code !== 'PGRST116') { 
+                        throw walletFetchError; 
+                    }
+
+                    if (wallet) {
+                        // المحفظة موجودة -> نقوم بعمل UPDATE وإضافة الجائزة للرصيد الحالي
+                        const { error: walletUpdateError } = await _supabase
+                            .from('wallets')
+                            .update({ balance: (wallet.balance || 0) + reward })
+                            .eq('user_id', submission.user_id);
+
+                        if (walletUpdateError) throw walletUpdateError;
+                    } else {
+                        // المحفظة غير موجودة أصلاً -> ننشئ سطر جديد للمستخدم (INSERT) ونضع فيه المكافأة مباشرة
+                        const { error: walletInsertError } = await _supabase
+                            .from('wallets')
+                            .insert([{ user_id: submission.user_id, balance: reward }]);
+
+                        if (walletInsertError) throw walletInsertError;
+                    }
+                }
+
+                // تنبيه الأدمن بنجاح العملية
+                alert(newStatus === 'approved' ? "✅ تم قبول الطلب وزيادة رصيد المستخدم بالمحفظة بنجاح!" : "❌ تم رفض الطلب بنجاح.");
                 
-                // إخفاء الكرت من القائمة متحركاً
+                // إخفاء كرت المهمة بعد الانتهاء منها
                 card.style.transition = '0.3s';
                 card.style.opacity = '0';
-                setTimeout(() => card.remove(), 300);
+                setTimeout(() => {
+                    card.remove();
+                    // إذا فرغت الصفحة، نعيد جلب البيانات لإظهار رسالة "لا توجد طلبات"
+                    if(document.getElementById('submissions-container').children.length === 0) {
+                        fetchPendingSubmissions();
+                    }
+                }, 300);
 
             } catch (error) {
                 console.error(error);
-                alert("تعذر تحديث حالة الطلب: " + error.message);
+                alert("حدث خطأ أثناء معالجة العملية: " + error.message);
+                // إعادة تفعيل الأزرار في حال حدوث خطأ لإتاحة المحاولة مجدداً
                 buttons.forEach(b => b.disabled = false);
             }
-        }
-
-        // فتح الصورة بحجمها الكامل
-        function openModal(url) {
-            document.getElementById('modalImg').src = url;
-            document.getElementById('imageModal').style.display = 'flex';
         }
     </script>
 </body>
