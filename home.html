@@ -274,11 +274,11 @@
                 </div>
             </div>
 
-            <!-- قائمة الأدوات والتحكم -->
+            <!-- قائمة الأدوات والتحكم وروابط الصفحات المطلوبة -->
             <div class="menu-links">
                 <a href="home.html" class="menu-btn active"><i class="fas fa-home"></i> الرئيسية</a>
-                <a href="add-task.html" class="menu-btn"><i class="fas fa-plus-circle"></i> إضافة مهمة جديدة</a>
-                <a href="add-ad.html" class="menu-btn"><i class="fas fa-ad"></i> إضافة إعلان جديد</a>
+                <a href="create-task.html" class="menu-btn"><i class="fas fa-plus-circle"></i> إضافة مهمة جديدة</a>
+                <a href="create-ad.html" class="menu-btn"><i class="fas fa-ad"></i> إضافة إعلان جديد</a>
                 <a href="settings.html" class="menu-btn"><i class="fas fa-sliders-h"></i> الإعدادات</a>
             </div>
         </div>
@@ -341,7 +341,7 @@
                 document.getElementById('user-balance').innerText = `${wallet.balance} BFP`;
             }
 
-            // 3. جلب الإعلانات وعرضها (يمكنك تعديل اسم الجدول والبيانات حسب قاعدة بياناتك)
+            // 3. جلب الإعلانات وعرضها
             await fetchAvailableAds();
 
             // 4. جلب المهام وفلترتها لإخفاء المهام التي تم إرسال إثباتها سابقاً
@@ -352,7 +352,6 @@
         async function fetchAvailableAds() {
             const adsGrid = document.getElementById('ads-grid');
             try {
-                // جلب الإعلانات المفعلة من جدول الـ ads
                 const { data: ads, error } = await _supabase.from('ads').select('*');
                 
                 if (error || !ads || ads.length === 0) {
@@ -381,7 +380,6 @@
         async function fetchAvailableTasks(userId) {
             const tasksGrid = document.getElementById('tasks-grid');
             try {
-                // جلب قائمة بالمهام التي قدم المستخدم إثبات لها سابقاً لمنع ظهورها مجدداً
                 const { data: userSubmissions } = await _supabase
                     .from('task_submissions')
                     .select('task_id')
@@ -389,14 +387,12 @@
 
                 const submittedTaskIds = userSubmissions ? userSubmissions.map(sub => sub.task_id) : [];
 
-                // جلب كل المهام من الجدول الأساسي
                 const { data: tasks, error } = await _supabase.from('tasks').select('*');
 
                 if (error || !tasks) throw error;
 
                 tasksGrid.innerHTML = '';
 
-                // الفلترة لاستثناء المعرفات المرسلة مسبقاً
                 const availableTasks = tasks.filter(task => !submittedTaskIds.includes(task.id));
 
                 if (availableTasks.length === 0) {
