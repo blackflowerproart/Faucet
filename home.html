@@ -96,7 +96,17 @@
                 document.getElementById('user-display-name').innerText = profile.username || "مستخدم";
                 document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
             }
+// داخل كود جلب بيانات المستخدم في صفحة home.html
+const { data: profile, error } = await _supabase
+    .from('profiles') // اسم الجدول الخاص ببيانات المستخدمين
+    .select('points')
+    .eq('id', currentUser.id)
+    .single();
 
+if (profile) {
+    // عرض الرصيد في العنصر المخصص له في الصفحة
+    document.getElementById('user-points').innerText = `${profile.points} BFP`;
+}
             // 2. جلب الرصيد من جدول المحافظ
             const { data: wallet, error: walletError } = await _supabase
                 .from('wallets')
