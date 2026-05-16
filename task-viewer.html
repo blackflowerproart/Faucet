@@ -15,7 +15,7 @@
         .task-detail span { color: #888; font-size: 0.9rem; display: block; margin-bottom: 5px; }
         .task-detail p { margin: 0; font-size: 1.2rem; font-weight: bold; }
         .reward-badge { display: inline-block; background: var(--primary-green); color: #fff; padding: 8px 15px; border-radius: 8px; font-weight: bold; margin-top: 5px; }
-        .task-img { width: 100%; max-height: 250px; object-fit: cover; border-radius: 10px; margin: 15px 0; border: 1px solid #333; display: none; }
+        .task-img { width: 100%; max-height: 350px; object-fit: contain; background: #050505; border-radius: 10px; margin: 15px 0; border: 1px solid #333; display: none; }
         
         .visit-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #000; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: bold; text-align: center; margin: 20px 0; transition: 0.2s; }
         .visit-btn:hover { background: #e6e6e6; }
@@ -54,6 +54,7 @@
             <div><span class="reward-badge" id="task-reward">0 BFP</span></div>
         </div>
 
+        <!-- الصورة التوضيحية للمهة المرفوعة من الأدمن -->
         <img id="task-preview-img" class="task-img" src="" alt="صورة توضيحية للمهمة">
 
         <a id="task-link" href="#" target="_blank" class="visit-btn" style="display: none;">
@@ -108,7 +109,7 @@
                 return;
             }
 
-            // عرض البيانات في الصفحة
+            // عرض البيانات في الصفحة ديناميكياً
             document.getElementById('task-title').innerText = task.title;
             document.getElementById('task-desc').innerText = task.description;
             document.getElementById('task-reward').innerText = `+ ${task.points_reward} BFP`;
@@ -173,14 +174,14 @@
 
                 // 2. إدخال الطلب المعلق بانتظار الموافقة داخل جدول task_submissions
                 const { error: insertError } = await _supabase
-                    .from('task-submissions')
+                    .from('task_submissions')
                     .insert([
                         {
                             task_id: taskId,
                             user_id: currentUser.id,
                             submitted_username: submittedUsername,
                             screenshot_url: publicUrl,
-                            status: 'pending' -- الانتظار للموافقة
+                            status: 'pending' // تم تعديل هذا السطر وإصلاح تعليق الـ SQL الخاطئ
                         }
                     ]);
 
