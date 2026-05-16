@@ -85,7 +85,7 @@
 
             document.getElementById('user-display-email').innerText = user.email;
 
-            // 1. جلب بيانات البروفايل
+            // 1. جلب بيانات البروفايل للتحقق من اسم المستخدم وعرضه
             const { data: profile } = await _supabase
                 .from('profiles')
                 .select('username')
@@ -96,18 +96,8 @@
                 document.getElementById('user-display-name').innerText = profile.username || "مستخدم";
                 document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
             }
-// داخل كود جلب بيانات المستخدم في صفحة home.html
-const { data: profile, error } = await _supabase
-    .from('profiles') // اسم الجدول الخاص ببيانات المستخدمين
-    .select('points')
-    .eq('id', currentUser.id)
-    .single();
 
-if (profile) {
-    // عرض الرصيد في العنصر المخصص له في الصفحة
-    document.getElementById('user-points').innerText = `${profile.points} BFP`;
-}
-            // 2. جلب الرصيد من جدول المحافظ
+            // 2. جلب الرصيد المحدّث للمستخدم من جدول المحافظ
             const { data: wallet, error: walletError } = await _supabase
                 .from('wallets')
                 .select('balance')
@@ -122,7 +112,7 @@ if (profile) {
                 console.error("Wallet Error:", walletError.message);
             }
 
-            // 3. جلب الإعلانات وعرض المكافآت ديناميكياً أسفل كل إعلان
+            // 3. جلب الإعلانات النشطة وعرض المكافآت ديناميكياً
             const { data: ads } = await _supabase.from('ads').select('*');
             const adsGrid = document.getElementById('ads-grid');
             if (ads) {
@@ -140,11 +130,11 @@ if (profile) {
                 });
             }
 
-            // 4. التعديل الجديد: جلب المهام وعرضها في شبكة المهام المتاحة المخصصة لها
+            // 4. جلب المهام وعرضها في شبكة المهام المتاحة وتوجيه المستخدم لصفحة العرض التفاعلية بالتمرير السليم للمعّرف
             const { data: tasks } = await _supabase.from('tasks').select('*');
             const tasksGrid = document.getElementById('tasks-grid');
             if (tasks) {
-                tasksGrid.innerHTML = ''; // تنظيف العناصر القديمة
+                tasksGrid.innerHTML = ''; 
                 tasks.forEach(task => {
                     tasksGrid.innerHTML += `
                         <div class="card">
