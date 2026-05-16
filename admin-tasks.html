@@ -177,7 +177,6 @@
             cursor: not-allowed;
         }
 
-        /* لودر التحميل البسيط */
         .loading-spinner {
             text-align: center;
             font-size: 1.5rem;
@@ -190,7 +189,7 @@
 
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-tasks-toggle"></i> مراجعة إثباتات المهام المطلوبة</h1>
+            <h1><i class="fas fa-tasks"></i> مراجعة إثباتات المهام المطلوبة</h1>
             <p>موافقة أو رفض طلبات المستخدمين المعلقة وتحديث أرصفتهم تلقائياً</p>
         </div>
 
@@ -219,7 +218,7 @@
             const loading = document.getElementById('loading');
 
             try {
-                // جلب الطلبات المعلقة مع ربط تفاصيل المهمة من جدول tasks
+                // جلب الطلبات المعلقة مع ربط تفاصيل المهمة والناشر
                 const { data: submissions, error } = await _supabase
                     .from('task_submissions')
                     .select(`
@@ -231,7 +230,8 @@
                         created_at,
                         tasks (
                             title,
-                            points_reward
+                            points_reward,
+                            creator_id
                         )
                     `)
                     .eq('status', 'pending')
@@ -280,10 +280,10 @@
 
                             <div class="actions">
                                 <button class="btn btn-approve" onclick="updateStatus('${sub.id}', 'approved')">
-                                    <i class="fas fa-check"></i> موافقة وإضافة الرصيد
+                                    <i class="fas fa-check"></i> موافقة وتبادل الأرصيدة
                                 </button>
                                 <button class="btn btn-reject" onclick="updateStatus('${sub.id}', 'rejected')">
-                                    <i class="fas fa-times"></i> رفض الطلب
+                                    <i class="fas fa-trash-alt"></i> رفض وحذف الإثبات نهائياً
                                 </button>
                             </div>
                         </div>
@@ -296,7 +296,7 @@
             }
         }
 
-        // دالة تحديث الحالة وزيادة الرصيد فوراً في حال الموافقة
+        // دالة تحديث الحالة (موافقة مع النقل والخصم المالي / أو رفض مع الحذف التام)
         async function updateStatus(submissionId, newStatus) {
             const card = document.getElementById(`sub-${submissionId}`);
             const buttons = card.querySelectorAll('.btn');
@@ -305,86 +305,107 @@
             buttons.forEach(b => b.disabled = true);
 
             try {
-                // 1. جلب بيانات الطلب لمعرفة الـ user_id والـ task_id
+                // 1. جلب بيانات الطلب لمعرفة الـ user_id والـ task_id ومكافأة السعر
                 const { data: submission, error: subError } = await _supabase
                     .from('task_submissions')
-                    .select('user_id, task_id')
+                    .select(`
+                        user_id, 
+                        task_id,
+                        tasks (
+                            points_reward,
+                            creator_id
+                        )
+                    `)
                     .eq('id', submissionId)
                     .single();
 
-                if (subError || !submission) throw new Error("تعذر العثور على بيانات هذا الطلب في قاعدة البيانات.");
+                if (subError || !submission) throw new Error("تعذر العثور على بيانات هذا الطلب.");
 
-                // 2. تحديث حالة الطلب في جدول التقديمات (task_submissions)
-                const { error: updateError } = await _supabase
-                    .from('task_submissions')
-                    .update({ status: newStatus })
-                    .eq('id', submissionId);
+                const reward = submission.tasks?.points_reward || 0;
+                const creatorId = submission.tasks?.creator_id; // معرف الناشر للمهمة
 
-                if (updateError) throw updateError;
+                // --- سيناريو الرفض: حذف الإثبات كلياً من قاعدة البيانات ---
+                if (newStatus === 'rejected') {
+                    if (confirm("هل أنت متأكد من رفض وحذف هذا الإثبات نهائياً من النظام؟")) {
+                        const { error: deleteError } = await _supabase
+                            .from('task_submissions')
+                            .delete()
+                            .eq('id', submissionId);
 
-                // 3. إذا ضغط الأدمن على "موافقة"، نقوم بزيادة المكافأة في المحفظة فوراً
+                        if (deleteError) throw deleteError;
+
+                        alert("❌ تم رفض الطلب وحذف ملف الإثبات من قاعدة البيانات بنجاح.");
+                        removeCardFromUI(card);
+                    } else {
+                        buttons.forEach(b => b.disabled = false); // إعادة التفعيل إذا ألغى الأدمن
+                    }
+                    return;
+                }
+
+                // --- سيناريو الموافقة: توزيع الأرصيدة والخصم من الناشر ---
                 if (newStatus === 'approved') {
-                    // جلب قيمة الجائزة الخاصة بالمهمة
-                    const { data: task, error: taskError } = await _supabase
-                        .from('tasks')
-                        .select('points_reward')
-                        .eq('id', submission.task_id)
-                        .single();
+                    
+                    // أ) تحديث حالة الطلب أولاً إلى approved لتسجيل قبول العملية
+                    const { error: updateError } = await _supabase
+                        .from('task_submissions')
+                        .update({ status: 'approved' })
+                        .eq('id', submissionId);
 
-                    if (taskError || !task) throw new Error("تعذر جلب مكافأة المهمة، ولكن تم تحديث حالة الطلب.");
+                    if (updateError) throw updateError;
 
-                    const reward = task.points_reward || 0;
-
-                    // جلب المحفظة الحالية للمستخدم للتأكد من وجودها
-                    const { data: wallet, error: walletFetchError } = await _supabase
+                    // ب) إضافة الرصيد إلى محفظة المستخدم المنفّذ (user_id)
+                    const { data: userWallet, error: fetchUserWalletErr } = await _supabase
                         .from('wallets')
                         .select('balance')
                         .eq('user_id', submission.user_id)
                         .single();
 
-                    // PGRST116 كود في Supabase يعني أن السطر غير موجود، سنتجاوزها لننشئ المحفظة
-                    if (walletFetchError && walletFetchError.code !== 'PGRST116') { 
-                        throw walletFetchError; 
-                    }
-
-                    if (wallet) {
-                        // المحفظة موجودة -> نقوم بعمل UPDATE وإضافة الجائزة للرصيد الحالي
-                        const { error: walletUpdateError } = await _supabase
-                            .from('wallets')
-                            .update({ balance: (wallet.balance || 0) + reward })
+                    if (!fetchUserWalletErr && userWallet) {
+                        await _supabase.from('wallets')
+                            .update({ balance: (userWallet.balance || 0) + reward })
                             .eq('user_id', submission.user_id);
-
-                        if (walletUpdateError) throw walletUpdateError;
                     } else {
-                        // المحفظة غير موجودة أصلاً -> ننشئ سطر جديد للمستخدم (INSERT) ونضع فيه المكافأة مباشرة
-                        const { error: walletInsertError } = await _supabase
-                            .from('wallets')
+                        await _supabase.from('wallets')
                             .insert([{ user_id: submission.user_id, balance: reward }]);
-
-                        if (walletInsertError) throw walletInsertError;
                     }
+
+                    // ج) حسم الرصيد من محفظة المستخدم الناشر (creator_id) إذا كان مسجلاً وموجوداً
+                    if (creatorId) {
+                        const { data: creatorWallet, error: fetchCreatorErr } = await _supabase
+                            .from('wallets')
+                            .select('balance')
+                            .eq('user_id', creatorId)
+                            .single();
+
+                        if (!fetchCreatorErr && creatorWallet) {
+                            // حسم القيمة من الناشر
+                            await _supabase.from('wallets')
+                                .update({ balance: (creatorWallet.balance || 0) - reward })
+                                .eq('user_id', creatorId);
+                        }
+                    }
+
+                    alert("✅ تم قبول المهمة بنجاح: إضافة المكافأة للمنفذ وحسمها من حساب الناشر!");
+                    removeCardFromUI(card);
                 }
-
-                // تنبيه الأدمن بنجاح العملية
-                alert(newStatus === 'approved' ? "✅ تم قبول الطلب وزيادة رصيد المستخدم بالمحفظة بنجاح!" : "❌ تم رفض الطلب بنجاح.");
-                
-                // إخفاء كرت المهمة بعد الانتهاء منها
-                card.style.transition = '0.3s';
-                card.style.opacity = '0';
-                setTimeout(() => {
-                    card.remove();
-                    // إذا فرغت الصفحة، نعيد جلب البيانات لإظهار رسالة "لا توجد طلبات"
-                    if(document.getElementById('submissions-container').children.length === 0) {
-                        fetchPendingSubmissions();
-                    }
-                }, 300);
 
             } catch (error) {
                 console.error(error);
-                alert("حدث خطأ أثناء معالجة العملية: " + error.message);
-                // إعادة تفعيل الأزرار في حال حدوث خطأ لإتاحة المحاولة مجدداً
+                alert("حدث خطأ أثناء تنفيذ العملية: " + error.message);
                 buttons.forEach(b => b.disabled = false);
             }
+        }
+
+        // دالة مساعدة لحذف الكرت بصرياً بعد انتهاء العملية
+        function removeCardFromUI(card) {
+            card.style.transition = '0.3s';
+            card.style.opacity = '0';
+            setTimeout(() => {
+                card.remove();
+                if(document.getElementById('submissions-container').children.length === 0) {
+                    fetchPendingSubmissions();
+                }
+            }, 300);
         }
     </script>
 </body>
