@@ -3,157 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - Blackflower Pro Art</title>
+    <title>الرئيسية - The Blackflower Pro Art</title>
+    <!-- ربط مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- ربط مكتبة الأيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #28a745; --dark-bg: #050505; --sidebar-bg: #111; --card-bg: #1a1a1a; --text-main: #ffffff; }
-        body { background-color: var(--dark-bg); color: var(--text-main); font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; height: 100vh; }
-        
-        .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 30px 20px; box-sizing: border-box; order: 2; }
-        .user-profile { text-align: center; padding-bottom: 30px; border-bottom: 1px solid #222; margin-bottom: 30px; }
-        .user-avatar { width: 80px; height: 80px; background: var(--primary); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; }
-        
-        .balance-box { background: #000; padding: 20px; border-radius: 15px; border: 1px solid var(--primary); margin-bottom: 20px; }
-        .balance-box h3 { margin: 0; font-size: 0.8rem; color: #888; }
-        .balance-box .bfp-amount { font-size: 1.8rem; font-weight: bold; color: var(--primary); display: block; }
-        .balance-box .usd-amount { font-size: 0.9rem; color: #aaa; }
+        :root {
+            --primary: #28a745;
+            --dark-bg: #000000;
+            --card-bg: #111111;
+            --text-main: #ffffff;
+        }
 
-        .create-ad-btn { background: #fff; color: #000; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 12px; display: block; transition: 0.2s; }
-        .create-ad-btn:hover { background: #e6e6e6; }
-        
-        .create-task-btn { background: var(--primary); color: #fff; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 20px; display: block; transition: 0.2s; }
-        .create-task-btn:hover { background: #218838; }
+        body {
+            background: var(--dark-bg);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        .nav-links { list-style: none; padding: 0; flex-grow: 1; }
-        .nav-links a { color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 8px; }
-        .nav-links a.active { background: #222; border-right: 3px solid var(--primary); }
+        /* الهيدر وشريط التنقل */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 15px 30px;
+            border-bottom: 1px solid #222;
+        }
 
-        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; order: 1; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 50px; }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; justify-content: space-between; }
-        .action-btn { background: var(--primary); color: white; border: none; width: 100%; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-        .logout-btn { color: #ff4444; cursor: pointer; text-align: center; padding: 10px; border-top: 1px solid #222; }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-nav-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #bd2130;
+        }
+
+        /* حاوية المحتوى الرئيسي */
+        .main-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* لوحة إحصائيات المستخدم والترحيب */
+        .welcome-section {
+            background: linear-gradient(135deg, #111, #1a1a1a);
+            border: 1px solid #222;
+            padding: 30px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .welcome-text h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.8rem;
+        }
+
+        .welcome-text p {
+            margin: 0;
+            color: #888;
+        }
+
+        .balance-card {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            padding: 15px 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .balance-card span {
+            display: block;
+            color: #aaa;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .balance-card strong {
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        /* قسم المهام المتوفرة */
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-right: 4px solid var(--primary);
+            padding-right: 10px;
+        }
+
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #333;
+        }
+
+        .card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 15px;
+        }
+
+        .action-btn:hover {
+            background: #218838;
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            grid-column: 1 / -1;
+            padding: 40px;
+        }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="user-profile">
-            <div class="user-avatar" id="avatar-char">?</div>
-            <h3 id="user-display-name">جاري التحميل...</h3>
-            <span id="user-display-email" style="font-size: 0.8rem; color: #666;"></span>
+    <!-- شريط التنقل العلوى -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-palette"></i> The Blackflower Pro Art
         </div>
-
-        <div class="balance-box">
-            <h3>رصيدك</h3>
-            <span class="bfp-amount" id="bfp-val">0.00</span>
-            <span class="usd-amount" id="usd-val">≈ $0.0000</span>
+        <div class="user-nav-info">
+            <span id="user-email" style="color: #ccc; font-size: 0.95rem;">جاري جلب الحساب...</span>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
         </div>
+    </nav>
 
-        <a href="create-ad.html" class="create-ad-btn"><i class="fas fa-plus-circle"></i> إضافة إعلان جديد</a>
-        <a href="create-task.html" class="create-task-btn"><i class="fas fa-tasks"></i> إضافة مهمة جديدة</a>
+    <!-- المحتوى الرئيسي للمنصة -->
+    <main class="main-container">
+        
+        <!-- كرت الترحيب والرصيد المحدث -->
+        <section class="welcome-section">
+            <div class="welcome-text">
+                <h2>أهلاً بك مجدداً 👋</h2>
+                <p>قم بتنفيذ المهام المتاحة أدناه لربح رصيد BFP وتطوير حسابك.</p>
+            </div>
+            <div class="balance-card">
+                <span>رصيدك الحالي المعتمد:</span>
+                <strong id="user-balance">0 BFP</strong>
+            </div>
+        </section>
 
-        <ul class="nav-links">
-            <li><a href="home.html" class="active"><i class="fas fa-home"></i> الرئيسية</a></li>
-            <li><a href="settings.html"><i class="fas fa-user-cog"></i> الإعدادات</a></li>
-        </ul>
+        <!-- قسم المهام المتاحة للتنفيذ -->
+        <section>
+            <h2 class="section-title"><i class="fas fa-bolt"></i> المهام المتاحة لك حالياً</h2>
+            
+            <div id="tasks-grid" class="tasks-grid">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> جاري جلب المهام المخصصة لك...
+                </div>
+            </div>
+        </section>
 
-        <div class="logout-btn" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-        </div>
-    </aside>
-
-    <main class="main-content">
-        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom: 10px;">📺 الإعلانات المتاحة</h2>
-        <div class="grid" id="ads-grid"></div>
-
-        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-top: 40px;">🛠️ المهام المتاحة</h2>
-        <div class="grid" id="tasks-grid"></div>
     </main>
 
     <script>
+        // إعدادات الاتصال بـ Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const CONVERSION_RATE = 0.0005 / 15;
-
         window.onload = async () => {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) { window.location.href = 'login.html'; return; }
-
-            document.getElementById('user-display-email').innerText = user.email;
-
-            // 1. جلب بيانات البروفايل للتحقق من اسم المستخدم وعرضه
-            const { data: profile } = await _supabase
-                .from('profiles')
-                .select('username')
-                .eq('id', user.id)
-                .single();
-
-            if (profile) {
-                document.getElementById('user-display-name').innerText = profile.username || "مستخدم";
-                document.getElementById('avatar-char').innerText = (profile.username || "U").charAt(0).toUpperCase();
+            // 1. التحقق من حالة تسجيل دخول المستخدم
+            const { data: { user }, error: authError } = await _supabase.auth.getUser();
+            
+            if (authError || !user) {
+                // إذا لم يسجل دخوله يتم توجيهه لصفحة الدخول
+                window.location.href = 'login.html';
+                return;
             }
 
-            // 2. جلب الرصيد المحدّث للمستخدم من جدول المحافظ
+            // عرض إيميل المستخدم في النافبار
+            document.getElementById('user-email').innerText = user.email;
+
+            // 2. جلب رصيد محفظة المستخدم الحالية وعرضها
             const { data: wallet, error: walletError } = await _supabase
                 .from('wallets')
                 .select('balance')
                 .eq('user_id', user.id)
                 .single();
 
-            if (wallet) {
-                const balance = wallet.balance || 0;
-                document.getElementById('bfp-val').innerText = balance.toFixed(2);
-                document.getElementById('usd-val').innerText = `≈ $${(balance * CONVERSION_RATE).toFixed(6)}`;
-            } else if (walletError) {
-                console.error("Wallet Error:", walletError.message);
+            if (!walletError && wallet) {
+                document.getElementById('user-balance').innerText = `${wallet.balance} BFP`;
+            } else {
+                document.getElementById('user-balance').innerText = `0 BFP`;
             }
 
-            // 3. جلب الإعلانات النشطة وعرض المكافآت ديناميكياً
-            const { data: ads } = await _supabase.from('ads').select('*');
-            const adsGrid = document.getElementById('ads-grid');
-            if (ads) {
-                adsGrid.innerHTML = ''; 
-                ads.forEach(ad => {
-                    const currentReward = ad.reward !== undefined ? ad.reward : (ad.reward_amount || 0);
-                    
-                    adsGrid.innerHTML += `
-                        <div class="card">
-                            <h3>${ad.title}</h3>
-                            <span style="color:var(--primary); font-weight:bold; font-size:1.2rem; margin: 5px 0;">+ ${currentReward} BFP</span>
-                            <p style="font-size:0.8rem; color:#888; margin: 5px 0 15px 0;">المدة: ${ad.duration_seconds || ad.duration || 0} ثانية</p>
-                            <button class="action-btn" onclick="openAd('${ad.id}', '${ad.link || ad.ad_link}', ${ad.duration_seconds || ad.duration || 10}, ${currentReward})">مشاهدة الإعلان</button>
-                        </div>`;
-                });
-            }
+            // 3. جلب معرفات المهام التي أرسل المستخدم إثباتها سابقاً (سواء كانت pending أو approved أو rejected)
+            const { data: userSubmissions } = await _supabase
+                .from('task_submissions')
+                .select('task_id')
+                .eq('user_id', user.id);
 
-            // 4. جلب المهام وعرضها في شبكة المهام المتاحة وتوجيه المستخدم لصفحة العرض التفاعلية بالتمرير السليم للمعّرف
-            const { data: tasks } = await _supabase.from('tasks').select('*');
+            const submittedTaskIds = userSubmissions ? userSubmissions.map(sub => sub.task_id) : [];
+
+            // 4. جلب المهام من جدول المهام وفلترتها لإخفاء المنفذ منها
+            const { data: tasks, error: tasksError } = await _supabase
+                .from('tasks')
+                .select('*');
+
             const tasksGrid = document.getElementById('tasks-grid');
+
+            if (tasksError) {
+                tasksGrid.innerHTML = '<p style="color:#dc3545; text-align:center; width:100%;">حدث خطأ أثناء تحميل المهام.</p>';
+                return;
+            }
+
             if (tasks) {
                 tasksGrid.innerHTML = ''; 
-                tasks.forEach(task => {
-                    tasksGrid.innerHTML += `
-                        <div class="card">
-                            <h3>${task.title}</h3>
-                            <span style="color:var(--primary); font-weight:bold; font-size:1.2rem; margin: 5px 0;">+ ${task.points_reward} BFP</span>
-                            <p style="font-size:0.8rem; color:#888; margin: 5px 0 15px 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${task.description || 'مهمة تفاعلية معلقة'}</p>
-                            <button class="action-btn" style="background-color: #007bff;" onclick="window.location.href='task-viewer.html?id=${task.id}'">عرض وتنفيذ المهمة</button>
+
+                // الفلترة الذكية: إبقاء المهام التي لم يرسل المستخدم لها أي طلب إثبات إطلاقاً
+                const availableTasks = tasks.filter(task => !submittedTaskIds.includes(task.id));
+
+                if (availableTasks.length === 0) {
+                    tasksGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px; background: #111; border-radius: 10px; border: 1px dashed #222;">
+                            <i class="fas fa-star" style="font-size: 2.5rem; color: #ffc107; margin-bottom: 15px; display: block;"></i>
+                            🎉 رائِع! لقد قمت بإتمام وتلبية جميع المهام المتوفرة حالياً. تابعنا لاحقاً!
                         </div>`;
-                });
+                } else {
+                    availableTasks.forEach(task => {
+                        tasksGrid.innerHTML += `
+                            <div class="card">
+                                <div>
+                                    <h3>${task.title}</h3>
+                                    <span style="color: var(--primary); font-weight: bold; font-size: 1.3rem; display: block; margin: 10px 0;">+ ${task.points_reward} BFP</span>
+                                    <p style="font-size: 0.9rem; color: #888; line-height: 1.5; margin: 5px 0 15px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                        ${task.description || 'لا يوجد وصف شروط متوفرة لهذه المهمة، اضغط على عرض لمشاهدة التفاصيل.'}
+                                    </p>
+                                </div>
+                                <button class="action-btn" onclick="window.location.href='task-viewer.html?id=${task.id}'">عرض وتنفيذ المهمة</button>
+                            </div>`;
+                    });
+                }
             }
         };
 
-        function openAd(id, url, sec, rew) {
-            window.location.href = `viewer.html?id=${id}&url=${encodeURIComponent(url)}&sec=${sec}&rew=${rew}`;
-        }
-
-        async function logout() { 
-            await _supabase.auth.signOut(); 
-            window.location.href = 'login.html'; 
+        // دالة تسجيل الخروج من الحساب
+        async function logout() {
+            if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
+                await _supabase.auth.signOut();
+                window.location.href = 'login.html';
+            }
         }
     </script>
 </body>
