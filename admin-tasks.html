@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - مراجعة المهام</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary-green: #28a745; --danger-red: #dc3545; --dark-bg: #000000; --card-bg: #111; }
+        body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 30px auto; background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid #333; }
+        h1 { text-align: center; color: var(--primary-green); margin-bottom: 30px; }
+        
+        .submissions-list { display: flex; flex-direction: column; gap: 20px; }
+        .submission-card { background: #1a1a1a; border: 1px solid #222; padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        
+        .details { flex: 1; min-width: 250px; text-align: right; }
+        .details h3 { margin: 0 0 10px 0; color: #fff; }
+        .details p { margin: 5px 0; color: #aaa; font-size: 0.95rem; }
+        .details strong { color: var(--primary-green); }
+
+        .screenshot-zone { text-align: center; }
+        .screenshot-thumb { max-width: 150px; max-height: 100px; border-radius: 6px; cursor: pointer; border: 1px solid #444; transition: 0.2s; }
+        .screenshot-thumb:hover { transform: scale(1.05); }
+
+        .actions { display: flex; gap: 10px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-approve { background: var(--primary-green); color: #fff; }
+        .btn-approve:hover { background: #218838; }
+        .btn-reject { background: var(--danger-red); color: #fff; }
+        .btn-reject:hover { background: #c82333; }
+        .btn:disabled { background: #555; cursor: not-allowed; }
+
+        .no-data { text-align: center; color: #666; padding: 40px; font-size: 1.2rem; }
+        
+        /* نافذة تكبير الصورة Modal */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 1000; }
+        .modal img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1><i class="fas fa-tasks"></i> لوحة مراجعة طلبات وإثباتات المهام</h1>
+        <div id="loading" style="text-align: center; color: #888;">جاري تحميل الطلبات المعلقة...</div>
+        <div class="submissions-list" id="submissions-container"></div>
+    </div>
+
+    <!-- نافذة عرض الصورة بالحجم الكامل -->
+    <div id="imageModal" class="modal" onclick="this.style.display='none'">
+        <img id="modalImg" src="" alt="Full Preview">
+    </div>
+
+    <script>
+        // إعدادات البيئة الخاصة بك
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        window.onload = () => {
+            fetchPendingSubmissions();
+        };
+
+        // جلب الطلبات التي حالتها منتظرة (pending) مع تفاصيل المهمة المرتبطة بها
+        async function fetchPendingSubmissions() {
+            try {
+                // جلب البيانات مع عمل Join لعنوان المهمة وقيمتها من جدول tasks
+                const { data, error } = await _supabase
+                    .from('task_submissions')
+                    .select(`
+                        id, user_id, submitted_username, screenshot_url, status, created_at,
+                        tasks ( title, points_reward )
+                    `)
+                    .eq('status', 'pending')
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+
+                const container = document.getElementById('submissions-container');
+                document.getElementById('loading').style.display = 'none';
+                container.innerHTML = '';
+
+                if (data.length === 0) {
+                    container.innerHTML = '<div class="no-data">🎉 لا توجد طلبات معلقة للمراجعة حالياً!</div>';
+                    return;
+                }
+
+                data.forEach(sub => {
+                    const card = document.createElement('div');
+                    card.className = 'submission-card';
+                    card.id = `sub-${sub.id}`;
+
+                    card.innerHTML = `
+                        <div class="details">
+                            <h3>المهمة: ${sub.tasks?.title || 'مهمة محذوفة'}</h3>
+                            <p><i class="fas fa-user"></i> الحساب المُرسل: <strong>${sub.submitted_username}</strong></p>
+                            <p><i class="fas fa-coins"></i> قيمة المكافأة: <strong>${sub.tasks?.points_reward || 0} BFP</strong></p>
+                            <p><i class="fas fa-id-card"></i> معرف المستخدم: <small style="color:#666">${sub.user_id}</small></p>
+                        </div>
+                        <div class="screenshot-zone">
+                            <p style="font-size:0.8rem; color:#888; margin-bottom:5px;">اضغط للتكبير</p>
+                            <img class="screenshot-thumb" src="${sub.screenshot_url}" onclick="openModal('${sub.screenshot_url}')" alt="Screenshot">
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-approve" onclick="updateStatus('${sub.id}', 'approved')">
+                                <i class="fas fa-check"></i> موافقة
+                            </button>
+                            <button class="btn btn-reject" onclick="updateStatus('${sub.id}', 'rejected')">
+                                <i class="fas fa-times"></i> رفض
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                alert("خطأ أثناء جلب البيانات: " + error.message);
+            }
+        }
+
+        // تحديث حالة الطلب (موافقة أو رفض)
+        async function updateStatus(submissionId, newStatus) {
+            const card = document.getElementById(`sub-${submissionId}`);
+            const buttons = card.querySelectorAll('.btn');
+            
+            // تعطيل الأزرار أثناء المعالجة
+            buttons.forEach(b => b.disabled = true);
+
+            try {
+                const { error } = await _supabase
+                    .from('task_submissions')
+                    .update({ status: newStatus })
+                    .eq('id', submissionId);
+
+                if (error) throw error;
+
+                alert(newStatus === 'approved' ? "✅ تم قبول الطلب وإضافة المكافأة لرصيد المستخدم تلقائياً." : "❌ تم رفض الطلب.");
+                
+                // إخفاء الكرت من القائمة متحركاً
+                card.style.transition = '0.3s';
+                card.style.opacity = '0';
+                setTimeout(() => card.remove(), 300);
+
+            } catch (error) {
+                console.error(error);
+                alert("تعذر تحديث حالة الطلب: " + error.message);
+                buttons.forEach(b => b.disabled = false);
+            }
+        }
+
+        // فتح الصورة بحجمها الكامل
+        function openModal(url) {
+            document.getElementById('modalImg').src = url;
+            document.getElementById('imageModal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
