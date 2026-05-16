@@ -253,7 +253,7 @@
                 container.innerHTML = '';
 
                 submissions.forEach(sub => {
-                    const taskInfo = sub.tasks || { title: 'مهمة غير معروفة', points_reward: 0 };
+                    const taskInfo = sub.tasks || { title: 'مهمة غير معروفة', points_reward: 0, creator_id: null };
                     const formattedDate = new Date(sub.created_at).toLocaleString('ar-EG');
 
                     container.innerHTML += `
@@ -317,7 +317,7 @@
                         )
                     `)
                     .eq('id', submissionId)
-                    .single();
+                    .maybeSingle(); // استخدام maybeSingle يمنع انقطاع الكود إذا لم يطابق سجل واحد كلياً
 
                 if (subError || !submission) throw new Error("تعذر العثور على بيانات هذا الطلب.");
 
@@ -358,7 +358,7 @@
                         .from('wallets')
                         .select('balance')
                         .eq('user_id', submission.user_id)
-                        .single();
+                        .maybeSingle(); // أصبحت آمنة هنا لمنع الانهيار
 
                     if (!fetchUserWalletErr && userWallet) {
                         await _supabase.from('wallets')
@@ -369,20 +369,26 @@
                             .insert([{ user_id: submission.user_id, balance: reward }]);
                     }
 
-                    // ج) حسم الرصيد من محفظة المستخدم الناشر (creator_id) إذا كان مسجلاً وموجوداً
+                    // ج) حسم الرصيد من محفظة المستخدم الناشر (creator_id) بمرونة وأمان عاليين
                     if (creatorId) {
                         const { data: creatorWallet, error: fetchCreatorErr } = await _supabase
                             .from('wallets')
                             .select('balance')
                             .eq('user_id', creatorId)
-                            .single();
+                            .maybeSingle(); // تعديل جوهري لمنع الفشل البرمجي عند عدم وجود المحفظة
 
                         if (!fetchCreatorErr && creatorWallet) {
-                            // حسم القيمة من الناشر
+                            // حسم القيمة من الناشر مباشرة إذا وجدت محفظته
                             await _supabase.from('wallets')
                                 .update({ balance: (creatorWallet.balance || 0) - reward })
                                 .eq('user_id', creatorId);
+                        } else {
+                            // إنشاء سطر محفظة جديد للناشر برصيد سالب بقيمة الخصم إذا كان السجل فارغاً في جدول الأرصدة
+                            await _supabase.from('wallets')
+                                .insert([{ user_id: creatorId, balance: 0 - reward }]);
                         }
+                    } else {
+                        console.warn("تنبيه: لم يتم العثور على 'creator_id' في بيانات هذه المهمة لتطبيق الخصم المالي.");
                     }
 
                     alert("✅ تم قبول المهمة بنجاح: إضافة المكافأة للمنفذ وحسمها من حساب الناشر!");
