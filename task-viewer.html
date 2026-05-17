@@ -9,7 +9,18 @@
     <style>
         :root { --primary-green: #28a745; --dark-bg: #000000; --card-bg: #111; }
         body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .container { max-width: 600px; margin: 30px auto; background: var(--card-bg); padding: 35px; border-radius: 20px; border: 1px solid #333; text-align: right; }
+        
+        .container { 
+            max-width: 600px; 
+            margin: 30px auto; 
+            background: var(--card-bg); 
+            padding: 35px; 
+            border-radius: 20px; 
+            border: 1px solid #333; 
+            text-align: right; 
+            position: relative; /* ضروري لتمكين التغطية المطلقة */
+        }
+        
         h1 { text-align: center; color: var(--primary-green); margin-bottom: 25px; }
         .task-detail { border-bottom: 1px solid #222; padding-bottom: 15px; margin-bottom: 15px; }
         .task-detail span { color: #888; font-size: 0.9rem; display: block; margin-bottom: 5px; }
@@ -32,11 +43,35 @@
         .submit-btn { width: 100%; padding: 18px; background: var(--primary-green); color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.3rem; transition: 0.3s; }
         .submit-btn:hover { background: #218838; }
         .submit-btn:disabled { background: #555; color: #aaa; cursor: not-allowed; }
+
+        /* ستايل التغطية الكاملة عند إتمام المهمة مسبقاً */
+        .viewer-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            z-index: 10;
+            color: var(--primary-green);
+        }
+        .viewer-overlay i { font-size: 4.5rem; }
+        .viewer-overlay h2 { margin: 0; color: #fff; font-size: 1.6rem; }
+        .back-btn { background: #333; color: #fff; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+        .back-btn:hover { background: #444; }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="viewer-container">
+        <!-- سيتم حقن طبقة الحماية الفوقية هنا بواسطة الجافاسكريبت إن وجد إرسال مسبق -->
+        
         <h1>🎯 تفاصيل وإتمام المهمة</h1>
         
         <div class="task-detail">
@@ -54,14 +89,13 @@
             <div><span class="reward-badge" id="task-reward">0 BFP</span></div>
         </div>
 
-        <!-- الصورة التوضيحية للمهة المرفوعة من الأدمن -->
         <img id="task-preview-img" class="task-img" src="" alt="صورة توضيحية للمهمة">
 
         <a id="task-link" href="#" target="_blank" class="visit-btn" style="display: none;">
             <i class="fas fa-external-link-alt"></i> الانتقال إلى الرابط المطلوب لتنفيذ المهمة
         </a>
 
-        <div class="submission-form">
+        <div class="submission-form" id="sub-form">
             <h3>📥 تقديم إثبات العمل</h3>
             
             <label for="user-input">اسم حسابك (Username) الذي استخدمته في التنفيذ:</label>
@@ -89,14 +123,33 @@
         let currentUser = null;
 
         window.onload = async () => {
-            // التحقق من تسجيل الدخول
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) { window.location.href = 'login.html'; return; }
             currentUser = user;
 
             if (!taskId) { alert("مهمة غير صالحة"); window.location.href = 'home.html'; return; }
 
-            // جلب تفاصيل المهمة من جدول tasks
+            // فحص إثباتات الإرسال المسبقة للمستخدم الحالي لهذه المهمة بالتحديد
+            const { data: submission } = await _supabase
+                .from('task_submissions')
+                .select('id')
+                .eq('task_id', taskId)
+                .eq('user_id', currentUser.id)
+                .maybeSingle();
+
+            if (submission) {
+                // تفعيل غطاء القفل التام ومنع التحكم بالصفحة
+                const container = document.getElementById('viewer-container');
+                container.innerHTML += `
+                    <div class="viewer-overlay">
+                        <i class="fas fa-check-circle"></i>
+                        <h2>لقد قمت بإنجاز هذه المهمة سابقاً!</h2>
+                        <p style="color:#aaa;">طلبك قيد المراجعة أو تم إيداعه بالمحفظة بالفعل.</p>
+                        <a href="home.html" class="back-btn"><i class="fas fa-arrow-right"></i> العودة للرئيسية</a>
+                    </div>`;
+                return;
+            }
+
             const { data: task, error } = await _supabase
                 .from('tasks')
                 .select('*')
@@ -109,7 +162,6 @@
                 return;
             }
 
-            // عرض البيانات في الصفحة ديناميكياً
             document.getElementById('task-title').innerText = task.title;
             document.getElementById('task-desc').innerText = task.description;
             document.getElementById('task-reward').innerText = `+ ${task.points_reward} BFP`;
@@ -156,7 +208,6 @@
                 btn.disabled = true;
                 btn.innerText = "جاري رفع الإثباتات والطلب...";
 
-                // 1. رفع السكرين شوت للمخزن المخصص لها
                 const fileExt = screenshotFile.name.split('.').pop();
                 const fileName = `${currentUser.id}_${Date.now()}.${fileExt}`;
                 const filePath = `proofs/${fileName}`;
@@ -167,12 +218,10 @@
 
                 if (uploadError) throw uploadError;
 
-                // جلب الرابط المباشر للصورة المرفوعة
                 const { data: { publicUrl } } = _supabase.storage
                     .from('task-screenshots')
                     .getPublicUrl(filePath);
 
-                // 2. إدخال الطلب المعلق بانتظار الموافقة داخل جدول task_submissions
                 const { error: insertError } = await _supabase
                     .from('task_submissions')
                     .insert([
@@ -181,7 +230,7 @@
                             user_id: currentUser.id,
                             submitted_username: submittedUsername,
                             screenshot_url: publicUrl,
-                            status: 'pending' // تم تعديل هذا السطر وإصلاح تعليق الـ SQL الخاطئ
+                            status: 'pending'
                         }
                     ]);
 
