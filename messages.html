@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صندوق الرسائل والوارد</title>
+    <!-- ربط مكتبة Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- ربط مكتبة الأيقونات FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-green: #28a745;
+            --danger-red: #dc3545;
+            --dark-bg: #0b0b0b;
+            --card-bg: #141414;
+            --hover-bg: #1c1c1c;
+            --text-color: #ffffff;
+            --muted-text: #888888;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            color: var(--primary-green);
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .header p {
+            color: var(--muted-text);
+            margin-top: 5px;
+        }
+
+        .messages-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message-item {
+            background: var(--card-bg);
+            border: 1px solid #252525;
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .message-item:hover {
+            background: var(--hover-bg);
+            border-color: #333;
+        }
+
+        /* تمييز الرسائل غير المقروءة */
+        .message-item.unread {
+            border-right: 4px solid var(--danger-red);
+            background: #171212;
+        }
+
+        .message-item.unread .message-title {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .message-title {
+            font-size: 1.1rem;
+            color: #eee;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message-date {
+            font-size: 0.85rem;
+            color: var(--muted-text);
+        }
+
+        .message-snippet {
+            font-size: 0.95rem;
+            color: #bbb;
+            white-space: nowrap;
+            overflow: hidden;
+            text-transform: none;
+            text-overflow: ellipsis;
+            max-width: 90%;
+        }
+
+        /* تفاصيل الرسالة عند فتحها */
+        .message-body {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #222;
+            color: #ddd;
+            font-size: 1rem;
+            line-height: 1.6;
+            white-space: pre-line; /* للحفاظ على الأسطر الجديدة */
+        }
+
+        .message-item.open .message-body {
+            display: block;
+        }
+
+        .message-item.open .message-snippet {
+            display: none;
+        }
+
+        .badge-unread {
+            background: var(--danger-red);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .no-messages {
+            text-align: center;
+            color: #555;
+            font-size: 1.2rem;
+            padding: 50px;
+            background: var(--card-bg);
+            border-radius: 15px;
+            border: 1px dashed #333;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary-green);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-envelope-open-text"></i> بريد الوارد والرسائل</h1>
+            <p>تابع تنبيهات المهام، أسباب الرفض، والإشعارات المباشرة لحسابك</p>
+        </div>
+
+        <div id="loading" class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i> جاري تحميل الرسائل...
+        </div>
+
+        <div id="messages-container" class="messages-list">
+            <!-- سيتم جلب الرسائل هنا ديناميكياً -->
+        </div>
+    </div>
+
+    <script>
+        // إعدادات الاتصال بـ Supabase
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        // محاكاة معرف المستخدم الحالي (قم بربطه بنظام تسجيل الدخول الحقيقي الخاص بك Auth)
+        // هذا مجرد نموذج اختبار، في المشروع الفعلي استعمل: (await _supabase.auth.getUser()).data.user.id
+        const CURRENT_USER_ID = "ضع_معرف_المستخدم_هنا_أو_سيتم_جلبه_من_جلسة_التسجيل"; 
+
+        window.onload = async () => {
+            // ملاحظة: تأكد من جلب الـ user_id الحقيقي للمستخدم النشط
+            await fetchUserMessages();
+        };
+
+        // دالة جلب الرسائل الخاصة بالمستخدم
+        async function fetchUserMessages() {
+            const container = document.getElementById('messages-container');
+            const loading = document.getElementById('loading');
+
+            try {
+                // جلب الـ User الحقيقي إذا كنت تستخدم Supabase Auth
+                const { data: { user } } = await _supabase.auth.getUser();
+                const userId = user ? user.id : CURRENT_USER_ID; 
+
+                const { data: messages, error } = await _supabase
+                    .from('user_messages')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .order('created_at', { ascending: false }); // الأحدث أولاً
+
+                if (error) throw error;
+
+                loading.style.display = 'none';
+
+                if (!messages || messages.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-messages">
+                            <i class="fas fa-folder-open" style="font-size: 3rem; color: #333; margin-bottom: 15px; display: block;"></i>
+                            صندوق الوارد فارغ. لا توجد لديك أي رسائل حالياً.
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+
+                messages.forEach(msg => {
+                    const formattedDate = new Date(msg.created_at).toLocaleString('ar-EG', {
+                        month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+                    });
+                    
+                    const unreadClass = msg.is_read ? '' : 'unread';
+                    const badge = msg.is_read ? '' : '<span class="badge-unread">جديد</span>';
+
+                    container.innerHTML += `
+                        <div class="message-item ${unreadClass}" id="msg-${msg.id}" onclick="toggleMessage('${msg.id}')">
+                            <div class="message-header">
+                                <h3 class="message-title">
+                                    <i class="${msg.is_read ? 'fas fa-envelope-open' : 'fas fa-envelope'}" style="color: ${msg.is_read ? '#666' : 'var(--danger-red)'}"></i>
+                                    ${msg.title} ${badge}
+                                </h3>
+                                <span class="message-date">${formattedDate}</span>
+                            </div>
+                            <div class="message-snippet">${msg.message}</div>
+                            <div class="message-body">${msg.message}</div>
+                        </div>
+                    `;
+                });
+
+            } catch (error) {
+                console.error(error);
+                loading.innerText = "حدث خطأ أثناء تحميل الرسائل: " + error.message;
+            }
+        }
+
+        // دالة لفتح/إغلاق الرسالة وتحديث حالتها إلى "مقروءة"
+        async function toggleMessage(msgId) {
+            const element = document.getElementById(`msg-${msgId}`);
+            
+            // إذا كانت الرسالة مغلقة وسنفتحها الآن
+            if (!element.classList.contains('open')) {
+                element.classList.add('open');
+
+                // إذا كانت غير مقروءة، نحدث حالتها في Supabase
+                if (element.classList.contains('unread')) {
+                    element.classList.remove('unread');
+                    
+                    // تغيير الأيقونة وإزالة شارة "جديد" بصرياً فوراً
+                    const icon = element.querySelector('.message-title i');
+                    icon.className = 'fas fa-envelope-open';
+                    icon.style.color = '#666';
+                    const badge = element.querySelector('.badge-unread');
+                    if(badge) badge.remove();
+
+                    // تحديث قاعدة البيانات خلف الكواليس
+                    try {
+                        await _supabase
+                            .from('user_messages')
+                            .update({ is_read: true })
+                            .eq('id', msgId);
+                    } catch (err) {
+                        console.error("فشل تحديث حالة القراءة:", err);
+                    }
+                }
+            } else {
+                // إذا كانت مفتوحة بالفعل وضغط عليها المستخدم، يتم إغلاقها
+                element.classList.remove('open');
+            }
+        }
+    </script>
+</body>
+</html>
