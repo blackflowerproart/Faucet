@@ -187,7 +187,7 @@
         <div class="form-header">
             <i class="fas fa-bullhorn"></i>
             <h2>إنشاء حملة إعلانية جديدة</h2>
-            <p>سيتم ربط الإعلان ببيانات جدولك الحقيقي وخصم القيمة الصافية</p>
+            <p>سيتم ربط الإعلان ببيانات جدولك الحقيقي وحساب تاريخ الانتهاء تلقائياً</p>
         </div>
 
         <form id="ad-form" onsubmit="handleSubmit(event)">
@@ -221,7 +221,7 @@
             </div>
 
             <div class="form-group">
-                <label for="promocode"><i class="fas fa-percentage"></i> هل لديك بروموكود (كود خصم)؟</label>
+                <label for="promocode"><i class="fas fa-percentage"></i> هل لديك بروموكود (كود خصم)？</label>
                 <input type="text" id="promocode" placeholder="أدخل كود الخصم إن وجد هنا" oninput="calculateTotalCost()">
                 <div id="promo-msg" class="promo-success"><i class="fas fa-check"></i> تم تفعيل البروموكود بنجاح! الحملة مجانية تماماً (خصم 100%).</div>
             </div>
@@ -258,7 +258,7 @@
             if (user) {
                 CURRENT_USER_ID = user.id;
             } else {
-                // ✨ تحديث: استخدام الـ UUID الحقيقي الظاهر في جدول محفظتك لتخطي خطأ الصياغة
+                // استخدام الـ UUID الحقيقي الظاهر في جدول محفظتك لتخطي خطأ الصياغة أثناء الاختبارات المحلية
                 CURRENT_USER_ID = "8ee744a5-28ad-49e7-8175-c87f8a515f29"; 
             }
             handleDurationChange();
@@ -316,13 +316,14 @@
             const description = document.getElementById('description').value;
             const url = document.getElementById('url').value;
             const duration = parseInt(document.getElementById('duration').value);
+            const campaignDays = parseInt(document.getElementById('campaign_days').value) || 1;
             
             const reward = (duration === 10) ? 0.001 : 0.005;
             const total_cost = calculateTotalCost();
             const total_views = 99999; 
 
             try {
-                // استدعاء دالة الـ RPC المحدثة المتوافقة مع أسماء الأعمدة الحالية
+                // استدعاء دالة الـ RPC المحدثة مع تمرير معطى الأيام الجديد لحساب تاريخ الانتهاء بنجاح
                 const { data, error } = await _supabase.rpc('create_ad_and_deduct', {
                     p_user_id: CURRENT_USER_ID,
                     p_title: title,
@@ -331,12 +332,13 @@
                     p_reward: reward,          
                     p_duration: duration,      
                     p_total_views: total_views,
-                    p_total_cost: total_cost    
+                    p_total_cost: total_cost,
+                    p_campaign_days: campaignDays // ✨ تم إضافة وتمرير هذا المتغير لحل خطأ الـ expiry_date
                 });
 
                 if (error) throw error;
 
-                alert("🎉 مبروك! تم إنشاء الحملة الإعلانية بنجاح ونشرها في جدول الإعلانات الحقيقي!");
+                alert("🎉 مبروك! تم إنشاء الحملة الإعلانية بنجاح ونشرها وحساب تاريخ الانتهاء تلقائياً!");
                 window.location.href = "home.html";
 
             } catch (err) {
