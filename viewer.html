@@ -18,6 +18,7 @@
         #confirm-btn:disabled { background: #555; cursor: not-allowed; }
         .ad-container { flex-grow: 1; width: 100%; background: #fff; }
         iframe { width: 100%; height: 100%; border: none; }
+        .loading-overlay { position: absolute; top: 90px; left: 0; right: 0; bottom: 0; background: #000; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; z-index: 5; }
     </style>
 </head>
 <body>
@@ -33,6 +34,8 @@
         </div>
     </header>
 
+    <div id="loading-view" class="loading-overlay">جاري تجهيز الإعلان والتحقق من البيانات...</div>
+
     <main class="ad-container">
         <iframe id="ad-frame" src="about:blank"></iframe>
     </main>
@@ -44,70 +47,103 @@
 
         const params = new URLSearchParams(window.location.search);
         const adId = params.get('id'); 
-        const targetUrl = params.get('url');
-        const duration = parseInt(params.get('sec')) || 15;
-        
-        // التعديل هنا: تحديد المكافأة بناءً على قيمة الثواني (sec) الممررة في الرابط بشكل صارم
-        let rewardAmount = parseFloat(params.get('rew')) || 0;
-        if (duration === 10) {
-            rewardAmount = 8;
-        } else if (duration === 20) {
-            rewardAmount = 15;
-        }
 
         const timerEl = document.getElementById('timer-display');
         const btnEl = document.getElementById('confirm-btn');
         const frameEl = document.getElementById('ad-frame');
+        const loadingEl = document.getElementById('loading-view');
 
-        let secondsLeft = duration;
+        let secondsLeft = 10; // قيمة افتراضية احتياطية
+        let rewardAmount = 0.001; // قيمة افتراضية احتياطية
         let currentUser = null;
 
         window.onload = async () => {
+            // 1. التحقق من تسجيل دخول المستخدم
             const { data: { user } } = await _supabase.auth.getUser();
             if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
             currentUser = user;
-            if (targetUrl) frameEl.src = targetUrl;
 
-            timerEl.innerText = secondsLeft;
-            const countdown = setInterval(() => {
-                secondsLeft--;
-                timerEl.innerText = secondsLeft;
-                if (secondsLeft <= 0) {
-                    clearInterval(countdown);
-                    timerEl.style.display = 'none';
-                    btnEl.style.display = 'block';
+            if (!adId) {
+                alert("معرف الإعلان غير صحيح!");
+                window.location.href = 'home.html';
+                return;
+            }
+
+            // 2. جلب تفاصيل الإعلان مباشرة من جدول ads لضمان الحماية والأسعار الدقيقة
+            try {
+                const { data: adData, error: adError } = await _supabase
+                    .from('ads')
+                    .select('*')
+                    .eq('id', adId)
+                    .single();
+
+                if (adError || !adData) throw new Error("لم يتم العثور على الإعلان في قاعدة البيانات.");
+
+                // إعداد العداد والمكافآت بناءً على نوع مدة الإعلان المخزنة (10 أو 20 ثانية)
+                secondsLeft = parseInt(adData.duration) || 10;
+                
+                // ✨ تطبيق المتغيرات والمكافآت العشرية الصارمة الجديدة:
+                if (secondsLeft === 10) {
+                    rewardAmount = 0.001;
+                } else if (secondsLeft === 20) {
+                    rewardAmount = 0.005;
+                } else {
+                    // في حال وجود قيم أخرى مخزنة مسبقاً في قاعدة البيانات
+                    rewardAmount = parseFloat(adData.reward) || 0.001;
                 }
-            }, 1000);
+
+                // تشغيل رابط الإعلان داخل الإطار
+                frameEl.src = adData.url;
+                loadingEl.style.display = 'none';
+
+                // 3. بدء العد التنازلي للمشاهدة
+                timerEl.innerText = secondsLeft;
+                const countdown = setInterval(() => {
+                    secondsLeft--;
+                    timerEl.innerText = secondsLeft;
+                    if (secondsLeft <= 0) {
+                        clearInterval(countdown);
+                        timerEl.style.display = 'none';
+                        btnEl.style.display = 'block';
+                    }
+                }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                alert("خطأ في جلب بيانات الإعلان: " + err.message);
+                window.location.href = 'home.html';
+            }
         };
 
+        // دالة تأكيد المشاهدة وإضافة الأرباح للمحفظة وتسجيل السجل
         async function handleClaim() {
             try {
                 btnEl.disabled = true;
-                btnEl.innerText = "جاري الحفظ...";
+                btnEl.innerText = "جاري الحفظ وإضافة الرصيد...";
 
-                // 1. استدعاء الدالة لزيادة الرصيد في جدول wallets بالمكافأة المعدلة
+                // 1. استدعاء الـ RPC لزيادة رصيد المحفظة الفعلي في جدول wallets (يستقبل قيم عشرية Float8)
                 const { error: rpcError } = await _supabase.rpc('increment_balance', { 
                     user_id_input: currentUser.id, 
-                    amount: rewardAmount 
+                    amount: parseFloat(rewardAmount) 
                 });
 
                 if (rpcError) throw rpcError;
 
-                // 2. تسجيل المشاهدة في جدول ad_views
+                // 2. تسجيل المشاهدة الحالية في جدول التتبع ads_views لكي يتم حظر الإعلان 24 ساعة في الهوم
                 const { error: insertError } = await _supabase
-                    .from('ad_views')
-                    .insert([{ user_id: currentUser.id, ad_id: adId }]);
+                    .from('ads_views')
+                    .insert([{ user_id: currentUser.id, ad_id: parseInt(adId) }]);
                 
                 if (insertError) console.warn("View log error:", insertError.message);
 
-                alert(`✅ مبروك! تمت إضافة ${rewardAmount} BFP إلى رصيدك.`);
+                alert(`✅ مبروك! تمت مشاهدة الإعلان بنجاح وإضافة ${rewardAmount} BFP إلى محفظتك.`);
                 window.location.href = 'home.html';
             } catch (err) {
                 console.error(err);
-                alert("خطأ أثناء استلام المكافأة: " + err.message);
+                alert("حدث خطأ أثناء معالجة المكافأة: " + err.message);
                 btnEl.disabled = false;
                 btnEl.innerText = "✅ تأكيد واستلام المكافأة";
             }
