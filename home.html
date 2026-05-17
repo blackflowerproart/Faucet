@@ -267,7 +267,8 @@
 
             <!-- واجهة حساب المستخدم الحالية ورصيده -->
             <div class="user-profile">
-                <span class="username" id="user-email">جاري التحميل...</span>
+                <!-- تم تغيير المعرّف (ID) ليصبح معبراً عن اسم المستخدم بشكل عام -->
+                <span class="username" id="user-display-name">جاري التحميل...</span>
                 <div class="balance-box">
                     <span>الرصيد المعتمد:</span>
                     <strong id="user-balance">0 BFP</strong>
@@ -320,25 +321,34 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         window.onload = async () => {
-            // 1. التحقق من حساب المستخدم وجلسة تسجيل الدخول
+            // 1. التحقق من حساب المستخدم وجلسة تسجيل الدخول من الـ Auth
             const { data: { user }, error: authError } = await _supabase.auth.getUser();
             if (authError || !user) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // عرض البريد الإلكتروني للمستخدم في واجهة السايدبار
-            document.getElementById('user-email').innerText = user.email;
+            // وضع البريد الإلكتروني بشكل مؤقت كـ Backup لحين تحميل البيانات الحقيقية من قاعدة البيانات
+            const userDisplayEl = document.getElementById('user-display-name');
+            userDisplayEl.innerText = user.email;
 
-            // 2. جلب وتحديث رصيد المحفظة من الجدول
-            const { data: wallet } = await _supabase
-                .from('wallets')
-                .select('balance')
-                .eq('user_id', user.id)
-                .single();
+            // 2. جلب رصيد المحفظة واسم المستخدم (Username) الفعلي من قاعدة البيانات
+            try {
+                const { data: wallet, error: walletError } = await _supabase
+                    .from('wallets')
+                    .select('balance, username') // قمنا بإضافة جلب حقل الـ username من الجدول هنا
+                    .eq('user_id', user.id)
+                    .single();
 
-            if (wallet) {
-                document.getElementById('user-balance').innerText = `${wallet.balance} BFP`;
+                if (wallet) {
+                    // إذا كان اسم المستخدم موجوداً في قاعدة البيانات نقوم بعرضه بدلاً من البريد الإلكتروني
+                    if (wallet.username) {
+                        userDisplayEl.innerText = wallet.username;
+                    }
+                    document.getElementById('user-balance').innerText = `${wallet.balance} BFP`;
+                }
+            } catch (err) {
+                console.error("Error fetching user data from DB:", err);
             }
 
             // 3. جلب الإعلانات وعرضها
