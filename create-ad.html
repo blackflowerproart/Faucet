@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إنشاء حملة إعلانية - BlackFlower ProArt</title>
-    <!-- ربط مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- ربط مكتبة الأيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -110,7 +108,6 @@
             display: none;
         }
 
-        /* حقل استعراض التكلفة التلقائية */
         .summary-card {
             background: rgba(40, 167, 69, 0.05);
             border: 1px dashed rgba(40, 167, 69, 0.3);
@@ -190,29 +187,25 @@
         <div class="form-header">
             <i class="fas fa-bullhorn"></i>
             <h2>إنشاء حملة إعلانية جديدة</h2>
-            <p>سيتم احتساب التكلفة وخصمها تلقائياً بناءً على مواصفات حملتك والبروموكود</p>
+            <p>سيتم ربط الإعلان ببيانات جدولك الحقيقي وخصم القيمة الصافية</p>
         </div>
 
         <form id="ad-form" onsubmit="handleSubmit(event)">
-            <!-- عنوان الإعلان -->
             <div class="form-group">
                 <label for="title"><i class="fas fa-heading"></i> عنوان الإعلان</label>
                 <input type="text" id="title" placeholder="مثال: اشترك في قناتنا واربح" required>
             </div>
 
-            <!-- الوصف المختصر -->
             <div class="form-group">
                 <label for="description"><i class="fas fa-align-left"></i> الوصف التفصيلي</label>
-                <textarea id="description" rows="3" placeholder="اكتب هنا تفاصيل واضحة ومختصرة للمشاهدين..." required></textarea>
+                <textarea id="description" rows="3" placeholder="اكتب هنا تفاصيل مختصرة للمشاهدين..." required></textarea>
             </div>
 
-            <!-- رابط التوجيه (URL) -->
             <div class="form-group">
                 <label for="url"><i class="fas fa-link"></i> رابط الإعلان المستهدف</label>
                 <input type="url" id="url" placeholder="https://example.com/your-page" required>
             </div>
 
-            <!-- تحديد مدة الإعلان بخيارات ثابتة (10 أو 20 ثانية) -->
             <div class="form-group">
                 <label for="duration"><i class="fas fa-hourglass-half"></i> مدة المشاهدة المطلوبة</label>
                 <select id="duration" required onchange="handleDurationChange()">
@@ -222,20 +215,17 @@
                 <div id="reward-info" class="info-note">💡 مكافأة المشاهد لهذا الخيار: 0.001 BFP لكل مشاهدة.</div>
             </div>
 
-            <!-- عدد أيام تشغيل الإعلان -->
             <div class="form-group">
                 <label for="campaign_days"><i class="fas fa-calendar-alt"></i> عدد أيام تشغيل الإعلان</label>
                 <input type="number" id="campaign_days" min="1" value="1" required oninput="calculateTotalCost()">
             </div>
 
-            <!-- خانة البروموكود السرّي بقيمة خصم 100% -->
             <div class="form-group">
                 <label for="promocode"><i class="fas fa-percentage"></i> هل لديك بروموكود (كود خصم)؟</label>
                 <input type="text" id="promocode" placeholder="أدخل كود الخصم إن وجد هنا" oninput="calculateTotalCost()">
                 <div id="promo-msg" class="promo-success"><i class="fas fa-check"></i> تم تفعيل البروموكود بنجاح! الحملة مجانية تماماً (خصم 100%).</div>
             </div>
 
-            <!-- مربع حساب التكلفة الإجمالية التلقائي -->
             <div class="summary-card">
                 <div class="summary-row">
                     <span><i class="fas fa-calculator"></i> التكلفة الإجمالية المقدرة:</span>
@@ -246,7 +236,6 @@
                 </div>
             </div>
 
-            <!-- زر الإرسال والحفظ -->
             <button type="submit" id="submit-btn" class="btn-submit">
                 <i class="fas fa-plus-circle"></i> نشر الحملة ودفع التكلفة
             </button>
@@ -269,7 +258,8 @@
             if (user) {
                 CURRENT_USER_ID = user.id;
             } else {
-                CURRENT_USER_ID = "test-user-id"; 
+                // ✨ تحديث: استخدام الـ UUID الحقيقي الظاهر في جدول محفظتك لتخطي خطأ الصياغة
+                CURRENT_USER_ID = "8ee744a5-28ad-49e7-8175-c87f8a515f29"; 
             }
             handleDurationChange();
         };
@@ -287,7 +277,7 @@
             calculateTotalCost();
         }
 
-        // دالة الحساب التلقائي للتكلفة الإجمالية والبروموكود
+        // دالة الحساب التلقائي للتكلفة والبروموكود
         function calculateTotalCost() {
             const duration = document.getElementById('duration').value;
             const days = parseInt(document.getElementById('campaign_days').value) || 1;
@@ -298,13 +288,13 @@
             let costPerDay = (duration === "10") ? 0.5 : 1.0;
             let totalCost = costPerDay * days;
 
-            // ✨ تحديث: التحقق من البروموكود وتطبيق خصم 100% كامل لتصبح التكلفة صفر
+            // التحقق من البروموكود وتطبيق خصم 100%
             if (promoInput === SECRET_PROMOCODE) {
                 promoMsg.style.display = 'block';
                 originalCostDisplay.style.display = 'inline';
                 originalCostDisplay.innerText = `${totalCost.toFixed(2)} BFP`;
                 
-                totalCost = 0; // خصم 100%
+                totalCost = 0; 
             } else {
                 promoMsg.style.display = 'none';
                 originalCostDisplay.style.display = 'none';
@@ -332,25 +322,25 @@
             const total_views = 99999; 
 
             try {
-                // استدعاء الدالة المخزنة rpc (ستخصم 0 إذا تم تفعيل الكود، وبالتالي لن ترفض العملية بسبب نقص الرصيد)
+                // استدعاء دالة الـ RPC المحدثة المتوافقة مع أسماء الأعمدة الحالية
                 const { data, error } = await _supabase.rpc('create_ad_and_deduct', {
                     p_user_id: CURRENT_USER_ID,
                     p_title: title,
-                    p_description: description,
+                    p_description: description,      
                     p_url: url,
                     p_reward: reward,          
                     p_duration: duration,      
                     p_total_views: total_views,
-                    p_total_cost: total_cost    // 🟢 ستمرر 0 في حال تطبيق الكود
+                    p_total_cost: total_cost    
                 });
 
                 if (error) throw error;
 
-                alert("🎉 مبروك! تم تفعيل الحملة الإعلانية مجاناً ونشرها للمستخدمين فوراً!");
+                alert("🎉 مبروك! تم إنشاء الحملة الإعلانية بنجاح ونشرها في جدول الإعلانات الحقيقي!");
                 window.location.href = "home.html";
 
             } catch (err) {
-                console.error(err);
+                console.error("تفاصيل الخطأ المستلم:", err);
                 alert("فشل في إنشاء الإعلان: " + (err.message || err));
             } finally {
                 submitBtn.disabled = false;
