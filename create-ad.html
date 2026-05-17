@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إضافة إعلان جديد - BlackFlower ProArt</title>
+    <title>إنشاء حملة إعلانية - BlackFlower ProArt</title>
     <!-- ربط مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- ربط مكتبة الأيقونات FontAwesome -->
@@ -80,7 +80,7 @@
             color: #ddd;
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input, .form-group textarea, .form-group select {
             background: var(--input-bg);
             border: 1px solid var(--border-color);
             color: #fff;
@@ -92,9 +92,22 @@
             transition: 0.2s;
         }
 
-        .form-group input:focus, .form-group textarea:focus {
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             border-color: var(--primary-green);
             background: #222;
+        }
+
+        .info-note {
+            font-size: 0.85rem;
+            color: #ffc107;
+            margin-top: 2px;
+        }
+
+        .promo-success {
+            font-size: 0.85rem;
+            color: var(--primary-green);
+            margin-top: 2px;
+            display: none;
         }
 
         /* حقل استعراض التكلفة التلقائية */
@@ -105,19 +118,28 @@
             padding: 15px;
             margin-bottom: 25px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .summary-label {
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 0.95rem;
-            font-weight: bold;
         }
 
         .summary-value {
             font-size: 1.2rem;
             font-weight: bold;
             color: var(--primary-green);
+        }
+
+        .discount-applied {
+            color: var(--danger-red);
+            font-size: 0.9rem;
+            text-decoration: line-through;
+            margin-left: 10px;
         }
 
         .btn-submit {
@@ -168,7 +190,7 @@
         <div class="form-header">
             <i class="fas fa-bullhorn"></i>
             <h2>إنشاء حملة إعلانية جديدة</h2>
-            <p>سيتم خصم التكلفة الإجمالية من محفظتك فوراً ونشر الإعلان للمستخدمين</p>
+            <p>سيتم احتساب التكلفة وخصمها تلقائياً بناءً على مواصفات حملتك والبروموكود</p>
         </div>
 
         <form id="ad-form" onsubmit="handleSubmit(event)">
@@ -181,38 +203,47 @@
             <!-- الوصف المختصر -->
             <div class="form-group">
                 <label for="description"><i class="fas fa-align-left"></i> الوصف التفصيلي</label>
-                <textarea id="description" rows="3" placeholder="اكتب هنا تفاصيل واضحة ومختصرة حول العرض المتوفر في الرابط..." required></textarea>
+                <textarea id="description" rows="3" placeholder="اكتب هنا تفاصيل واضحة ومختصرة للمشاهدين..." required></textarea>
             </div>
 
             <!-- رابط التوجيه (URL) -->
             <div class="form-group">
                 <label for="url"><i class="fas fa-link"></i> رابط الإعلان المستهدف</label>
-                <input type="url" id="url" placeholder="https://example.com/your-video-or-page" required>
+                <input type="url" id="url" placeholder="https://example.com/your-page" required>
             </div>
 
-            <!-- مدة المشاهدة بالثواني -->
+            <!-- تحديد مدة الإعلان بخيارات ثابتة (10 أو 20 ثانية) -->
             <div class="form-group">
-                <label for="duration"><i class="fas fa-hourglass-half"></i> مدة المشاهدة المطلوبة (بالثواني)</label>
-                <input type="number" id="duration" min="5" value="15" required oninput="calculateTotalCost()">
+                <label for="duration"><i class="fas fa-hourglass-half"></i> مدة المشاهدة المطلوبة</label>
+                <select id="duration" required onchange="handleDurationChange()">
+                    <option value="10" selected>10 ثوانٍ (التكلفة: 0.5 BFP / يومياً)</option>
+                    <option value="20">20 ثانية (التكلفة: 1 BFP / يومياً)</option>
+                </select>
+                <div id="reward-info" class="info-note">💡 مكافأة المشاهد لهذا الخيار: 0.001 BFP لكل مشاهدة.</div>
             </div>
 
-            <!-- مكافأة المشاهد الواحد (تقبل أرقام عشرية بدقة) -->
+            <!-- عدد أيام تشغيل الإعلان -->
             <div class="form-group">
-                <label for="reward"><i class="fas fa-coins"></i> مكافأة المشاهدة للشخص الواحد (BFP)</label>
-                <!-- ✨ تم تغيير الحقل هنا ليقبل أي كسور عشرية عبر وضع step="any" -->
-                <input type="number" id="reward" step="any" min="0.0001" placeholder="مثال: 0.001" required oninput="calculateTotalCost()">
+                <label for="campaign_days"><i class="fas fa-calendar-alt"></i> عدد أيام تشغيل الإعلان</label>
+                <input type="number" id="campaign_days" min="1" value="1" required oninput="calculateTotalCost()">
             </div>
 
-            <!-- عدد المشاهدات المطلوبة الإجمالي -->
+            <!-- خانة البروموكود السرّي بقيمة خصم 100% -->
             <div class="form-group">
-                <label for="total_views"><i class="fas fa-users"></i> إجمالي عدد المشاهدات المستهدفة</label>
-                <input type="number" id="total_views" min="1" value="100" required oninput="calculateTotalCost()">
+                <label for="promocode"><i class="fas fa-percentage"></i> هل لديك بروموكود (كود خصم)؟</label>
+                <input type="text" id="promocode" placeholder="أدخل كود الخصم إن وجد هنا" oninput="calculateTotalCost()">
+                <div id="promo-msg" class="promo-success"><i class="fas fa-check"></i> تم تفعيل البروموكود بنجاح! الحملة مجانية تماماً (خصم 100%).</div>
             </div>
 
-            <!-- مربع حساب التكلفة الإجمالية التلقائي بالكسور -->
+            <!-- مربع حساب التكلفة الإجمالية التلقائي -->
             <div class="summary-card">
-                <span class="summary-label"><i class="fas fa-calculator"></i> التكلفة الإجمالية للحملة:</span>
-                <span id="total-cost-display" class="summary-value">0.0000 BFP</span>
+                <div class="summary-row">
+                    <span><i class="fas fa-calculator"></i> التكلفة الإجمالية المقدرة:</span>
+                    <div>
+                        <span id="original-cost-display" class="discount-applied" style="display:none;"></span>
+                        <span id="total-cost-display" class="summary-value">0.50 BFP</span>
+                    </div>
+                </div>
             </div>
 
             <!-- زر الإرسال والحفظ -->
@@ -231,70 +262,95 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let CURRENT_USER_ID = null;
+        const SECRET_PROMOCODE = "9861003993"; // البروموكود المعتمد الخاص بك
 
         window.onload = async () => {
             const { data: { user } } = await _supabase.auth.getUser();
             if (user) {
                 CURRENT_USER_ID = user.id;
             } else {
-                CURRENT_USER_ID = "test-user-id"; // للمستخدم التجريبي
+                CURRENT_USER_ID = "test-user-id"; 
             }
-            calculateTotalCost();
+            handleDurationChange();
         };
 
-        // دالة الحساب التلقائي للتكلفة الإجمالية بدعم كامل للكسور
+        // تحديث الملاحظات عند تغيير مدة الإعلان
+        function handleDurationChange() {
+            const duration = document.getElementById('duration').value;
+            const rewardInfo = document.getElementById('reward-info');
+            
+            if (duration === "10") {
+                rewardInfo.innerText = "💡 مكافأة المشاهد لهذا الخيار: 0.001 BFP لكل مشاهدة.";
+            } else if (duration === "20") {
+                rewardInfo.innerText = "💡 مكافأة المشاهد لهذا الخيار: 0.005 BFP لكل مشاهدة.";
+            }
+            calculateTotalCost();
+        }
+
+        // دالة الحساب التلقائي للتكلفة الإجمالية والبروموكود
         function calculateTotalCost() {
-            // ✨ تم تحويل حقل المكافأة لاستخدام parseFloat بدلاً من الأعداد الصحيحة لضمان بقاء الكسور مثل 0.001
-            const reward = parseFloat(document.getElementById('reward').value) || 0;
-            const views = parseInt(document.getElementById('total_views').value) || 0;
+            const duration = document.getElementById('duration').value;
+            const days = parseInt(document.getElementById('campaign_days').value) || 1;
+            const promoInput = document.getElementById('promocode').value.trim();
+            const promoMsg = document.getElementById('promo-msg');
+            const originalCostDisplay = document.getElementById('original-cost-display');
+
+            let costPerDay = (duration === "10") ? 0.5 : 1.0;
+            let totalCost = costPerDay * days;
+
+            // ✨ تحديث: التحقق من البروموكود وتطبيق خصم 100% كامل لتصبح التكلفة صفر
+            if (promoInput === SECRET_PROMOCODE) {
+                promoMsg.style.display = 'block';
+                originalCostDisplay.style.display = 'inline';
+                originalCostDisplay.innerText = `${totalCost.toFixed(2)} BFP`;
+                
+                totalCost = 0; // خصم 100%
+            } else {
+                promoMsg.style.display = 'none';
+                originalCostDisplay.style.display = 'none';
+            }
             
-            const totalCost = reward * views;
-            
-            // عرض النتيجة بدقة 4 أرقام بعد الفاصلة العشرية
-            document.getElementById('total-cost-display').innerText = `${totalCost.toFixed(4)} BFP`;
+            document.getElementById('total-cost-display').innerText = `${totalCost.toFixed(3)} BFP`;
             return totalCost;
         }
 
-        // إرسال البيانات وحفظها في قاعدة البيانات عبر الدالة المحدثة RPC
+        // إرسال البيانات وحفظها في قاعدة البيانات
         async function handleSubmit(event) {
             event.preventDefault();
             
             const submitBtn = document.getElementById('submit-btn');
             submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري معالجة الدفع وإنشاء الحملة...`;
+            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري معالجة الطلب ونشر إعلانك...`;
 
             const title = document.getElementById('title').value;
             const description = document.getElementById('description').value;
             const url = document.getElementById('url').value;
             const duration = parseInt(document.getElementById('duration').value);
             
-            // ✨ استخدام parseFloat لتمرير القيم العشرية النظيفة بشكل كامل إلى الدالة المخزنة
-            const reward = parseFloat(document.getElementById('reward').value);
-            const total_views = parseInt(document.getElementById('total_views').value);
+            const reward = (duration === 10) ? 0.001 : 0.005;
             const total_cost = calculateTotalCost();
+            const total_views = 99999; 
 
             try {
-                // استدعاء الدالة المخزنة RPC التي تم تحديثها لتقبل الـ NUMERIC
+                // استدعاء الدالة المخزنة rpc (ستخصم 0 إذا تم تفعيل الكود، وبالتالي لن ترفض العملية بسبب نقص الرصيد)
                 const { data, error } = await _supabase.rpc('create_ad_and_deduct', {
                     p_user_id: CURRENT_USER_ID,
                     p_title: title,
                     p_description: description,
                     p_url: url,
-                    p_reward: reward,          // 🟢 قيمة عشرية دقيقة
-                    p_duration: duration,
+                    p_reward: reward,          
+                    p_duration: duration,      
                     p_total_views: total_views,
-                    p_total_cost: total_cost    // 🟢 تكلفة إجمالية عشرية دقيقة
+                    p_total_cost: total_cost    // 🟢 ستمرر 0 في حال تطبيق الكود
                 });
 
-                if (error) {
-                    throw error;
-                }
+                if (error) throw error;
 
-                alert("🎉 تم إنشاء إعلانك بنجاح، وخصم قيمته من محفظتك ونشره للمشاهدين!");
+                alert("🎉 مبروك! تم تفعيل الحملة الإعلانية مجاناً ونشرها للمستخدمين فوراً!");
                 window.location.href = "home.html";
 
             } catch (err) {
-                console.error("تفاصيل الخطأ:", err);
+                console.error(err);
                 alert("فشل في إنشاء الإعلان: " + (err.message || err));
             } finally {
                 submitBtn.disabled = false;
