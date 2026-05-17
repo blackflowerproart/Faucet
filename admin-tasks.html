@@ -132,6 +132,36 @@
             border-color: #555;
         }
 
+        /* تنسيق مربع نص سبب الرفض */
+        .rejection-reason-container {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .rejection-reason-container label {
+            font-size: 0.9rem;
+            color: #aaa;
+            font-weight: bold;
+        }
+
+        .rejection-input {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        .rejection-input:focus {
+            border-color: var(--danger-red);
+            outline: none;
+        }
+
         .actions {
             display: flex;
             gap: 15px;
@@ -278,6 +308,12 @@
                                 </a>
                             </div>
 
+                            <!-- مربع نص لكتابة سبب الرفض -->
+                            <div class="rejection-reason-container">
+                                <label for="reason-${sub.id}">سبب الرفض (يُرسل بريداً للمستخدم عند الرفض):</label>
+                                <textarea id="reason-${sub.id}" class="rejection-input" rows="2" placeholder="اكتب هنا سبب الرفض..."></textarea>
+                            </div>
+
                             <div class="actions">
                                 <button class="btn btn-approve" onclick="updateStatus('${sub.id}', 'approved')">
                                     <i class="fas fa-check"></i> موافقة وتبادل الأرصيدة
@@ -296,10 +332,12 @@
             }
         }
 
-        // دالة تحديث الحالة (موافقة مع النقل والخصم المالي / أو رفض مع الحذف التام)
+        // دالة تحديث الحالة (موافقة مع النقل والخصم المالي / أو رفض مع الحذف التام وإرسال رسالة سبب الرفض)
         async function updateStatus(submissionId, newStatus) {
             const card = document.getElementById(`sub-${submissionId}`);
             const buttons = card.querySelectorAll('.btn');
+            const reasonInput = document.getElementById(`reason-${submissionId}`);
+            const rejectionReason = reasonInput.value.trim();
             
             // تعطيل أزرار الكرت لمنع الضغط المتكرر
             buttons.forEach(b => b.disabled = true);
@@ -312,21 +350,46 @@
                         user_id, 
                         task_id,
                         tasks (
+                            title,
                             points_reward,
                             creator_id
                         )
                     `)
                     .eq('id', submissionId)
-                    .maybeSingle(); // استخدام maybeSingle يمنع انقطاع الكود إذا لم يطابق سجل واحد كلياً
+                    .maybeSingle();
 
                 if (subError || !submission) throw new Error("تعذر العثور على بيانات هذا الطلب.");
 
                 const reward = submission.tasks?.points_reward || 0;
-                const creatorId = submission.tasks?.creator_id; // معرف الناشر للمهمة
+                const creatorId = submission.tasks?.creator_id; 
+                const taskTitle = submission.tasks?.title || "مهمة";
 
-                // --- سيناريو الرفض: حذف الإثبات كلياً من قاعدة البيانات ---
+                // --- سيناريو الرفض: إرسال الرسالة وحذف الإثبات كلياً ---
                 if (newStatus === 'rejected') {
-                    if (confirm("هل أنت متأكد من رفض وحذف هذا الإثبات نهائياً من النظام؟")) {
+                    if (!rejectionReason) {
+                        alert("⚠️ يرجى كتابة سبب الرفض في مربع النص أولاً قبل الضغط على زر الرفض.");
+                        buttons.forEach(b => b.disabled = false);
+                        return;
+                    }
+
+                    if (confirm("هل أنت متأكد من رفض هذا الطلب وإرسال الرسالة للمستخدم وحذفه نهائياً؟")) {
+                        
+                        // أ) إرسال الرسالة إلى جدول الرسائل الجديد (user_messages)
+                        const { error: msgError } = await _supabase
+                            .from('user_messages')
+                            .insert([
+                                {
+                                    user_id: submission.user_id,
+                                    title: `❌ تم رفض طلبك للمهمة: ${taskTitle}`,
+                                    message: rejectionReason,
+                                    is_read: false,
+                                    created_at: new Date()
+                                }
+                            ]);
+
+                        if (msgError) throw new Error("فشل في إرسال رسالة الرفض إلى بريد المستخدم: " + msgError.message);
+
+                        // ب) حذف الطلب نهائياً من قاعدة البيانات
                         const { error: deleteError } = await _supabase
                             .from('task_submissions')
                             .delete()
@@ -334,15 +397,15 @@
 
                         if (deleteError) throw deleteError;
 
-                        alert("❌ تم رفض الطلب وحذف ملف الإثبات من قاعدة البيانات بنجاح.");
+                        alert("❌ تم رفض الطلب، وإرسال سبب الرفض لبريد المستخدم، وحذف السجل نهائياً.");
                         removeCardFromUI(card);
                     } else {
-                        buttons.forEach(b => b.disabled = false); // إعادة التفعيل إذا ألغى الأدمن
+                        buttons.forEach(b => b.disabled = false); 
                     }
                     return;
                 }
 
-                // --- سيناريو الموافقة: توزيع الأرصيدة والخصم من الناشر ---
+                // --- سيناريو الموافقة: توزيع الأرصيدة والخصم من الناشر واختفاء الكرت ---
                 if (newStatus === 'approved') {
                     
                     // أ) تحديث حالة الطلب أولاً إلى approved لتسجيل قبول العملية
@@ -358,7 +421,7 @@
                         .from('wallets')
                         .select('balance')
                         .eq('user_id', submission.user_id)
-                        .maybeSingle(); // أصبحت آمنة هنا لمنع الانهيار
+                        .maybeSingle();
 
                     if (!fetchUserWalletErr && userWallet) {
                         await _supabase.from('wallets')
@@ -369,29 +432,27 @@
                             .insert([{ user_id: submission.user_id, balance: reward }]);
                     }
 
-                    // ج) حسم الرصيد من محفظة المستخدم الناشر (creator_id) بمرونة وأمان عاليين
+                    // ج) حسم الرصيد من محفظة المستخدم الناشر (creator_id)
                     if (creatorId) {
                         const { data: creatorWallet, error: fetchCreatorErr } = await _supabase
                             .from('wallets')
                             .select('balance')
                             .eq('user_id', creatorId)
-                            .maybeSingle(); // تعديل جوهري لمنع الفشل البرمجي عند عدم وجود المحفظة
+                            .maybeSingle();
 
                         if (!fetchCreatorErr && creatorWallet) {
-                            // حسم القيمة من الناشر مباشرة إذا وجدت محفظته
                             await _supabase.from('wallets')
                                 .update({ balance: (creatorWallet.balance || 0) - reward })
                                 .eq('user_id', creatorId);
                         } else {
-                            // إنشاء سطر محفظة جديد للناشر برصيد سالب بقيمة الخصم إذا كان السجل فارغاً في جدول الأرصدة
                             await _supabase.from('wallets')
                                 .insert([{ user_id: creatorId, balance: 0 - reward }]);
                         }
                     } else {
-                        console.warn("تنبيه: لم يتم العثور على 'creator_id' في بيانات هذه المهمة لتطبيق الخصم المالي.");
+                        console.warn("تنبيه: لم يتم العثور على 'creator_id' لتطبيق الخصم.");
                     }
 
-                    alert("✅ تم قبول المهمة بنجاح: إضافة المكافأة للمنفذ وحسمها من حساب الناشر!");
+                    alert("✅ تم قبول المهمة بنجاح: إضافة المكافأة للمنفذ وحسمها من الناشر!");
                     removeCardFromUI(card);
                 }
 
@@ -402,12 +463,13 @@
             }
         }
 
-        // دالة مساعدة لحذف الكرت بصرياً بعد انتهاء العملية
+        // دالة مساعدة لحذف الكرت بصرياً بعد انتهاء العملية ليتبقى فقط غير المعالج
         function removeCardFromUI(card) {
             card.style.transition = '0.3s';
             card.style.opacity = '0';
             setTimeout(() => {
                 card.remove();
+                // إذا فرغت الصفحة تماماً، قم بعمل جلب للتأكد من عدم وجود كروت جديدة
                 if(document.getElementById('submissions-container').children.length === 0) {
                     fetchPendingSubmissions();
                 }
