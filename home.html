@@ -41,7 +41,7 @@
             flex-direction: column;
             justify-content: space-between;
             box-sizing: border-box;
-            order: 2; /* لجعلها على يسار الشاشة في وضع RTL */
+            order: 2;
         }
 
         .logo-section {
@@ -147,7 +147,7 @@
             padding: 40px;
             overflow-y: auto;
             box-sizing: border-box;
-            order: 1; /* لتظهر على اليمين موازية للسايدبار اليساري */
+            order: 1;
         }
 
         .dashboard-header {
@@ -164,7 +164,6 @@
             color: var(--text-muted);
         }
 
-        /* تقسيم الأقسام */
         .dashboard-section {
             margin-bottom: 45px;
         }
@@ -179,7 +178,6 @@
             padding-right: 10px;
         }
 
-        /* شبكة العرض (المهام والإعلانات) */
         .content-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -196,11 +194,40 @@
             justify-content: space-between;
             transition: 0.3s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative; /* ضروري لضبط موضع علامة الصح */
         }
 
         .card:hover {
             transform: translateY(-3px);
             border-color: #333;
+        }
+
+        /* طبقة التغطية للمهمة المنجزة */
+        .card.completed {
+            pointer-events: none; /* قفل أي نقرات مسموحة */
+        }
+
+        .card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--primary);
+            font-size: 1.1rem;
+            font-weight: bold;
+            z-index: 5;
+        }
+
+        .card-overlay i {
+            font-size: 3rem;
         }
 
         .card h3 {
@@ -258,14 +285,12 @@
 </head>
 <body>
 
-    <!-- السايدبار (شريط التحكم الجانبي) - يظهر على يسار الصفحة -->
     <aside class="sidebar">
         <div>
             <div class="logo-section">
                 <i class="fas fa-palette"></i> Blackflower Pro Art
             </div>
 
-            <!-- واجهة حساب المستخدم الحالية ورصيده -->
             <div class="user-profile">
                 <span class="username" id="user-display-name">جاري التحميل...</span>
                 <div class="balance-box">
@@ -274,7 +299,6 @@
                 </div>
             </div>
 
-            <!-- قائمة الأدوات والتحكم وروابط الصفحات المطلوبة -->
             <div class="menu-links">
                 <a href="home.html" class="menu-btn active"><i class="fas fa-home"></i> الرئيسية</a>
                 <a href="create-task.html" class="menu-btn"><i class="fas fa-plus-circle"></i> إضافة مهمة جديدة</a>
@@ -283,20 +307,17 @@
             </div>
         </div>
 
-        <!-- زر تسجيل الخروج في الأسفل -->
         <button class="logout-btn" onclick="logout()">
             <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
         </button>
     </aside>
 
-    <!-- المحتوى الرئيسي (المهام والإعلانات المتاحة) - يظهر على يمين الصفحة -->
     <main class="main-content">
         <header class="dashboard-header">
             <h1>لوحة التحكم الرئيسية</h1>
             <p>مرحباً بك! تصفح الإعلانات والمهام المتاحة لك لكسب النقاط والأرباح.</p>
         </header>
 
-        <!-- قسم الإعلانات المتاحة -->
         <section class="dashboard-section">
             <h2 class="section-title"><i class="fas fa-rectangle-ad"></i> الإعلانات المتاحة لك حالياً</h2>
             <div id="ads-grid" class="content-grid">
@@ -304,7 +325,6 @@
             </div>
         </section>
 
-        <!-- قسم المهام المتاحة -->
         <section class="dashboard-section">
             <h2 class="section-title"><i class="fas fa-tasks"></i> المهام المتوفرة للتنفيذ</h2>
             <div id="tasks-grid" class="content-grid">
@@ -314,13 +334,11 @@
     </main>
 
     <script>
-        // إعدادات الاتصال بـ Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         window.onload = async () => {
-            // 1. التحقق من حساب المستخدم وجلسة تسجيل الدخول من الـ Auth
             const { data: { user }, error: authError } = await _supabase.auth.getUser();
             if (authError || !user) {
                 window.location.href = 'login.html';
@@ -328,26 +346,22 @@
             }
 
             const userDisplayEl = document.getElementById('user-display-name');
-            userDisplayEl.innerText = user.email; // قيمة احتياطية
+            userDisplayEl.innerText = user.email;
 
-            // 2. جلب اسم المستخدم (Username) من جدول 'profiles'
             try {
-                const { data: profile, error: profileError } = await _supabase
+                const { data: profile } = await _supabase
                     .from('profiles')
-                    .select('username') // تأكد أن اسم الحقل في السيرفر هو username
-                    .eq('id', user.id) // يفترض أن المفتاح الرئيسي الربطي هو id أو قم بتغييره لـ user_id إذا دعت الحاجة
+                    .select('username')
+                    .eq('id', user.id)
                     .single();
 
                 if (profile && profile.username) {
                     userDisplayEl.innerText = profile.username;
                 }
-            } catch (err) {
-                console.error("خطأ أثناء جلب اسم المستخدم من جدول profiles:", err);
-            }
+            } catch (err) { console.error(err); }
 
-            // 3. جلب رصيد المحفظة من جدول 'wallets'
             try {
-                const { data: wallet, error: walletError } = await _supabase
+                const { data: wallet } = await _supabase
                     .from('wallets')
                     .select('balance')
                     .eq('user_id', user.id)
@@ -356,28 +370,20 @@
                 if (wallet) {
                     document.getElementById('user-balance').innerText = `${wallet.balance} BFP`;
                 }
-            } catch (err) {
-                console.error("خطأ أثناء جلب الرصيد من جدول wallets:", err);
-            }
+            } catch (err) { console.error(err); }
 
-            // 4. جلب الإعلانات وعرضها
             await fetchAvailableAds();
-
-            // 5. جلب المهام وفلترتها
             await fetchAvailableTasks(user.id);
         };
 
-        // دالة جلب الإعلانات المتاحة
         async function fetchAvailableAds() {
             const adsGrid = document.getElementById('ads-grid');
             try {
                 const { data: ads, error } = await _supabase.from('ads').select('*');
-                
                 if (error || !ads || ads.length === 0) {
                     adsGrid.innerHTML = '<div class="empty-text">🎉 لا توجد إعلانات متاحة للمشاهدة حالياً.</div>';
                     return;
                 }
-
                 adsGrid.innerHTML = '';
                 ads.forEach(ad => {
                     adsGrid.innerHTML += `
@@ -390,12 +396,10 @@
                             <button class="action-btn" onclick="window.open('${ad.url || '#'}', '_blank')">مشاهدة الإعلان</button>
                         </div>`;
                 });
-            } catch (err) {
-                adsGrid.innerHTML = '<div class="empty-text">تعذر تحميل الإعلانات حالياً.</div>';
-            }
+            } catch (err) { adsGrid.innerHTML = '<div class="empty-text">تعذر تحميل الإعلانات حالياً.</div>'; }
         }
 
-        // دالة جلب المهام وفلترتها الذكية لمنع التكرار
+        // تم تعديل الدالة لتعرض علامة الصح على المهام المنجزة للمستخدم الحالي
         async function fetchAvailableTasks(userId) {
             const tasksGrid = document.getElementById('tasks-grid');
             try {
@@ -405,38 +409,37 @@
                     .eq('user_id', userId);
 
                 const submittedTaskIds = userSubmissions ? userSubmissions.map(sub => sub.task_id) : [];
-
                 const { data: tasks, error } = await _supabase.from('tasks').select('*');
 
                 if (error || !tasks) throw error;
-
                 tasksGrid.innerHTML = '';
 
-                const availableTasks = tasks.filter(task => !submittedTaskIds.includes(task.id));
-
-                if (availableTasks.length === 0) {
-                    tasksGrid.innerHTML = '<div class="empty-text">🎉 رائِع! لقد أتممت جميع المهام المتاحة حالياً.</div>';
+                if (tasks.length === 0) {
+                    tasksGrid.innerHTML = '<div class="empty-text">لا توجد مهام حالياً.</div>';
                     return;
                 }
 
-                availableTasks.forEach(task => {
+                tasks.forEach(task => {
+                    const isCompleted = submittedTaskIds.includes(task.id);
+                    
                     tasksGrid.innerHTML += `
-                        <div class="card">
+                        <div class="card ${isCompleted ? 'completed' : ''}">
+                            ${isCompleted ? `
+                            <div class="card-overlay">
+                                <i class="fas fa-check-circle"></i>
+                                <span>تم إتمام المهمة بنجاح</span>
+                            </div>` : ''}
                             <div>
                                 <h3>${task.title}</h3>
                                 <span class="reward-tag">+ ${task.points_reward} BFP</span>
                                 <p>${task.description || 'اضغط على تنفيذ لمشاهدة تفاصيل الشروط ورفع الإثبات.'}</p>
                             </div>
-                            <button class="action-btn" onclick="window.location.href='task-viewer.html?id=${task.id}'">تنفيذ المهمة</button>
+                            <button class="action-btn" ${isCompleted ? 'disabled' : ''} onclick="window.location.href='task-viewer.html?id=${task.id}'">تنفيذ المهمة</button>
                         </div>`;
                 });
-
-            } catch (err) {
-                tasksGrid.innerHTML = '<div class="empty-text">حدث خطأ أثناء تحميل قائمة المهام.</div>';
-            }
+            } catch (err) { tasksGrid.innerHTML = '<div class="empty-text">حدث خطأ أثناء تحميل قائمة المهام.</div>'; }
         }
 
-        // دالة تسجيل الخروج للمستخدم
         async function logout() {
             if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
                 await _supabase.auth.signOut();
