@@ -345,7 +345,7 @@
 
         let CURRENT_USER_ID = null;
         
-        // ✨ تعديل: سعر الـ BFP الواحد يساوي 0.50 دولار (نصف دولار)
+        // تعديل: سعر الـ BFP الواحد يساوي 0.50 دولار (نصف دولار)
         const BFP_TO_USD_RATE = 0.50; 
 
         window.onload = async () => {
@@ -375,7 +375,7 @@
             }
         }
 
-        // جلب رصيد المحفظة واحتساب قيمته بالدولار بناءً على التحديث الجديد
+        // جلب رصيد المحفظة واحتساب قيمته بالدولار بناءً على التحديث الجديد مع دعم الكسور الصغيرة
         async function fetchWalletData() {
             try {
                 const { data: wallet, error } = await _supabase
@@ -386,9 +386,10 @@
 
                 if (wallet) {
                     const bfpBalance = wallet.balance || 0;
-                    const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(2);
+                    const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(4); // زيادة دقة الكسور للدولار بسبب القيم الصغيرة
 
-                    document.getElementById('user-balance-bfp').innerText = `${bfpBalance.toLocaleString()} BFP`;
+                    // عرض الرصيد بشكل مناسب للأرقام العشرية الصغرى
+                    document.getElementById('user-balance-bfp').innerText = `${bfpBalance} BFP`;
                     document.getElementById('user-balance-usd').innerText = `=$${usdBalance} دولار`;
                 }
             } catch (err) {
@@ -414,14 +415,17 @@
             } catch (err) { console.error(err); }
         }
 
-        // جلب الإعلانات وتوجيهها لصفحة viewer.html
+        // جلب الإعلانات وتوجيهها لصفحة viewer.html مع التحقق من الحظر لمدة 24 ساعة
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
+                // جلب الإعلانات النشطة
                 const { data: ads } = await _supabase.from('ads').select('*');
+                
+                // ✨ التعديل الجديد: جلب سجلات المشاهدات الفعليّة من جدول ads_views للمستخدم الحالي
                 const { data: watched } = await _supabase
-                    .from('watched_ads')
-                    .select('ad_id, watched_at')
+                    .from('ads_views')
+                    .select('ad_id, created_at')
                     .eq('user_id', CURRENT_USER_ID);
 
                 if (!ads || ads.length === 0) {
@@ -431,20 +435,27 @@
 
                 container.innerHTML = '';
                 ads.forEach(ad => {
-                    const watchRecord = watched?.find(w => w.ad_id === ad.id);
+                    // البحث عن آخر مشاهدة لهذا الإعلان بالتحديد
+                    const watchRecords = watched?.filter(w => w.ad_id === ad.id);
                     let isLocked = false;
 
-                    if (watchRecord) {
-                        const watchedTime = new Date(watchRecord.watched_at).getTime();
+                    if (watchRecords && watchRecords.length > 0) {
+                        // جلب تاريخ أحدث مشاهدة للإعلان
+                        const latestWatch = watchRecords.reduce((latest, current) => {
+                            return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+                        });
+
+                        const watchedTime = new Date(latestWatch.created_at).getTime();
                         const currentTime = new Date().getTime();
                         const hoursPassed = (currentTime - watchedTime) / (1000 * 60 * 60);
                         
+                        // ✨ إذا لم يمر 24 ساعة يتم تفعيل الحظر
                         if (hoursPassed < 24) {
                             isLocked = true; 
                         }
                     }
 
-                    // ✨ تعديل: تم تغيير الرابط التوجيهي إلى viewer.html بالأسفل
+                    // عرض الإعلان مع المكافأة المخصصة والمحددة له بجانبه بدقة واحتساب طبقة الحظر الشفافة السوداء
                     container.innerHTML += `
                         <div class="item-card">
                             ${isLocked ? `
@@ -454,7 +465,8 @@
                             </div>` : ''}
                             <div class="card-top">
                                 <h4 class="card-title">${ad.title}</h4>
-                                <span class="reward-badge">+${ad.reward || 5} BFP</span>
+                                <!-- ✨ تعديل: عرض سعر المكافأة المخزن في جدول ads مباشرة بجانب الاسم -->
+                                <span class="reward-badge">+${ad.reward || 0.001} BFP</span>
                             </div>
                             <p class="card-desc">${ad.description || 'شاهد هذا الإعلان الترويجي السريع لكسب النقاط مجاناً.'}</p>
                             <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.4;"' : ''}>
@@ -463,7 +475,10 @@
                         </div>
                     `;
                 });
-            } catch (err) { container.innerHTML = 'حدث خطأ أثناء تحميل الإعلانات.'; }
+            } catch (err) { 
+                console.error(err);
+                container.innerHTML = 'حدث خطأ أثناء تحميل الإعلانات.'; 
+            }
         }
 
         async function loadTasks() {
