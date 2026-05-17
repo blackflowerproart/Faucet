@@ -267,7 +267,6 @@
 
             <!-- واجهة حساب المستخدم الحالية ورصيده -->
             <div class="user-profile">
-                <!-- تم تغيير المعرّف (ID) ليصبح معبراً عن اسم المستخدم بشكل عام -->
                 <span class="username" id="user-display-name">جاري التحميل...</span>
                 <div class="balance-box">
                     <span>الرصيد المعتمد:</span>
@@ -328,33 +327,43 @@
                 return;
             }
 
-            // وضع البريد الإلكتروني بشكل مؤقت كـ Backup لحين تحميل البيانات الحقيقية من قاعدة البيانات
             const userDisplayEl = document.getElementById('user-display-name');
-            userDisplayEl.innerText = user.email;
+            userDisplayEl.innerText = user.email; // قيمة احتياطية
 
-            // 2. جلب رصيد المحفظة واسم المستخدم (Username) الفعلي من قاعدة البيانات
+            // 2. جلب اسم المستخدم (Username) من جدول 'profiles'
+            try {
+                const { data: profile, error: profileError } = await _supabase
+                    .from('profiles')
+                    .select('username') // تأكد أن اسم الحقل في السيرفر هو username
+                    .eq('id', user.id) // يفترض أن المفتاح الرئيسي الربطي هو id أو قم بتغييره لـ user_id إذا دعت الحاجة
+                    .single();
+
+                if (profile && profile.username) {
+                    userDisplayEl.innerText = profile.username;
+                }
+            } catch (err) {
+                console.error("خطأ أثناء جلب اسم المستخدم من جدول profiles:", err);
+            }
+
+            // 3. جلب رصيد المحفظة من جدول 'wallets'
             try {
                 const { data: wallet, error: walletError } = await _supabase
                     .from('wallets')
-                    .select('balance, username') // قمنا بإضافة جلب حقل الـ username من الجدول هنا
+                    .select('balance')
                     .eq('user_id', user.id)
                     .single();
 
                 if (wallet) {
-                    // إذا كان اسم المستخدم موجوداً في قاعدة البيانات نقوم بعرضه بدلاً من البريد الإلكتروني
-                    if (wallet.username) {
-                        userDisplayEl.innerText = wallet.username;
-                    }
                     document.getElementById('user-balance').innerText = `${wallet.balance} BFP`;
                 }
             } catch (err) {
-                console.error("Error fetching user data from DB:", err);
+                console.error("خطأ أثناء جلب الرصيد من جدول wallets:", err);
             }
 
-            // 3. جلب الإعلانات وعرضها
+            // 4. جلب الإعلانات وعرضها
             await fetchAvailableAds();
 
-            // 4. جلب المهام وفلترتها لإخفاء المهام التي تم إرسال إثباتها سابقاً
+            // 5. جلب المهام وفلترتها
             await fetchAvailableTasks(user.id);
         };
 
