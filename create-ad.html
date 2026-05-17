@@ -23,10 +23,11 @@
         <input type="text" id="ad-title" placeholder="عنوان الإعلان (مثلاً: موقع الربح الصادق)">
         <input type="url" id="ad-link" placeholder="رابط الإعلان (https://...)">
         
-        <label>نوع الإعلان:</label>
+        <label>نوع الإعلان ومدته:</label>
         <select id="ad-type" onchange="calculateTotal()">
-            <option value="10">10 ثوانٍ (50 BFP / يوم) - مكافأة المشاهدة: 8 BFP</option>
-            <option value="20">20 ثانية (100 BFP / يوم) - مكافأة المشاهدة: 15 BFP</option>
+            <!-- تحديث خيارات نوع الإعلان والمكافآت الموضحة بجانبه -->
+            <option value="10">10 ثوانٍ (0.5 BFP / يوم) - المكافأة: 0.001 BFP</option>
+            <option value="20">20 ثانية (1 BFP / يوم) - المكافأة: 0.005 BFP</option>
         </select>
 
         <label>مدة العرض:</label>
@@ -41,7 +42,7 @@
             <div id="free-msg" class="free-badge">✨ الكود صحيح! الإعلان مجاني تماماً ✨</div>
         </div>
 
-        <div class="price-tag">التكلفة الإجمالية: <span id="total-price">50</span> BFP</div>
+        <div class="price-tag">التكلفة الإجمالية: <span id="total-price">0.5</span> BFP</div>
         <button id="create-btn" onclick="submitAd()">تأكيد ونشر الإعلان</button>
     </div>
 
@@ -59,7 +60,9 @@
             const freeMsg = document.getElementById('free-msg');
             const priceSpan = document.getElementById('total-price');
 
-            let total = (type == "10" ? 50 : 100) * days;
+            // الحسبة الجديدة: إذا كان 10 ثوانٍ السعر اليومي 0.5 وإذا كان 20 ثانية السعر اليومي 1
+            let dailyRate = (type == "10") ? 0.5 : 1.0;
+            let total = dailyRate * parseInt(days);
 
             if (promo === "123456") {
                 total = 0;
@@ -74,8 +77,13 @@
                 priceSpan.style.color = "#fff";
             }
             
-            priceSpan.innerText = total;
+            priceSpan.innerText = total.toFixed(3).replace(/\.?0+$/, ""); // لإظهار الرقم العشري بنظافة دون أصفار زائدة
         }
+
+        // استدعاء دالة الحساب فور تحميل الصفحة لتهيئة السعر المبدئي (0.5 BFP)
+        window.onload = () => {
+            calculateTotal();
+        };
 
         async function submitAd() {
             const { data: { user } } = await _supabase.auth.getUser();
@@ -86,29 +94,35 @@
             const dur = document.getElementById('ad-type').value;
             const days = document.getElementById('ad-duration').value;
             
-            // حساب التكلفة بناءً على الخيارات المحددة والكود الترويجي
-            const cost = isFree ? 0 : ((dur == "10" ? 50 : 100) * days);
+            // احتساب التكلفة العشرية بدقة
+            let dailyRate = (dur == "10") ? 0.5 : 1.0;
+            const cost = isFree ? 0 : (dailyRate * parseInt(days));
             
-            // التعديل الجديد: تحديد قيمة المكافأة بناءً على الثواني بدقة (8 أو 15)
-            const reward = (dur == "10" ? 8 : 15);
+            // ✨ التعديل الجديد للمكافآت العشرية المطلوبة بدقة:
+            const reward = (dur == "10") ? 0.001 : 0.005;
 
             if(!title || !link) return alert("يرجى ملء جميع الخانات");
 
-            // إرسال البيانات المحدثة إلى دالة الـ RPC في Supabase
+            document.getElementById('create-btn').innerText = "جاري النشر...";
+            document.getElementById('create-btn').disabled = true;
+
+            // إرسال البيانات إلى دالة الـ RPC في Supabase
             const { error } = await _supabase.rpc('create_ad_and_deduct', {
                 p_user_id: user.id, 
                 ad_title: title,
                 ad_url: link,
                 dur: parseInt(dur),
-                reward: parseInt(reward), // تمرير القيمة المعدلة هنا
-                cost: cost,
+                reward: parseFloat(reward), // تم تغييرها لـ Float لاستقبال الأرقام العشرية الصغرى 
+                cost: parseFloat(cost),     // تم تغييرها لـ Float لاستقبال نصف BFP (.5)
                 days: parseInt(days)
             });
 
             if (error) {
                 alert("فشل في إنشاء الإعلان: " + error.message);
+                document.getElementById('create-btn').innerText = "تأكيد ونشر الإعلان";
+                document.getElementById('create-btn').disabled = false;
             } else {
-                alert("تم بنجاح! إعلانك الآن قيد العرض.");
+                alert("تم بنجاح! إعلانك الآن قيد العرض في جدول ads.");
                 window.location.href = 'home.html';
             }
         }
