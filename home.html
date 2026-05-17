@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم الرئيسية - The Blackflower Pro Art</title>
+    <title>الرئيسية - منصة المهام والأعمال</title>
     <!-- ربط مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- ربط مكتبة الأيقونات FontAwesome -->
@@ -11,439 +11,297 @@
     
     <style>
         :root {
-            --primary: #28a745;
-            --dark-bg: #000000;
-            --card-bg: #111111;
-            --sidebar-bg: #141414;
-            --text-main: #ffffff;
-            --text-muted: #888888;
+            --primary-green: #28a745;
+            --danger-red: #dc3545;
+            --dark-bg: #0b0b0b;
+            --card-bg: #141414;
+            --hover-bg: #1c1c1c;
+            --text-color: #ffffff;
+            --muted-text: #888888;
         }
 
         body {
-            background: var(--dark-bg);
-            color: var(--text-main);
+            background-color: var(--dark-bg);
+            color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            padding: 20px;
+            direction: rtl;
         }
 
-        /* القائمة الجانبية اليسرى (Sidebar) */
-        .sidebar {
-            width: 280px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid #222;
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-sizing: border-box;
-            order: 2;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
         }
 
-        .logo-section {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--primary);
+        .header {
             text-align: center;
-            padding-bottom: 25px;
+            margin-bottom: 30px;
             border-bottom: 1px solid #222;
-            margin-bottom: 25px;
+            padding-bottom: 20px;
         }
 
-        /* واجهة المستخدم داخل السايدبار */
-        .user-profile {
-            background: #1c1c1c;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            border: 1px solid #282828;
-        }
-
-        .user-profile .username {
-            font-weight: bold;
-            font-size: 1rem;
-            word-break: break-all;
-            display: block;
-            margin-bottom: 8px;
-            color: #fff;
-        }
-
-        .user-profile .balance-box {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .user-profile .balance-box strong {
-            font-size: 1.3rem;
-            color: var(--primary);
-            display: block;
-            margin-top: 3px;
-        }
-
-        /* أزرار القائمة الجانبية */
-        .menu-links {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex-grow: 1;
-        }
-
-        .menu-btn {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: transparent;
-            color: #ccc;
-            border: 1px solid transparent;
-            padding: 12px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.95rem;
-            text-align: right;
-            transition: 0.2s;
-            text-decoration: none;
-        }
-
-        .menu-btn:hover {
-            background: #1c1c1c;
-            color: #fff;
-            border-color: #333;
-        }
-
-        .menu-btn.active {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--primary);
-            border-color: rgba(40, 167, 69, 0.3);
-        }
-
-        .logout-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.2s;
-            margin-top: 20px;
-        }
-
-        .logout-btn:hover {
-            background: #bd2130;
-        }
-
-        /* منطقة المحتوى الرئيسي اليمنى */
-        .main-content {
-            flex-grow: 1;
-            padding: 40px;
-            overflow-y: auto;
-            box-sizing: border-box;
-            order: 1;
-        }
-
-        .dashboard-header {
-            margin-bottom: 35px;
-        }
-
-        .dashboard-header h1 {
-            margin: 0 0 5px 0;
-            font-size: 1.8rem;
-        }
-
-        .dashboard-header p {
+        .header h1 {
+            color: var(--primary-green);
             margin: 0;
-            color: var(--text-muted);
+            font-size: 2.2rem;
         }
 
-        .dashboard-section {
-            margin-bottom: 45px;
+        .header p {
+            color: var(--muted-text);
+            margin-top: 5px;
         }
 
         .section-title {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #eee;
+            margin-top: 25px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
-            border-right: 4px solid var(--primary);
-            padding-right: 10px;
         }
 
-        .content-grid {
+        /* تنسيق القوائم والأزرار الرئيسية في الهوم */
+        .grid-menu {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
-        .card {
+        @media (max-width: 600px) {
+            .grid-menu {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .menu-card {
             background: var(--card-bg);
-            border: 1px solid #222;
+            border: 1px solid #252525;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-card:hover {
+            background: var(--hover-bg);
+            border-color: #333;
+            transform: translateY(-2px);
+        }
+
+        .menu-card i {
+            font-size: 2rem;
+            color: var(--primary-green);
+        }
+
+        .menu-card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* -------------------------------------------------- */
+        /* التعديل الجديد: تنسيق قسم صندوق البريد والرسائل المضاف */
+        /* -------------------------------------------------- */
+        .mail-section {
+            background: var(--card-bg);
+            border: 1px solid #252525;
             border-radius: 12px;
             padding: 20px;
+            margin-top: 20px;
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            position: relative; /* ضروري لضبط موضع علامة الصح */
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: #333;
-        }
-
-        /* طبقة التغطية للمهمة المنجزة */
-        .card.completed {
-            pointer-events: none; /* قفل أي نقرات مسموحة */
-        }
-
-        .card-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            border-radius: 12px;
+        .mail-info {
             display: flex;
-            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mail-icon-wrapper {
+            position: relative;
+            background: rgba(40, 167, 69, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            color: var(--primary);
-            font-size: 1.1rem;
+        }
+
+        .mail-icon-wrapper i {
+            font-size: 1.5rem;
+            color: var(--primary-green);
+        }
+
+        /* شارة عدد الرسائل غير المقروءة فوق الأيقونة */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger-red);
+            color: white;
+            font-size: 0.75rem;
             font-weight: bold;
-            z-index: 5;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: none; /* ستظهر فقط إذا وُجدت رسائل غير مقروءة عبر الـ JS */
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
         }
 
-        .card-overlay i {
-            font-size: 3rem;
-        }
-
-        .card h3 {
-            margin: 0 0 10px 0;
-            font-size: 1.15rem;
+        .mail-text h4 {
+            margin: 0;
+            font-size: 1.1rem;
             color: #fff;
         }
 
-        .reward-tag {
-            color: var(--primary);
-            font-weight: bold;
-            font-size: 1.2rem;
-            display: block;
-            margin: 8px 0;
-        }
-
-        .card p {
+        .mail-text p {
+            margin: 5px 0 0 0;
             font-size: 0.85rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin: 5px 0 15px 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            color: var(--muted-text);
         }
 
-        .action-btn {
-            width: 100%;
-            padding: 10px;
-            background: var(--primary);
+        .btn-mail {
+            background: var(--primary-green);
             color: white;
-            border: none;
-            border-radius: 6px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
             font-weight: bold;
             font-size: 0.95rem;
-            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             transition: 0.2s;
+            border: none;
+            cursor: pointer;
         }
 
-        .action-btn:hover {
+        .btn-mail:hover {
             background: #218838;
+            transform: scale(1.02);
         }
+        /* -------------------------------------------------- */
 
-        .loading-text, .empty-text {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: #555;
-            padding: 30px;
-            background: #0d0d0d;
-            border-radius: 10px;
-            border: 1px dashed #222;
-        }
     </style>
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div>
-            <div class="logo-section">
-                <i class="fas fa-palette"></i> Blackflower Pro Art
-            </div>
-
-            <div class="user-profile">
-                <span class="username" id="user-display-name">جاري التحميل...</span>
-                <div class="balance-box">
-                    <span>الرصيد المعتمد:</span>
-                    <strong id="user-balance">0 BFP</strong>
-                </div>
-            </div>
-
-            <div class="menu-links">
-                <a href="home.html" class="menu-btn active"><i class="fas fa-home"></i> الرئيسية</a>
-                <a href="create-task.html" class="menu-btn"><i class="fas fa-plus-circle"></i> إضافة مهمة جديدة</a>
-                <a href="create-ad.html" class="menu-btn"><i class="fas fa-ad"></i> إضافة إعلان جديد</a>
-                <a href="settings.html" class="menu-btn"><i class="fas fa-sliders-h"></i> الإعدادات</a>
-            </div>
+    <div class="container">
+        
+        <!-- رأس الصفحة -->
+        <div class="header">
+            <h1><i class="fas fa-home"></i> لوحة التحكم الرئيسية</h1>
+            <p>أهلاً بك مجدداً! قم بإدارة أعمالك، مهامك، ومتابعة آخر التحديثات</p>
         </div>
 
-        <button class="logout-btn" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-        </button>
-    </aside>
+        <!-- قائمة إضافة المهام والإعلانات الأصلية -->
+        <div class="section-title">
+            <i class="fas fa-layer-group"></i> إدارة المحتوى والطلبات
+        </div>
+        
+        <div class="grid-menu">
+            <!-- كرت إضافة المهام -->
+            <a href="add-task.html" class="menu-card">
+                <i class="fas fa-plus-circle"></i>
+                <h3>إضافة مهمة جديدة</h3>
+            </a>
 
-    <main class="main-content">
-        <header class="dashboard-header">
-            <h1>لوحة التحكم الرئيسية</h1>
-            <p>مرحباً بك! تصفح الإعلانات والمهام المتاحة لك لكسب النقاط والأرباح.</p>
-        </header>
+            <!-- كرت إدارة الإعلانات -->
+            <a href="manage-ads.html" class="menu-card">
+                <i class="fas fa-bullhorn"></i>
+                <h3>إدارة الإعلانات</h3>
+            </a>
+        </div>
 
-        <section class="dashboard-section">
-            <h2 class="section-title"><i class="fas fa-rectangle-ad"></i> الإعلانات المتاحة لك حالياً</h2>
-            <div id="ads-grid" class="content-grid">
-                <div class="loading-text"><i class="fas fa-spinner fa-spin"></i> جاري تحميل الإعلانات...</div>
+        <!-- ================================================== -->
+        <!-- التعديل المضاف: قسم البريد الإلكتروني وصندوق الرسائل تحت القائمة -->
+        <!-- ================================================== -->
+        <div class="section-title">
+            <i class="fas fa-bell"></i> الإشعارات والتواصل
+        </div>
+
+        <div class="mail-section">
+            <div class="mail-info">
+                <div class="mail-icon-wrapper">
+                    <i class="fas fa-envelope"></i>
+                    <!-- شارة التنبيه الرقمية -->
+                    <div id="unread-count" class="notification-badge">0</div>
+                </div>
+                <div class="mail-text">
+                    <h4>البريد الإلكتروني والرسائل</h4>
+                    <p id="mail-status-text">تفقّد صندوق الوارد لمراجعة أسباب رفض المهام والإشعارات المباشرة.</p>
+                </div>
             </div>
-        </section>
+            <!-- زر التوجيه إلى صفحة الرسائل المعدلة سابقاً -->
+            <a href="messages.html" class="btn-mail">
+                <i class="fas fa-paper-plane"></i> عرض الرسائل
+            </a>
+        </div>
+        <!-- ================================================== -->
 
-        <section class="dashboard-section">
-            <h2 class="section-title"><i class="fas fa-tasks"></i> المهام المتوفرة للتنفيذ</h2>
-            <div id="tasks-grid" class="content-grid">
-                <div class="loading-text"><i class="fas fa-spinner fa-spin"></i> جاري تحميل المهام المخصصة لك...</div>
-            </div>
-        </section>
-    </main>
+    </div>
 
     <script>
+        // إعدادات الاتصال بـ Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+        // معرف افتراضي للمستخدم (سيتم استبداله تلقائياً بـ Auth User النشط)
+        const CURRENT_USER_ID = "ضع_معرف_المستخدم_هنا"; 
+
         window.onload = async () => {
-            const { data: { user }, error: authError } = await _supabase.auth.getUser();
-            if (authError || !user) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const userDisplayEl = document.getElementById('user-display-name');
-            userDisplayEl.innerText = user.email;
-
-            try {
-                const { data: profile } = await _supabase
-                    .from('profiles')
-                    .select('username')
-                    .eq('id', user.id)
-                    .single();
-
-                if (profile && profile.username) {
-                    userDisplayEl.innerText = profile.username;
-                }
-            } catch (err) { console.error(err); }
-
-            try {
-                const { data: wallet } = await _supabase
-                    .from('wallets')
-                    .select('balance')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (wallet) {
-                    document.getElementById('user-balance').innerText = `${wallet.balance} BFP`;
-                }
-            } catch (err) { console.error(err); }
-
-            await fetchAvailableAds();
-            await fetchAvailableTasks(user.id);
+            await checkUnreadMessages();
         };
 
-        async function fetchAvailableAds() {
-            const adsGrid = document.getElementById('ads-grid');
+        // دالة تفحص وجود رسائل غير مقروءة لتحديث الشارة بصرياً للمستخدم
+        async function checkUnreadMessages() {
+            const badge = document.getElementById('unread-count');
+            const statusText = document.getElementById('mail-status-text');
+
             try {
-                const { data: ads, error } = await _supabase.from('ads').select('*');
-                if (error || !ads || ads.length === 0) {
-                    adsGrid.innerHTML = '<div class="empty-text">🎉 لا توجد إعلانات متاحة للمشاهدة حالياً.</div>';
-                    return;
-                }
-                adsGrid.innerHTML = '';
-                ads.forEach(ad => {
-                    adsGrid.innerHTML += `
-                        <div class="card">
-                            <div>
-                                <h3>${ad.title || 'إعلان تفاعلي'}</h3>
-                                <span class="reward-tag">+ ${ad.reward || 0} BFP</span>
-                                <p>${ad.description || 'اضغط لمشاهدة الإعلان وحصد الأرباح فوراً.'}</p>
-                            </div>
-                            <button class="action-btn" onclick="window.open('${ad.url || '#'}', '_blank')">مشاهدة الإعلان</button>
-                        </div>`;
-                });
-            } catch (err) { adsGrid.innerHTML = '<div class="empty-text">تعذر تحميل الإعلانات حالياً.</div>'; }
-        }
+                // جلب الـ ID الخاص بالمستخدم الحالي من نظام الـ Auth
+                const { data: { user } } = await _supabase.auth.getUser();
+                const userId = user ? user.id : CURRENT_USER_ID;
 
-        // تم تعديل الدالة لتعرض علامة الصح على المهام المنجزة للمستخدم الحالي
-        async function fetchAvailableTasks(userId) {
-            const tasksGrid = document.getElementById('tasks-grid');
-            try {
-                const { data: userSubmissions } = await _supabase
-                    .from('task_submissions')
-                    .select('task_id')
-                    .eq('user_id', userId);
+                // جلب الرسائل التي لم تقرأ بعد لهذا المستخدم المحدد
+                const { data: unreadMessages, error } = await _supabase
+                    .from('user_messages')
+                    .select('id')
+                    .eq('user_id', userId)
+                    .eq('is_read', false);
 
-                const submittedTaskIds = userSubmissions ? userSubmissions.map(sub => sub.task_id) : [];
-                const { data: tasks, error } = await _supabase.from('tasks').select('*');
+                if (error) throw error;
 
-                if (error || !tasks) throw error;
-                tasksGrid.innerHTML = '';
-
-                if (tasks.length === 0) {
-                    tasksGrid.innerHTML = '<div class="empty-text">لا توجد مهام حالياً.</div>';
-                    return;
+                if (unreadMessages && unreadMessages.length > 0) {
+                    // إظهار الرقم فوق الأيقونة وتحديث النص الترحيبي
+                    badge.innerText = unreadMessages.length;
+                    badge.style.display = 'flex';
+                    statusText.innerText = `لديك ${unreadMessages.length} رسائل جديدة غير مقروءة في صندوق الوارد!`;
+                    statusText.style.color = 'var(--danger-red)';
+                } else {
+                    badge.style.display = 'none';
+                    statusText.innerText = 'لا توجد رسائل جديدة غير مقروءة. صندوقك بوضع ممتاز.';
+                    statusText.style.color = 'var(--muted-text)';
                 }
 
-                tasks.forEach(task => {
-                    const isCompleted = submittedTaskIds.includes(task.id);
-                    
-                    tasksGrid.innerHTML += `
-                        <div class="card ${isCompleted ? 'completed' : ''}">
-                            ${isCompleted ? `
-                            <div class="card-overlay">
-                                <i class="fas fa-check-circle"></i>
-                                <span>تم إتمام المهمة بنجاح</span>
-                            </div>` : ''}
-                            <div>
-                                <h3>${task.title}</h3>
-                                <span class="reward-tag">+ ${task.points_reward} BFP</span>
-                                <p>${task.description || 'اضغط على تنفيذ لمشاهدة تفاصيل الشروط ورفع الإثبات.'}</p>
-                            </div>
-                            <button class="action-btn" ${isCompleted ? 'disabled' : ''} onclick="window.location.href='task-viewer.html?id=${task.id}'">تنفيذ المهمة</button>
-                        </div>`;
-                });
-            } catch (err) { tasksGrid.innerHTML = '<div class="empty-text">حدث خطأ أثناء تحميل قائمة المهام.</div>'; }
-        }
-
-        async function logout() {
-            if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
-                await _supabase.auth.signOut();
-                window.location.href = 'login.html';
+            } catch (err) {
+                console.warn("تعذر جلب العداد التنبيهي للرسائل:", err.message);
             }
         }
     </script>
