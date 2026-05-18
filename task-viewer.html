@@ -298,7 +298,7 @@
             background: #218838;
         }
 
-        /* رسالة نجاح تقديم المهمة مسبقاً */
+        /* رسائل الحالات المختفلة للطلبات */
         .status-alert {
             display: flex;
             align-items: center;
@@ -361,7 +361,7 @@
         
         <div>
             <a href="index.html" class="back-link">
-                <i class="fas fa-arrow-right"></i> العودة لوحة المهام المتاحة
+                <i class="fas fa-arrow-right"></i> العودة للوحة المهام المتاحة
             </a>
         </div>
 
@@ -384,7 +384,6 @@
 
         window.onload = async () => {
             const urlParams = new URLSearchParams(window.location.search);
-            // تنظيف وتنقية المعرف القادم من الرابط فوراً لمنع أخطاء البيانات
             const rawId = urlParams.get('id');
             TASK_ID = rawId ? rawId.trim() : null;
 
@@ -404,7 +403,6 @@
                     CURRENT_USER_ID = user.id;
                     document.getElementById('user-display-name').innerText = user.email.split('@')[0];
                 } else {
-                    // حظر دخول المستخدم الوهمي لمنع أخطاء الـ RLS وحجب البيانات
                     alert("لم يتم العثور على جلسة تسجيل دخول نشطة، يرجى تسجيل الدخول أولاً.");
                     window.location.href = "login.html";
                     return;
@@ -437,7 +435,7 @@
             const submissionContainer = document.getElementById('submission-container');
 
             try {
-                // 1. جلب تفاصيل المهمة باستخدام المعرّف النظيف
+                // 1. جلب تفاصيل المهمة
                 const { data: task, error: taskErr } = await _supabase
                     .from('tasks')
                     .select('*')
@@ -449,7 +447,7 @@
                     detailsContainer.innerHTML = `
                         <div style="color:var(--danger-red); text-align:center;">
                             عذراً، لم يتم العثور على هذه المهمة أو أنها انتهت.<br>
-                            <small style="color:gray;">المعرف المطلوب الفاشل: ${TASK_ID}</small>
+                            <small style="color:gray;">المعرف المطلوب: ${TASK_ID}</small>
                         </div>`;
                     submissionContainer.innerHTML = '';
                     return;
@@ -457,7 +455,7 @@
 
                 TASK_REWARD = task.points_reward || 0;
 
-                // عرض تفاصيل المهمة داخل الـ HTML
+                // عرض تفاصيل المهمة
                 detailsContainer.innerHTML = `
                     <div class="task-header">
                         <h2 class="task-title">${task.title}</h2>
@@ -488,7 +486,7 @@
                                 <i class="fas fa-clock fa-2x"></i>
                                 <div>
                                     <div style="font-size: 1.1rem;">تم إرسال الإثبات وهو قيد المراجعة حالياً</div>
-                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #aaa;">نص الإثبات: "${submission.proof_text}"</div>
+                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #aaa;">نص الإثبات المرسل: "${submission.proof_text}"</div>
                                 </div>
                             </div>`;
                     } else if (submission.status === 'approved') {
@@ -501,7 +499,7 @@
                                 </div>
                             </div>`;
                     } else if (submission.status === 'rejected') {
-                        // في حال الرفض، نعرض رسالة الرفض ونعيد إظهار الـ Form بالأسفل ليتمكن من المحاولة ثانية وتحديث الإثبات
+                        // إعادة إظهار الـ Form بالأسفل ليتمكن من المحاولة ثانية وتحديث الإثبات في حال الرفض
                         statusHtml = `
                             <div class="status-alert rejected" style="margin-bottom:20px;">
                                 <i class="fas fa-times-circle fa-2x"></i>
@@ -514,7 +512,7 @@
                     }
                     submissionContainer.innerHTML = statusHtml;
                 } else {
-                    // عرض نموذج جديد إذا لم يسبق الإرسال
+                    // عرض نموذج جديد تماماً إذا لم يسبق للمستخدم الإرسال
                     submissionContainer.innerHTML = getFormHtml();
                 }
 
@@ -523,7 +521,7 @@
             }
         }
 
-        // دالة مساعدة لإنشاء وعرض الـ Form بطريقة نظيفة وقابلة لإعادة الاستخدام
+        // دالة مساعدة لإنشاء وعرض الـ Form بطريقة مرنة
         function getFormHtml(previousText = '') {
             return `
                 <form id="proofForm" onsubmit="handleSubmitProof(event)" class="submission-form">
@@ -553,7 +551,7 @@
                 btnSubmit.disabled = true;
                 btnSubmit.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري الإرسال للمسؤول...`;
 
-                // استخدام دالة upsert حتى تقوم بتعديل الطلب القديم المرفوض بدلاً من عمل طلبات مكررة تفجر قاعدة البيانات
+                // استخدام دالة upsert لتحديث الطلب المرفوض القديم بدلاً من عمل صفوف مكررة
                 const { error } = await _supabase
                     .from('task_submissions')
                     .upsert({
@@ -561,7 +559,7 @@
                         task_id: TASK_ID,
                         proof_text: proofText,
                         status: 'pending',
-                        rejection_reason: null // تصفير سبب الرفض المسبق لبدء مراجعة جديدة
+                        rejection_reason: null 
                     }, { onConflict: 'user_id,task_id' });
 
                 if (error) throw error;
