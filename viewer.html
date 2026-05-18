@@ -82,16 +82,16 @@
 
                 if (adError || !adData) throw new Error("لم يتم العثور على الإعلان في قاعدة البيانات.");
 
-                // إعداد العداد والمكافآت بناءً على نوع مدة الإعلان المخزنة (10 أو 20 ثانية)
+                // إعداد العداد بناءً على المدة الزمنية المسجلة للإعلان
                 secondsLeft = parseInt(adData.duration) || 10;
                 
-                // ✨ تطبيق المتغيرات والمكافآت العشرية الصارمة الجديدة:
-                if (secondsLeft === 10) {
-                    rewardAmount = 0.001;
-                } else if (secondsLeft === 20) {
-                    rewardAmount = 0.005;
+                // التحديث الديناميكي للمكافآت العشرية لتتطابق تماماً مع صفحة الهوم:
+                if (secondsLeft === 20) {
+                    rewardAmount = 0.005; // سعر الـ 20 ثانية
+                } else if (secondsLeft === 10) {
+                    rewardAmount = 0.001; // سعر الـ 10 ثوانٍ
                 } else {
-                    // في حال وجود قيم أخرى مخزنة مسبقاً في قاعدة البيانات
+                    // في حال تسجيل مدد زمنية مختلفة بشكل مخصص
                     rewardAmount = parseFloat(adData.reward) || 0.001;
                 }
 
@@ -118,13 +118,13 @@
             }
         };
 
-        // دالة تأكيد المشاهدة وإضافة الأرباح للمحفظة وتسجيل السجل
+        // دالة تأكيد المشاهدة وإضافة الأرباح الدقيقة للمحفظة وتسجيل التتبع في السجلات
         async function handleClaim() {
             try {
                 btnEl.disabled = true;
                 btnEl.innerText = "جاري الحفظ وإضافة الرصيد...";
 
-                // 1. استدعاء الـ RPC لزيادة رصيد المحفظة الفعلي في جدول wallets (يستقبل قيم عشرية Float8)
+                // 1. استدعاء الـ RPC لزيادة رصيد المحفظة بالقيمة المحسوبة ديناميكياً
                 const { error: rpcError } = await _supabase.rpc('increment_balance', { 
                     user_id_input: currentUser.id, 
                     amount: parseFloat(rewardAmount) 
@@ -132,7 +132,7 @@
 
                 if (rpcError) throw rpcError;
 
-                // 2. تسجيل المشاهدة الحالية في جدول التتبع ads_views لكي يتم حظر الإعلان 24 ساعة في الهوم
+                // 2. تسجيل المشاهدة الحالية في جدول التتبع ads_views لكي يتم حظر الإعلان 24 ساعة في صفحة الـ home
                 const { error: insertError } = await _supabase
                     .from('ads_views')
                     .insert([{ user_id: currentUser.id, ad_id: parseInt(adId) }]);
