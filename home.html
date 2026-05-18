@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الرئيسية - منصة الأرباح والمهام</title>
-    <!-- ربط مكتبة Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- ربط مكتبة الأيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -283,14 +281,12 @@
 </head>
 <body>
 
-    <!-- ================= واجهة المستخدم الجانبية ================= -->
     <div class="sidebar">
         <div>
             <div class="user-profile">
                 <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
                 <div id="user-display-name" class="username">جاري التحميل...</div>
                 
-                <!-- عرض الرصيد المحدث بسعر الصرف الجديد -->
                 <div class="balance-card">
                     <div id="user-balance-bfp" class="balance-bfp">0.00 BFP</div>
                     <div id="user-balance-usd" class="balance-usd">=$0.00 دولار</div>
@@ -316,10 +312,8 @@
         </a>
     </div>
 
-    <!-- ================= المحتوى الرئيسي الأساسي ================= -->
     <div class="main-content">
         
-        <!-- قسم الإعلانات النشطة المربوطة بـ viewer.html -->
         <div class="section-header">
             <i class="fas fa-play-circle"></i> الإعلانات المتوفرة (المشاهدة المتاحة)
         </div>
@@ -327,7 +321,6 @@
             <div class="loading-text">جاري تحميل الإعلانات...</div>
         </div>
 
-        <!-- قسم المهام النشطة -->
         <div class="section-header">
             <i class="fas fa-clipboard-list"></i> المهام المتاحة للعمل
         </div>
@@ -347,6 +340,9 @@
         
         // تعديل: سعر الـ BFP الواحد يساوي 0.50 دولار (نصف دولار)
         const BFP_TO_USD_RATE = 0.50; 
+        
+        // تعديل: تحديد القيمة الثابتة لمكافأة مشاهدة الإعلان بـ 0.005 BFP بدلًا من القيمة السابقة
+        const FIXED_AD_REWARD = 0.005;
 
         window.onload = async () => {
             await initSession();
@@ -415,14 +411,14 @@
             } catch (err) { console.error(err); }
         }
 
-        // جلب الإعلانات وتوجيهها لصفحة viewer.html مع التحقق من الحظر لمدة 24 ساعة
+        // جلب الإعلانات وتوجيهها لصفحة viewer.html مع التحقق من الحظر لمدة 24 ساعة والتسعير الجديد
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
                 // جلب الإعلانات النشطة
                 const { data: ads } = await _supabase.from('ads').select('*');
                 
-                // ✨ التعديل الجديد: جلب سجلات المشاهدات الفعليّة من جدول ads_views للمستخدم الحالي
+                // جلب سجلات المشاهدات الفعليّة من جدول ads_views للمخدم الحالي
                 const { data: watched } = await _supabase
                     .from('ads_views')
                     .select('ad_id, created_at')
@@ -449,13 +445,13 @@
                         const currentTime = new Date().getTime();
                         const hoursPassed = (currentTime - watchedTime) / (1000 * 60 * 60);
                         
-                        // ✨ إذا لم يمر 24 ساعة يتم تفعيل الحظر
+                        // إذا لم يمر 24 ساعة يتم تفعيل الحظر الشفاف
                         if (hoursPassed < 24) {
                             isLocked = true; 
                         }
                     }
 
-                    // عرض الإعلان مع المكافأة المخصصة والمحددة له بجانبه بدقة واحتساب طبقة الحظر الشفافة السوداء
+                    // عرض الإعلان بالتسعير الجديد الثابت لعشرين ثانية (0.005 BFP)
                     container.innerHTML += `
                         <div class="item-card">
                             ${isLocked ? `
@@ -465,10 +461,9 @@
                             </div>` : ''}
                             <div class="card-top">
                                 <h4 class="card-title">${ad.title}</h4>
-                                <!-- ✨ تعديل: عرض سعر المكافأة المخزن في جدول ads مباشرة بجانب الاسم -->
-                                <span class="reward-badge">+${ad.reward || 0.001} BFP</span>
+                                <span class="reward-badge">+${FIXED_AD_REWARD} BFP</span>
                             </div>
-                            <p class="card-desc">${ad.description || 'شاهد هذا الإعلان الترويجي السريع لكسب النقاط مجاناً.'}</p>
+                            <p class="card-desc">${ad.description || 'شاهد هذا الإعلان الترويجي السريع لمدة 20 ثانية لكسب النقاط مجاناً.'}</p>
                             <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.4;"' : ''}>
                                 <i class="fas fa-eye"></i> بدء المشاهدة
                             </a>
@@ -481,10 +476,18 @@
             }
         }
 
+        // جلب المهام الفعالة والنشطة المتاحة مع تصفية أوتوماتيكية لأي مهمة انتهت صلاحيتها
         async function loadTasks() {
             const container = document.getElementById('tasks-container');
             try {
-                const { data: tasks } = await _supabase.from('tasks').select('*');
+                const nowISO = new Date().toISOString();
+
+                // ✨ التعديل والفلترة: جلب المهام النشطة فقط التي يكون تاريخ انتهائها أكبر من الوقت الحالي
+                const { data: tasks } = await _supabase
+                    .from('tasks')
+                    .select('*')
+                    .gt('expires_at', nowISO); // جلب الصالح فقط لضمان تصفية المهام فوراً
+
                 const { data: submissions } = await _supabase
                     .from('task_submissions')
                     .select('task_id, status')
@@ -517,7 +520,10 @@
                         </div>
                     `;
                 });
-            } catch (err) { container.innerHTML = 'حدث خطأ أثناء تحميل المهام.'; }
+            } catch (err) { 
+                console.error(err);
+                container.innerHTML = 'حدث خطأ أثناء تحميل المهام.'; 
+            }
         }
 
         async function handleLogout() {
