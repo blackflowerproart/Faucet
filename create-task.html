@@ -9,7 +9,7 @@
         body { background: #000; color: #fff; font-family: Arial, sans-serif; text-align: center; padding: 20px; direction: rtl; }
         .container { max-width: 500px; margin: auto; background: #111; padding: 35px; border-radius: 20px; border: 1px solid #333; }
         select, input, textarea { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 1.1rem; box-sizing: border-box; outline: none; font-family: Arial; text-align: right; }
-        input:focus, textarea:focus, select:focus { border-color: #28a745; }
+        input:focus, textarea:focus { border-color: #28a745; }
         textarea { height: 100px; resize: none; }
         label { display: block; text-align: right; margin-top: 15px; font-weight: bold; color: #ccc; }
         .file-input-container { background: #1a1a1a; border: 1px dashed #444; padding: 20px; border-radius: 10px; margin: 10px 0; cursor: pointer; position: relative; }
@@ -36,19 +36,13 @@
             <img id="image-preview" class="preview-img" src="" alt="Preview">
         </div>
 
-        <label>مكافأة إتمام المهمة لكل مستخدم:</label>
-        <select id="task-reward" onchange="calculateTotalCost()">
-            <option value="10">مهمة عادية (10 BFP)</option>
-            <option value="25">مهمة متوسطة (25 BFP)</option>
-            <option value="50">مهمة مميزة (50 BFP)</option>
-        </select>
-
         <label>عدد المنفذين المطلوبين للمهمة:</label>
         <input type="number" id="task-limit" min="1" value="10" placeholder="مثال: 50 مستخدم" oninput="calculateTotalCost()">
 
         <div class="reward-tag">
-            المكافأة الفردية: <span id="reward-price">10</span> BFP
-            <span class="total-cost">إجمالي التكلفة المطلوب حسمها: <span id="total-price">100</span> BFP</span>
+            المكافأة الفردية: <span id="reward-price">0.5</span> BFP
+            <span class="total-cost">إجمالي التكلفة المطلوب حسمها: <span id="total-price">5</span> BFP</span>
+            <small style="display: block; font-size: 0.85rem; margin-top: 5px; color: #eee;">صلاحية المهمة: أسبوع واحد فقط (تختفي بعدها تلقائياً)</small>
         </div>
         
         <button id="submit-btn" onclick="submitTask()">تأكيد ونشر المهمة</button>
@@ -59,17 +53,17 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // حساب إجمالي المبلغ بناءً على المكافأة وعدد المنفذين المستهدفين
+        const FIXED_REWARD = 0.5; // تسعير ثابت لكل فرد بناءً على طلبك
+
+        // حساب إجمالي المبلغ بناءً على المكافأة الثابتة وعدد المنفذين
         function calculateTotalCost() {
-            const reward = parseInt(document.getElementById('task-reward').value) || 0;
             let limit = parseInt(document.getElementById('task-limit').value) || 0;
-            
             if (limit < 1) limit = 1;
 
-            const total = reward * limit;
+            const total = FIXED_REWARD * limit;
 
-            document.getElementById('reward-price').innerText = reward;
-            document.getElementById('total-price').innerText = total;
+            document.getElementById('reward-price').innerText = FIXED_REWARD;
+            document.getElementById('total-price').innerText = total % 1 === 0 ? total : total.toFixed(2);
         }
 
         function previewFile() {
@@ -97,12 +91,11 @@
             const title = document.getElementById('task-title').value.trim();
             const desc = document.getElementById('task-desc').value.trim();
             const url = document.getElementById('task-url').value.trim();
-            const reward = parseInt(document.getElementById('task-reward').value);
             let limit = parseInt(document.getElementById('task-limit').value);
             const imageFile = document.getElementById('task-image').files[0];
 
             if (!limit || limit < 1) limit = 1;
-            const totalCost = reward * limit;
+            const totalCost = FIXED_REWARD * limit;
 
             if (!title || !desc) return alert("يرجى إدخال عنوان المهمة وتفاصيلها على الأقل");
 
@@ -154,24 +147,29 @@
 
                 if (deductError) throw new Error("فشل حسم الرصيد من المحفظة، يرجى المحاولة لاحقاً.");
 
-                // 4. إدخال بيانات المهمة بالكامل داخل جدول الـ tasks
+                // حساب تاريخ الانتهاء (الوقت الحالي + 7 أيام)
+                const expiresAt = new Date();
+                expiresAt.setDate(expiresAt.getDate() + 7);
+
+                // 4. إدخال بيانات المهمة بالكامل داخل جدول الـ tasks مع حقل صلاحية الانتهاء
                 const { error: insertError } = await _supabase
                     .from('tasks')
                     .insert([
                         {
-                            user_id: user.id,       // معرّف المنشئ الأساسي
-                            creator_id: user.id,   // معرّف الناشر للربط مع صفحة المراجعة والتحويل المالي
+                            user_id: user.id,       
+                            creator_id: user.id,   
                             title: title,
                             description: desc,
                             site_url: url ? url : null,
                             image_url: imageUrl,
-                            points_reward: reward,
-                            target_limit: limit    // ميزة حفظ عدد المنفذين المطلوبين للمهمة في القاعدة
+                            points_reward: FIXED_REWARD, // تم تعيينها بـ 0.5 تلقائياً
+                            target_limit: limit,
+                            expires_at: expiresAt.toISOString() // حفظ تاريخ انتهاء المهمة بالقاعدة
                         }
                     ]);
 
                 if (insertError) {
-                    // تراجع (Rollback) اختياري لإعادة الرصيد للمستخدم في حال فشل رفع المهمة لسبب ما في قاعدة البيانات
+                    // تراجع (Rollback) في حال الفشل
                     await _supabase.from('wallets').update({ balance: currentBalance }).eq('user_id', user.id);
                     throw insertError;
                 }
