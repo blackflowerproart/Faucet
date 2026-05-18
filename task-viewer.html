@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الرئيسية - منصة الأرباح والمهام</title>
+    <title>تفاصيل وتنفيذ المهمة - منصة الأرباح</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -80,12 +80,6 @@
             color: var(--primary-green);
         }
 
-        .balance-usd {
-            font-size: 0.9rem;
-            color: var(--muted-text);
-            margin-top: 4px;
-        }
-
         .sidebar-menu {
             display: flex;
             flex-direction: column;
@@ -107,169 +101,203 @@
             font-weight: bold;
             font-size: 0.95rem;
             transition: 0.2s;
-            position: relative;
         }
 
-        .menu-btn:hover {
+        .menu-btn:hover, .menu-btn.active {
             background: var(--hover-bg);
             border-color: #444;
             color: var(--primary-green);
         }
 
-        .menu-btn.logout {
-            background: rgba(220, 53, 69, 0.1);
-            border-color: rgba(220, 53, 69, 0.2);
-            color: var(--danger-red);
-            margin-top: auto;
-        }
-
-        .menu-btn.logout:hover {
-            background: var(--danger-red);
-            color: white;
-        }
-
-        .sidebar-badge {
-            position: absolute;
-            left: 15px;
-            background: var(--danger-red);
-            color: white;
-            font-size: 0.75rem;
-            padding: 2px 7px;
-            border-radius: 10px;
-            display: none;
-        }
-
-        /* ----------------- المحتوى الأساسي للصفحة ----------------- */
+        /* ----------------- المحتوى الأساسي ----------------- */
         .main-content {
             margin-right: var(--sidebar-width);
             flex-grow: 1;
             padding: 40px;
             box-sizing: border-box;
-        }
-
-        .section-header {
-            font-size: 1.4rem;
-            color: #fff;
-            margin: 35px 0 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid #222;
-            padding-bottom: 10px;
-        }
-
-        .section-header i {
-            color: var(--primary-green);
-        }
-
-        .items-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-        }
-
-        .item-card {
-            background: var(--card-bg);
-            border: 1px solid #252525;
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 25px;
+        }
+
+        .back-link {
+            color: var(--muted-text);
+            text-decoration: none;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             transition: 0.2s;
         }
 
-        .item-card:hover {
-            border-color: #383838;
-            transform: translateY(-2px);
+        .back-link:hover {
+            color: var(--primary-green);
         }
 
-        .card-top {
+        .task-details-card {
+            background: var(--card-bg);
+            border: 1px solid #252525;
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .task-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            border-bottom: 1px solid #222;
+            padding-bottom: 15px;
         }
 
-        .card-title {
-            font-size: 1.15rem;
+        .task-title {
+            font-size: 1.6rem;
             font-weight: bold;
             margin: 0;
-            color: #eee;
+            color: #fff;
         }
 
         .reward-badge {
             background: rgba(40, 167, 69, 0.1);
             color: var(--primary-green);
-            padding: 4px 10px;
+            padding: 6px 14px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: bold;
             border: 1px solid rgba(40, 167, 69, 0.2);
         }
 
-        .card-desc {
-            font-size: 0.9rem;
-            color: var(--muted-text);
-            margin: 0;
-            line-height: 1.4;
+        .task-description {
+            font-size: 1.05rem;
+            color: #ccc;
+            line-height: 1.6;
+            white-space: pre-line;
         }
 
-        .action-link {
-            background: #1a1a1a;
-            border: 1px solid #333;
+        .task-url-box {
+            background: #181818;
+            border: 1px solid #252525;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .url-btn {
+            background: var(--primary-green);
             color: #fff;
-            text-align: center;
-            padding: 10px;
+            border: none;
+            padding: 10px 20px;
             border-radius: 6px;
+            font-weight: bold;
             text-decoration: none;
             font-size: 0.9rem;
-            font-weight: bold;
-            margin-top: auto;
             transition: 0.2s;
         }
 
-        .action-link:hover {
-            background: var(--primary-green);
-            border-color: var(--primary-green);
+        .url-btn:hover {
+            background: #218838;
         }
 
-        /* تأثير الحجب والمربع الشفاف الأسود مع الصح الأخضر */
-        .completed-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(2px);
+        /* ----------------- نموذج تقديم الإثبات ----------------- */
+        .submission-form {
+            background: var(--card-bg);
+            border: 1px solid #252525;
             border-radius: 12px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            color: #fff;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: var(--muted-text);
+        }
+
+        .form-control {
+            background: #0b0b0b;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-green);
+            outline: none;
+        }
+
+        .submit-btn {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            z-index: 10;
-            color: var(--primary-green);
-            font-weight: bold;
-            font-size: 1.1rem;
-            text-align: center;
-            padding: 10px;
-            box-sizing: border-box;
         }
 
-        .completed-overlay i {
-            font-size: 2.2rem;
-            background: rgba(40, 167, 69, 0.15);
-            padding: 12px;
-            border-radius: 50%;
-            border: 1px solid rgba(40, 167, 69, 0.3);
+        .submit-btn:hover {
+            background: #218838;
         }
 
-        .loading-text {
-            color: var(--muted-text);
-            text-align: center;
+        .submit-btn:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        /* رسالة نجاح تقديم المهمة مسبقاً */
+        .status-alert {
+            display: flex;
+            align-items: center;
+            gap: 15px;
             padding: 20px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .status-alert.pending {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        .status-alert.approved {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            color: var(--primary-green);
+        }
+        .status-alert.rejected {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            color: var(--danger-red);
         }
 
         @media (max-width: 768px) {
@@ -289,56 +317,53 @@
                 
                 <div class="balance-card">
                     <div id="user-balance-bfp" class="balance-bfp">0.00 BFP</div>
-                    <div id="user-balance-usd" class="balance-usd">=$0.00 دولار</div>
                 </div>
             </div>
 
             <div class="sidebar-menu">
-                <a href="create-task.html" class="menu-btn">
-                    <i class="fas fa-tasks"></i> إضافة مهمة جديدة
-                </a>
-                <a href="create-ad.html" class="menu-btn">
-                    <i class="fas fa-bullhorn"></i> إضافة إعلان جديد
-                </a>
-                <a href="messages.html" class="menu-btn">
-                    <i class="fas fa-envelope"></i> البريد والرسائل الإلكترونية
-                    <span id="msg-badge" class="sidebar-badge">0</span>
+                <a href="index.html" class="menu-btn active">
+                    <i class="fas fa-home"></i> العودة للرئيسية
                 </a>
             </div>
         </div>
-
-        <a href="#" class="menu-btn logout" onclick="handleLogout()">
-            <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
-        </a>
     </div>
 
     <div class="main-content">
         
-        <div class="section-header">
-            <i class="fas fa-play-circle"></i> الإعلانات المتوفرة (المشاهدة المتاحة)
-        </div>
-        <div id="ads-container" class="items-grid">
-            <div class="loading-text">جاري تحميل الإعلانات...</div>
+        <div>
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-right"></i> العودة لوحة المهام المتاحة
+            </a>
         </div>
 
-        <div class="section-header">
-            <i class="fas fa-clipboard-list"></i> المهام المتاحة للعمل
+        <div id="task-details-container" class="task-details-card">
+            <div class="loading-text" style="text-align: center; color: var(--muted-text);">جاري تحميل تفاصيل المهمة...</div>
         </div>
-        <div id="tasks-container" class="items-grid">
-            <div class="loading-text">جاري تحميل المهام المتاحة...</div>
-        </div>
+
+        <div id="submission-container"></div>
 
     </div>
 
     <script>
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OY0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let CURRENT_USER_ID = null;
-        const BFP_TO_USD_RATE = 0.50; 
+        let TASK_ID = null;
+        let TASK_REWARD = 0;
 
         window.onload = async () => {
+            // الحصول على معرف المهمة من رابط URL
+            const urlParams = new URLSearchParams(window.location.search);
+            TASK_ID = urlParams.get('id');
+
+            if (!TASK_ID) {
+                alert("لم يتم العثور على معرف المهمة المحددة.");
+                window.location.href = "index.html";
+                return;
+            }
+
             await initSession();
         };
 
@@ -353,15 +378,11 @@
                     document.getElementById('user-display-name').innerText = "مستخدم تجريبي";
                 }
 
-                await Promise.all([
-                    fetchWalletData(),
-                    fetchUnreadMessagesCount(),
-                    loadAds(),
-                    loadTasks()
-                ]);
+                await fetchWalletData();
+                await loadTaskAndSubmissionStatus();
 
             } catch (err) {
-                console.error("خطأ أثناء تهيئة البيانات:", err);
+                console.error("خطأ في التهيئة:", err);
             }
         }
 
@@ -374,164 +395,144 @@
                     .maybeSingle();
 
                 if (wallet) {
-                    const bfpBalance = wallet.balance || 0;
-                    const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(4); 
-                    document.getElementById('user-balance-bfp').innerText = `${bfpBalance} BFP`;
-                    document.getElementById('user-balance-usd').innerText = `=$${usdBalance} دولار`;
+                    document.getElementById('user-balance-bfp').innerText = `${wallet.balance || 0} BFP`;
                 }
             } catch (err) { console.error(err); }
         }
 
-        async function fetchUnreadMessagesCount() {
+        async function loadTaskAndSubmissionStatus() {
+            const detailsContainer = document.getElementById('task-details-container');
+            const submissionContainer = document.getElementById('submission-container');
+
             try {
-                const { data } = await _supabase
-                    .from('user_messages')
-                    .select('id')
-                    .eq('user_id', CURRENT_USER_ID)
-                    .eq('is_read', false);
-
-                const badge = document.getElementById('msg-badge');
-                if (data && data.length > 0) {
-                    badge.innerText = data.length;
-                    badge.style.display = 'block';
-                } else {
-                    badge.style.display = 'none';
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        async function loadAds() {
-            const container = document.getElementById('ads-container');
-            try {
-                const { data: ads, error: fetchError } = await _supabase.from('ads').select('*');
-                if (fetchError) throw fetchError;
-
-                const { data: watched, error: watchError } = await _supabase
-                    .from('ads_views')
-                    .select('ad_id, created_at')
-                    .eq('user_id', CURRENT_USER_ID);
-
-                if (watchError) console.warn("خطأ في جلب سجلات المشاهدة:", watchError.message);
-
-                if (!ads || ads.length === 0) {
-                    container.innerHTML = `<div class="loading-text">لا توجد إعلانات متوفرة حالياً.</div>`;
-                    return;
-                }
-
-                container.innerHTML = '';
-                ads.forEach(ad => {
-                    const duration = parseInt(ad.duration_seconds) || 10;
-                    let adReward = parseFloat(ad.reward_amount) || (duration === 20 ? 0.005 : 0.001);
-
-                    const adTitle = ad.title || "إعلان ترويجي مميز";
-                    const adDesc = ad.description || `شاهد هذا الإعلان لمدة ${duration} ثانية لكسب النقاط مجاناً.`;
-
-                    let isLocked = false;
-
-                    const localWatchTime = localStorage.getItem(`watched_ad_${ad.id}`);
-                    if (localWatchTime) {
-                        const hoursPassedLocal = (new Date().getTime() - parseInt(localWatchTime)) / (1000 * 60 * 60);
-                        if (hoursPassedLocal < 24) {
-                            isLocked = true;
-                        } else {
-                            localStorage.removeItem(`watched_ad_${ad.id}`);
-                        }
-                    }
-
-                    if (!isLocked) {
-                        const watchRecords = watched?.filter(w => String(w.ad_id).trim() === String(ad.id).trim());
-                        if (watchRecords && watchRecords.length > 0) {
-                            const latestWatch = watchRecords.reduce((latest, current) => {
-                                return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
-                            });
-
-                            const watchedTime = new Date(latestWatch.created_at).getTime();
-                            const currentTime = new Date().getTime();
-                            const hoursPassed = (currentTime - watchedTime) / (1000 * 60 * 60);
-                            
-                            if (hoursPassed < 24) {
-                                isLocked = true; 
-                            }
-                        }
-                    }
-
-                    container.innerHTML += `
-                        <div class="item-card" style="position: relative;">
-                            ${isLocked ? `
-                            <div class="completed-overlay">
-                                <i class="fas fa-check-circle"></i>
-                                <span>تمت المشاهدة (مغلق 24 ساعة)</span>
-                            </div>` : ''}
-                            <div class="card-top">
-                                <h4 class="card-title">${adTitle}</h4>
-                                <span class="reward-badge">+${adReward.toFixed(3)} BFP</span>
-                            </div>
-                            <p class="card-desc">${adDesc}</p>
-                            <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
-                                <i class="fas fa-eye"></i> بدء المشاهدة (${duration} ثانية)
-                            </a>
-                        </div>
-                    `;
-                });
-            } catch (err) { 
-                console.error(err);
-                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل الإعلانات.</div>'; 
-            }
-        }
-
-        async function loadTasks() {
-            const container = document.getElementById('tasks-container');
-            try {
-                const nowISO = new Date().toISOString();
-
-                const { data: tasks } = await _supabase
+                // 1. جلب تفاصيل المهمة
+                const { data: task, error: taskErr } = await _supabase
                     .from('tasks')
                     .select('*')
-                    .gt('expires_at', nowISO); 
+                    .eq('id', TASK_ID)
+                    .maybeSingle();
 
-                const { data: submissions } = await _supabase
-                    .from('task_submissions')
-                    .select('task_id, status')
-                    .eq('user_id', CURRENT_USER_ID);
-
-                if (!tasks || tasks.length === 0) {
-                    container.innerHTML = `<div class="loading-text">لا توجد مهام متاحة حالياً.</div>`;
+                if (taskErr || !task) {
+                    detailsContainer.innerHTML = `<div style="color:var(--danger-red); text-align:center;">عذراً، لم يتم العثور على هذه المهمة أو أنها انتهت.</div>`;
                     return;
                 }
 
-                container.innerHTML = '';
-                tasks.forEach(task => {
-                    const hasSubmitted = submissions?.some(s => String(s.task_id).trim() === String(task.id).trim());
+                TASK_REWARD = task.points_reward || 0;
 
-                    // [تعديل أساسي] تم تغيير الرابط هنا ليوجّه مباشرةً إلى صفحة task-viewer.html
-                    container.innerHTML += `
-                        <div class="item-card" style="position: relative;">
-                            ${hasSubmitted ? `
-                            <div class="completed-overlay">
-                                <i class="fas fa-check-circle"></i>
-                                <span>🔒 تم تقديم الإثبات وبانتظار المراجعة</span>
-                            </div>` : ''}
-                            <div class="card-top">
-                                <h4 class="card-title">${task.title}</h4>
-                                <span class="reward-badge">+${task.points_reward} BFP</span>
-                            </div>
-                            <p class="card-desc">${task.description || 'نفذ الشروط المطلوبة للمهمة وقدم الإثبات لتنال المكافأة.'}</p>
-                            <a href="${hasSubmitted ? '#' : `task-viewer.html?id=${task.id}`}" class="action-link" ${hasSubmitted ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
-                                <i class="fas fa-external-link-alt"></i> تفاصيل المهمة
-                            </a>
+                // عرض تفاصيل المهمة داخل الـ HTML
+                detailsContainer.innerHTML = `
+                    <div class="task-header">
+                        <h2 class="task-title">${task.title}</h2>
+                        <span class="reward-badge">+${TASK_REWARD} BFP</span>
+                    </div>
+                    <p class="task-description">${task.description || 'لا يوجد وصف تفصيلي للمهمة.'}</p>
+                    ${task.task_url ? `
+                        <div class="task-url-box">
+                            <span style="color: var(--muted-text); font-size: 0.9rem;"><i class="fas fa-link"></i> الرابط المطلوب للعمل:</span>
+                            <a href="${task.task_url}" target="_blank" class="url-btn">انقر هنا لفتح الرابط <i class="fas fa-external-link-alt" style="font-size:0.8rem; margin-right:5px;"></i></a>
                         </div>
+                    ` : ''}
+                `;
+
+                // 2. التحقق مما إذا كان المستخدم قد أرسل إثباتاً لهذه المهمة من قبل مسبقاً
+                const { data: submission, error: subErr } = await _supabase
+                    .from('task_submissions')
+                    .select('*')
+                    .eq('task_id', TASK_ID)
+                    .eq('user_id', CURRENT_USER_ID)
+                    .maybeSingle();
+
+                if (submission) {
+                    // إذا قدم المستخدم إثبات مسبقاً، نعرض له حالته بدلاً من الفورم
+                    let statusHtml = '';
+                    if (submission.status === 'pending') {
+                        statusHtml = `
+                            <div class="status-alert pending">
+                                <i class="fas fa-clock fa-2x"></i>
+                                <div>
+                                    <div style="font-size: 1.1rem;">تم إرسال الإثبات وهو قيد المراجعة حالياً</div>
+                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #aaa;">نص الإثبات الذي أرسلته: "${submission.proof_text}"</div>
+                                </div>
+                            </div>`;
+                    } else if (submission.status === 'approved') {
+                        statusHtml = `
+                            <div class="status-alert approved">
+                                <i class="fas fa-check-circle fa-2x"></i>
+                                <div>
+                                    <div style="font-size: 1.1rem;">تهانينا! تمت الموافقة على المهمة واحتساب المكافأة</div>
+                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #ccc;">أُضيف لملفك المالي +${TASK_REWARD} BFP.</div>
+                                </div>
+                            </div>`;
+                    } else if (submission.status === 'rejected') {
+                        statusHtml = `
+                            <div class="status-alert rejected">
+                                <i class="fas fa-times-circle fa-2x"></i>
+                                <div>
+                                    <div style="font-size: 1.1rem;">للأسف، تم رفض طلبك من قِبل المسؤول</div>
+                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #f5b3b3;">سبب الرفض المذكور: "${submission.rejection_reason || 'لم يتم تحديد سبب مخصص'}"</div>
+                                </div>
+                            </div>`;
+                    }
+                    submissionContainer.innerHTML = statusHtml;
+                } else {
+                    // إذا لم يقدم إثبات بعد، نعرض له نموذج الإرسال (Form)
+                    submissionContainer.innerHTML = `
+                        <form id="proofForm" onsubmit="handleSubmitProof(event)" class="submission-form">
+                            <h3 class="form-title"><i class="fas fa-paper-plane" style="color:var(--primary-green)"></i> تقديم إثبات تنفيذ المهمة</h3>
+                            <div class="form-group">
+                                <label for="proofText">اكتب إثبات العمل هنا (مثال: اسم حسابك الذي نفذت به الشروط أو لقطة تأكيد):</label>
+                                <textarea id="proofText" class="form-control" rows="4" placeholder="اكتب هنا التفاصيل بوضوح لكي يراجعها الأدمن..." required></textarea>
+                            </div>
+                            <button type="submit" id="btnSubmit" class="submit-btn">
+                                <i class="fas fa-check"></i> إرسال المراجعة للأدمن
+                            </button>
+                        </form>
                     `;
-                });
-            } catch (err) { 
-                console.error(err);
-                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل المهام.</div>'; 
+                }
+
+            } catch (error) {
+                console.error("خطأ في جلب بيانات المهمة والاستمارة:", error);
             }
         }
 
-        async function handleLogout() {
-            if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
-                await _supabase.auth.signOut();
-                window.location.href = "login.html";
+        async function handleSubmitProof(e) {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btnSubmit');
+            const proofText = document.getElementById('proofText').value.trim();
+
+            if (!proofText) {
+                alert("يرجى كتابة نص الإثبات أولاً.");
+                return;
+            }
+
+            try {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري الإرسال للمسؤول...`;
+
+                // إدراج طلب مراجعة جديد في جدول 'task-submissions'
+                const { error } = await _supabase
+                    .from('task_submissions')
+                    .insert([
+                        {
+                            user_id: CURRENT_USER_ID,
+                            task_id: TASK_ID,
+                            proof_text: proofText,
+                            status: 'pending' // القيمة الافتراضية بانتظار المراجعة للأدمن
+                        }
+                    ]);
+
+                if (error) throw error;
+
+                alert("تم إرسال إثباتك للأدمن بنجاح! سيتم فحصها في صفحة إدارة المهام واحتساب المكافأة قريباً.");
+                
+                // إعادة تحميل الصفحة لتحديث الحالة وعرض المربع الأصفر المقفل
+                await loadTaskAndSubmissionStatus();
+
+            } catch (err) {
+                console.error("خطأ أثناء إرسال الإثبات:", err);
+                alert("حدث خطأ أثناء عملية الإرسال: " + err.message);
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i class="fas fa-check"></i> إرسال المراجعة للأدمن`;
             }
         }
     </script>
