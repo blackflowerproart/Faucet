@@ -400,7 +400,6 @@
             } catch (err) { console.error(err); }
         }
 
-        // جلب الإعلانات وحجبها تلقائياً إذا شوهدت خلال آخر 24 ساعة (من السيرفر أو محلياً)
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
@@ -429,18 +428,16 @@
 
                     let isLocked = false;
 
-                    // 1. فحص الحجب الفوري من الـ LocalStorage (الذي تم حفظه فور الضغط في صفحة viewer)
                     const localWatchTime = localStorage.getItem(`watched_ad_${ad.id}`);
                     if (localWatchTime) {
                         const hoursPassedLocal = (new Date().getTime() - parseInt(localWatchTime)) / (1000 * 60 * 60);
                         if (hoursPassedLocal < 24) {
                             isLocked = true;
                         } else {
-                            localStorage.removeItem(`watched_ad_${ad.id}`); // تنظيف إذا انتهت المدة
+                            localStorage.removeItem(`watched_ad_${ad.id}`);
                         }
                     }
 
-                    // 2. فحص السيرفر والـ DB (كخط دفاع أساسي ومزامنة)
                     if (!isLocked) {
                         const watchRecords = watched?.filter(w => String(w.ad_id).trim() === String(ad.id).trim());
                         if (watchRecords && watchRecords.length > 0) {
@@ -506,6 +503,7 @@
                 tasks.forEach(task => {
                     const hasSubmitted = submissions?.some(s => String(s.task_id).trim() === String(task.id).trim());
 
+                    // [تعديل أساسي] تم تغيير الرابط هنا ليوجّه مباشرةً إلى صفحة task-viewer.html
                     container.innerHTML += `
                         <div class="item-card" style="position: relative;">
                             ${hasSubmitted ? `
@@ -518,7 +516,7 @@
                                 <span class="reward-badge">+${task.points_reward} BFP</span>
                             </div>
                             <p class="card-desc">${task.description || 'نفذ الشروط المطلوبة للمهمة وقدم الإثبات لتنال المكافأة.'}</p>
-                            <a href="${hasSubmitted ? '#' : `task-details.html?id=${task.id}`}" class="action-link" ${hasSubmitted ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
+                            <a href="${hasSubmitted ? '#' : `task-viewer.html?id=${task.id}`}" class="action-link" ${hasSubmitted ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
                                 <i class="fas fa-external-link-alt"></i> تفاصيل المهمة
                             </a>
                         </div>
