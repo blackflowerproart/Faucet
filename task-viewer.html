@@ -3,113 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تنفيذ المهمة - The Blackflower Pro Art</title>
+    <title>الرئيسية - منصة الأرباح والمهام</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --primary-green: #28a745; --dark-bg: #000000; --card-bg: #111; }
-        body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
-        
-        .container { 
-            max-width: 600px; 
-            margin: 30px auto; 
-            background: var(--card-bg); 
-            padding: 35px; 
-            border-radius: 20px; 
-            border: 1px solid #333; 
-            text-align: right; 
-            position: relative; /* ضروري لتمكين التغطية المطلقة */
+        :root {
+            --primary-green: #28a745;
+            --danger-red: #dc3545;
+            --dark-bg: #0b0b0b;
+            --card-bg: #141414;
+            --hover-bg: #1c1c1c;
+            --text-color: #ffffff;
+            --muted-text: #888888;
+            --sidebar-width: 280px;
         }
-        
-        h1 { text-align: center; color: var(--primary-green); margin-bottom: 25px; }
-        .task-detail { border-bottom: 1px solid #222; padding-bottom: 15px; margin-bottom: 15px; }
-        .task-detail span { color: #888; font-size: 0.9rem; display: block; margin-bottom: 5px; }
-        .task-detail p { margin: 0; font-size: 1.2rem; font-weight: bold; }
-        .reward-badge { display: inline-block; background: var(--primary-green); color: #fff; padding: 8px 15px; border-radius: 8px; font-weight: bold; margin-top: 5px; }
-        .task-img { width: 100%; max-height: 350px; object-fit: contain; background: #050505; border-radius: 10px; margin: 15px 0; border: 1px solid #333; display: none; }
-        
-        .visit-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #000; text-decoration: none; padding: 15px; border-radius: 10px; font-weight: bold; text-align: center; margin: 20px 0; transition: 0.2s; }
-        .visit-btn:hover { background: #e6e6e6; }
 
-        .submission-form { border-top: 2px dashed #333; margin-top: 25px; padding-top: 25px; }
-        label { font-weight: bold; color: var(--primary-green); display: block; margin-bottom: 8px; }
-        input[type="text"] { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 1.1rem; box-sizing: border-box; outline: none; margin-bottom: 20px; }
-        input[type="text"]:focus { border-color: var(--primary-green); }
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            display: flex;
+            min-height: 100vh;
+        }
 
-        .file-box { background: #1a1a1a; border: 2px dashed #444; padding: 25px; border-radius: 10px; text-align: center; cursor: pointer; position: relative; margin-bottom: 25px; }
-        .file-box input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .preview-ss { max-width: 100%; max-height: 200px; border-radius: 8px; margin-top: 15px; display: none; }
+        /* ----------------- واجهة المستخدم الجانبية (Sidebar) ----------------- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-left: 1px solid #222;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 100;
+        }
 
-        .submit-btn { width: 100%; padding: 18px; background: var(--primary-green); color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 1.3rem; transition: 0.3s; }
-        .submit-btn:hover { background: #218838; }
-        .submit-btn:disabled { background: #555; color: #aaa; cursor: not-allowed; }
+        .user-profile {
+            text-align: center;
+            border-bottom: 1px solid #222;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
 
-        /* ستايل التغطية الكاملة عند إتمام المهمة مسبقاً */
-        .viewer-overlay {
+        .user-avatar {
+            font-size: 3.5rem;
+            color: var(--primary-green);
+            margin-bottom: 10px;
+        }
+
+        .username {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .balance-card {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .balance-bfp {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+
+        .balance-usd {
+            font-size: 0.9rem;
+            color: var(--muted-text);
+            margin-top: 4px;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+            margin-top: 10px;
+        }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #181818;
+            border: 1px solid #252525;
+            color: var(--text-color);
+            padding: 14px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .menu-btn:hover {
+            background: var(--hover-bg);
+            border-color: #444;
+            color: var(--primary-green);
+        }
+
+        .menu-btn.logout {
+            background: rgba(220, 53, 69, 0.1);
+            border-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger-red);
+            margin-top: auto;
+        }
+
+        .menu-btn.logout:hover {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        .sidebar-badge {
+            position: absolute;
+            left: 15px;
+            background: var(--danger-red);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* ----------------- المحتوى الأساسي للصفحة ----------------- */
+        .main-content {
+            margin-right: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .section-header {
+            font-size: 1.4rem;
+            color: #fff;
+            margin: 35px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+        }
+
+        .section-header i {
+            color: var(--primary-green);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border: 1px solid #252525;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: 0.2s;
+        }
+
+        .item-card:hover {
+            border-color: #383838;
+            transform: translateY(-2px);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin: 0;
+            color: #eee;
+        }
+
+        .reward-badge {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--primary-green);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--muted-text);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .action-link {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: auto;
+            transition: 0.2s;
+        }
+
+        .action-link:hover {
+            background: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+
+        /* تأثير الحجب والمربع الشفاف الأسود مع الصح الأخضر */
+        .completed-overlay {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.92);
-            border-radius: 20px;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             z-index: 10;
             color: var(--primary-green);
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
         }
-        .viewer-overlay i { font-size: 4.5rem; }
-        .viewer-overlay h2 { margin: 0; color: #fff; font-size: 1.6rem; }
-        .back-btn { background: #333; color: #fff; text-decoration: none; padding: 12px 25px; border-radius: 8px; font-weight: bold; margin-top: 10px; transition: 0.2s; }
-        .back-btn:hover { background: #444; }
+
+        .completed-overlay i {
+            font-size: 2.2rem;
+            background: rgba(40, 167, 69, 0.15);
+            padding: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .loading-text {
+            color: var(--muted-text);
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; position: relative; border-left: none; border-bottom: 1px solid #222; }
+            .main-content { margin-right: 0; padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container" id="viewer-container">
-        <!-- سيتم حقن طبقة الحماية الفوقية هنا بواسطة الجافاسكريبت إن وجد إرسال مسبق -->
-        
-        <h1>🎯 تفاصيل وإتمام المهمة</h1>
-        
-        <div class="task-detail">
-            <span>اسم المهمة:</span>
-            <p id="task-title">جاري التحميل...</p>
-        </div>
-
-        <div class="task-detail">
-            <span>شروط ومتطلبات التنفيذ:</span>
-            <p id="task-desc" style="font-weight: normal; color: #ccc; font-size: 1.1rem; line-height: 1.6;">جاري التحميل...</p>
-        </div>
-
-        <div class="task-detail">
-            <span>المكافأة عند قبول الطلب:</span>
-            <div><span class="reward-badge" id="task-reward">0 BFP</span></div>
-        </div>
-
-        <img id="task-preview-img" class="task-img" src="" alt="صورة توضيحية للمهمة">
-
-        <a id="task-link" href="#" target="_blank" class="visit-btn" style="display: none;">
-            <i class="fas fa-external-link-alt"></i> الانتقال إلى الرابط المطلوب لتنفيذ المهمة
-        </a>
-
-        <div class="submission-form" id="sub-form">
-            <h3>📥 تقديم إثبات العمل</h3>
-            
-            <label for="user-input">اسم حسابك (Username) الذي استخدمته في التنفيذ:</label>
-            <input type="text" id="user-input" placeholder="أدخل اسم حسابك أو الإيميل المستخدم">
-
-            <label>ارفع صورة لقطة شاشة (Screenshot) كإثبات للتنفيذ:</label>
-            <div class="file-box">
-                <span id="file-label"><i class="fas fa-image" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i> اضغط هنا لرفع السكرين شوت</span>
-                <input type="file" id="screenshot-file" accept="image/*" onchange="previewScreenshot()">
-                <img id="ss-preview" class="preview-ss" src="" alt="Screenshot Preview">
+    <div class="sidebar">
+        <div>
+            <div class="user-profile">
+                <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+                <div id="user-display-name" class="username">جاري التحميل...</div>
+                
+                <div class="balance-card">
+                    <div id="user-balance-bfp" class="balance-bfp">0.00 BFP</div>
+                    <div id="user-balance-usd" class="balance-usd">=$0.00 دولار</div>
+                </div>
             </div>
 
-            <button id="claim-btn" class="submit-btn" onclick="submitProof()">إرسال الطلب للمراجعة</button>
+            <div class="sidebar-menu">
+                <a href="create-task.html" class="menu-btn">
+                    <i class="fas fa-tasks"></i> إضافة مهمة جديدة
+                </a>
+                <a href="create-ad.html" class="menu-btn">
+                    <i class="fas fa-bullhorn"></i> إضافة إعلان جديد
+                </a>
+                <a href="messages.html" class="menu-btn">
+                    <i class="fas fa-envelope"></i> البريد والرسائل الإلكترونية
+                    <span id="msg-badge" class="sidebar-badge">0</span>
+                </a>
+            </div>
         </div>
+
+        <a href="#" class="menu-btn logout" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
+    </div>
+
+    <div class="main-content">
+        
+        <div class="section-header">
+            <i class="fas fa-play-circle"></i> الإعلانات المتوفرة (المشاهدة المتاحة)
+        </div>
+        <div id="ads-container" class="items-grid">
+            <div class="loading-text">جاري تحميل الإعلانات...</div>
+        </div>
+
+        <div class="section-header">
+            <i class="fas fa-clipboard-list"></i> المهام المتاحة للعمل
+        </div>
+        <div id="tasks-container" class="items-grid">
+            <div class="loading-text">جاري تحميل المهام المتاحة...</div>
+        </div>
+
     </div>
 
     <script>
@@ -117,134 +335,203 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const params = new URLSearchParams(window.location.search);
-        const taskId = params.get('id');
-
-        let currentUser = null;
+        let CURRENT_USER_ID = null;
+        const BFP_TO_USD_RATE = 0.50; 
 
         window.onload = async () => {
-            const { data: { user } } = await _supabase.auth.getUser();
-            if (!user) { window.location.href = 'login.html'; return; }
-            currentUser = user;
-
-            if (!taskId) { alert("مهمة غير صالحة"); window.location.href = 'home.html'; return; }
-
-            // فحص إثباتات الإرسال المسبقة للمستخدم الحالي لهذه المهمة بالتحديد
-            const { data: submission } = await _supabase
-                .from('task_submissions')
-                .select('id')
-                .eq('task_id', taskId)
-                .eq('user_id', currentUser.id)
-                .maybeSingle();
-
-            if (submission) {
-                // تفعيل غطاء القفل التام ومنع التحكم بالصفحة
-                const container = document.getElementById('viewer-container');
-                container.innerHTML += `
-                    <div class="viewer-overlay">
-                        <i class="fas fa-check-circle"></i>
-                        <h2>لقد قمت بإنجاز هذه المهمة سابقاً!</h2>
-                        <p style="color:#aaa;">طلبك قيد المراجعة أو تم إيداعه بالمحفظة بالفعل.</p>
-                        <a href="home.html" class="back-btn"><i class="fas fa-arrow-right"></i> العودة للرئيسية</a>
-                    </div>`;
-                return;
-            }
-
-            const { data: task, error } = await _supabase
-                .from('tasks')
-                .select('*')
-                .eq('id', taskId)
-                .single();
-
-            if (error || !task) {
-                alert("تعذر جلب تفاصيل المهمة.");
-                window.location.href = 'home.html';
-                return;
-            }
-
-            document.getElementById('task-title').innerText = task.title;
-            document.getElementById('task-desc').innerText = task.description;
-            document.getElementById('task-reward').innerText = `+ ${task.points_reward} BFP`;
-
-            if (task.image_url) {
-                const img = document.getElementById('task-preview-img');
-                img.src = task.image_url;
-                img.style.display = 'block';
-            }
-
-            if (task.site_url) {
-                const linkBtn = document.getElementById('task-link');
-                linkBtn.href = task.site_url;
-                linkBtn.style.display = 'flex';
-            }
+            await initSession();
         };
 
-        function previewScreenshot() {
-            const file = document.getElementById('screenshot-file').files[0];
-            const preview = document.getElementById('ss-preview');
-            const label = document.getElementById('file-label');
-            
-            if (file) {
-                label.innerHTML = `<i class="fas fa-check-circle" style="color:var(--primary-green);"></i> تم اختيار: ${file.name}`;
-                const reader = new FileReader();
-                reader.onloadend = function () {
-                    preview.src = reader.result;
-                    preview.style.display = "block";
+        async function initSession() {
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (user) {
+                    CURRENT_USER_ID = user.id;
+                    document.getElementById('user-display-name').innerText = user.email.split('@')[0];
+                } else {
+                    CURRENT_USER_ID = "test-user-id";
+                    document.getElementById('user-display-name').innerText = "مستخدم تجريبي";
                 }
-                reader.readAsDataURL(file);
+
+                await Promise.all([
+                    fetchWalletData(),
+                    fetchUnreadMessagesCount(),
+                    loadAds(),
+                    loadTasks()
+                ]);
+
+            } catch (err) {
+                console.error("خطأ أثناء تهيئة البيانات:", err);
             }
         }
 
-        async function submitProof() {
-            const btn = document.getElementById('claim-btn');
-            const submittedUsername = document.getElementById('user-input').value.trim();
-            const screenshotFile = document.getElementById('screenshot-file').files[0];
-
-            if (!submittedUsername || !screenshotFile) {
-                return alert("يرجى إدخال اسم الحساب وإرفاق صورة السكرين شوت كإثبات لتنفيذ المهمة");
-            }
-
+        async function fetchWalletData() {
             try {
-                btn.disabled = true;
-                btn.innerText = "جاري رفع الإثباتات والطلب...";
+                const { data: wallet } = await _supabase
+                    .from('wallets')
+                    .select('balance')
+                    .eq('user_id', CURRENT_USER_ID)
+                    .maybeSingle();
 
-                const fileExt = screenshotFile.name.split('.').pop();
-                const fileName = `${currentUser.id}_${Date.now()}.${fileExt}`;
-                const filePath = `proofs/${fileName}`;
+                if (wallet) {
+                    const bfpBalance = wallet.balance || 0;
+                    const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(4); 
+                    document.getElementById('user-balance-bfp').innerText = `${bfpBalance} BFP`;
+                    document.getElementById('user-balance-usd').innerText = `=$${usdBalance} دولار`;
+                }
+            } catch (err) { console.error(err); }
+        }
 
-                const { data: uploadData, error: uploadError } = await _supabase.storage
-                    .from('task-screenshots')
-                    .upload(filePath, screenshotFile);
+        async function fetchUnreadMessagesCount() {
+            try {
+                const { data } = await _supabase
+                    .from('user_messages')
+                    .select('id')
+                    .eq('user_id', CURRENT_USER_ID)
+                    .eq('is_read', false);
 
-                if (uploadError) throw uploadError;
+                const badge = document.getElementById('msg-badge');
+                if (data && data.length > 0) {
+                    badge.innerText = data.length;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (err) { console.error(err); }
+        }
 
-                const { data: { publicUrl } } = _supabase.storage
-                    .from('task-screenshots')
-                    .getPublicUrl(filePath);
+        async function loadAds() {
+            const container = document.getElementById('ads-container');
+            try {
+                const { data: ads, error: fetchError } = await _supabase.from('ads').select('*');
+                if (fetchError) throw fetchError;
 
-                const { error: insertError } = await _supabase
-                    .from('task_submissions')
-                    .insert([
-                        {
-                            task_id: taskId,
-                            user_id: currentUser.id,
-                            submitted_username: submittedUsername,
-                            screenshot_url: publicUrl,
-                            status: 'pending'
+                const { data: watched, error: watchError } = await _supabase
+                    .from('ads_views')
+                    .select('ad_id, created_at')
+                    .eq('user_id', CURRENT_USER_ID);
+
+                if (watchError) console.warn("خطأ في جلب سجلات المشاهدة:", watchError.message);
+
+                if (!ads || ads.length === 0) {
+                    container.innerHTML = `<div class="loading-text">لا توجد إعلانات متوفرة حالياً.</div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                ads.forEach(ad => {
+                    const duration = parseInt(ad.duration_seconds) || 10;
+                    let adReward = parseFloat(ad.reward_amount) || (duration === 20 ? 0.005 : 0.001);
+
+                    const adTitle = ad.title || "إعلان ترويجي مميز";
+                    const adDesc = ad.description || `شاهد هذا الإعلان لمدة ${duration} ثانية لكسب النقاط مجاناً.`;
+
+                    let isLocked = false;
+
+                    const localWatchTime = localStorage.getItem(`watched_ad_${ad.id}`);
+                    if (localWatchTime) {
+                        const hoursPassedLocal = (new Date().getTime() - parseInt(localWatchTime)) / (1000 * 60 * 60);
+                        if (hoursPassedLocal < 24) {
+                            isLocked = true;
+                        } else {
+                            localStorage.removeItem(`watched_ad_${ad.id}`);
                         }
-                    ]);
+                    }
 
-                if (insertError) throw insertError;
+                    if (!isLocked) {
+                        const watchRecords = watched?.filter(w => String(w.ad_id).trim() === String(ad.id).trim());
+                        if (watchRecords && watchRecords.length > 0) {
+                            const latestWatch = watchRecords.reduce((latest, current) => {
+                                return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+                            });
 
-                alert("✅ تم إرسال طلبك بنجاح! يرجى الانتظار لحين مراجعة الطلب والموافقة عليه من قبل الإدارة لتحصيل المكافأة.");
-                window.location.href = 'home.html';
+                            const watchedTime = new Date(latestWatch.created_at).getTime();
+                            const currentTime = new Date().getTime();
+                            const hoursPassed = (currentTime - watchedTime) / (1000 * 60 * 60);
+                            
+                            if (hoursPassed < 24) {
+                                isLocked = true; 
+                            }
+                        }
+                    }
 
-            } catch (error) {
-                console.error(error);
-                alert("حدث خطأ أثناء إرسال الطلب: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "إرسال الطلب للمراجعة";
+                    container.innerHTML += `
+                        <div class="item-card" style="position: relative;">
+                            ${isLocked ? `
+                            <div class="completed-overlay">
+                                <i class="fas fa-check-circle"></i>
+                                <span>تمت المشاهدة (مغلق 24 ساعة)</span>
+                            </div>` : ''}
+                            <div class="card-top">
+                                <h4 class="card-title">${adTitle}</h4>
+                                <span class="reward-badge">+${adReward.toFixed(3)} BFP</span>
+                            </div>
+                            <p class="card-desc">${adDesc}</p>
+                            <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
+                                <i class="fas fa-eye"></i> بدء المشاهدة (${duration} ثانية)
+                            </a>
+                        </div>
+                    `;
+                });
+            } catch (err) { 
+                console.error(err);
+                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل الإعلانات.</div>'; 
+            }
+        }
+
+        async function loadTasks() {
+            const container = document.getElementById('tasks-container');
+            try {
+                const nowISO = new Date().toISOString();
+
+                const { data: tasks } = await _supabase
+                    .from('tasks')
+                    .select('*')
+                    .gt('expires_at', nowISO); 
+
+                const { data: submissions } = await _supabase
+                    .from('task_submissions')
+                    .select('task_id, status')
+                    .eq('user_id', CURRENT_USER_ID);
+
+                if (!tasks || tasks.length === 0) {
+                    container.innerHTML = `<div class="loading-text">لا توجد مهام متاحة حالياً.</div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                tasks.forEach(task => {
+                    const hasSubmitted = submissions?.some(s => String(s.task_id).trim() === String(task.id).trim());
+
+                    // [تعديل أساسي] تم تغيير الرابط هنا ليوجّه مباشرةً إلى صفحة task-viewer.html
+                    container.innerHTML += `
+                        <div class="item-card" style="position: relative;">
+                            ${hasSubmitted ? `
+                            <div class="completed-overlay">
+                                <i class="fas fa-check-circle"></i>
+                                <span>🔒 تم تقديم الإثبات وبانتظار المراجعة</span>
+                            </div>` : ''}
+                            <div class="card-top">
+                                <h4 class="card-title">${task.title}</h4>
+                                <span class="reward-badge">+${task.points_reward} BFP</span>
+                            </div>
+                            <p class="card-desc">${task.description || 'نفذ الشروط المطلوبة للمهمة وقدم الإثبات لتنال المكافأة.'}</p>
+                            <a href="${hasSubmitted ? '#' : `task-viewer.html?id=${task.id}`}" class="action-link" ${hasSubmitted ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
+                                <i class="fas fa-external-link-alt"></i> تفاصيل المهمة
+                            </a>
+                        </div>
+                    `;
+                });
+            } catch (err) { 
+                console.error(err);
+                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل المهام.</div>'; 
+            }
+        }
+
+        async function handleLogout() {
+            if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
+                await _supabase.auth.signOut();
+                window.location.href = "login.html";
             }
         }
     </script>
