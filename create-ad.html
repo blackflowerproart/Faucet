@@ -221,7 +221,7 @@
             </div>
 
             <div class="form-group">
-                <label for="promocode"><i class="fas fa-percentage"></i> هل لديك بروموكود (كود خصم)？</label>
+                <label for="promocode"><i class="fas fa-percentage"></i> هل لديك بروموكود (كود خصم)؟</label>
                 <input type="text" id="promocode" placeholder="أدخل كود الخصم إن وجد هنا" oninput="calculateTotalCost()">
                 <div id="promo-msg" class="promo-success"><i class="fas fa-check"></i> تم تفعيل البروموكود بنجاح! الحملة مجانية تماماً (خصم 100%).</div>
             </div>
@@ -318,6 +318,7 @@
             const duration = parseInt(document.getElementById('duration').value);
             const campaignDays = parseInt(document.getElementById('campaign_days').value) || 1;
             
+            // تعديل المتغيرات هنا لتتوافق مع المدة الزمنية المختارة بدقة
             const reward = (duration === 10) ? 0.001 : 0.005;
             const total_cost = calculateTotalCost();
             const total_views = 99999; 
@@ -333,7 +334,7 @@
                     p_duration: duration,      
                     p_total_views: total_views,
                     p_total_cost: total_cost,
-                    p_campaign_days: campaignDays // ✨ تم إضافة وتمرير هذا المتغير لحل خطأ الـ expiry_date
+                    p_campaign_days: campaignDays // تم إضافة وتمرير هذا المتغير لحل خطأ الـ expiry_date
                 });
 
                 if (error) throw error;
