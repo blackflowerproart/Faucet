@@ -383,6 +383,11 @@
                 if (user) {
                     CURRENT_USER_ID = user.id;
                     document.getElementById('user-display-name').innerText = user.email.split('@')[0];
+                    
+                    // -------------------------------------------------------------
+                    // استدعاء ميزة تتبع الحضور وتسجيل تواجده أونلاين في قاعدة البيانات
+                    trackUserPresence();
+                    // -------------------------------------------------------------
                 } else {
                     // إذا لم يسجل دخول، يوجهه لصفحة تسجيل الدخول لكي لا يظهر كمستخدم تجريبي وتختفي البيانات
                     alert("لم يتم العثور على جلسة تسجيل دخول نشطة، يرجى تسجيل الدخول أولاً.");
@@ -400,6 +405,32 @@
             } catch (err) {
                 console.error("خطأ أثناء تهيئة البيانات:", err);
             }
+        }
+
+        // دالة مخصصة لتحديث حالة الـ Online بجدول user-presence كل 60 ثانية تلقائياً
+        async function trackUserPresence() {
+            if (!CURRENT_USER_ID) return;
+
+            const updatePresence = async () => {
+                try {
+                    const { error } = await _supabase
+                        .from('user-presence') // يطابق اسم الجدول المرسل تماماً
+                        .upsert({ 
+                            user_id: CURRENT_USER_ID, 
+                            last_seen: new Date().toISOString() 
+                        }, { onConflict: 'user_id' });
+                        
+                    if (error) console.error("خطأ أثناء تحديث التواجد:", error);
+                } catch (e) { 
+                    console.error("حدث خطأ غير متوقع في نظام التواجد:", e); 
+                }
+            };
+
+            // تشغيل التحديث بشكل فوري فور فتح الصفحة
+            await updatePresence();
+
+            // ضبط مؤقت لتكرار التحديث كل دقيقة للبقاء أونلاين دائماً
+            setInterval(updatePresence, 60000);
         }
 
         async function fetchWalletData() {
@@ -498,7 +529,6 @@
         async function loadTasks() {
             const container = document.getElementById('tasks-container');
             try {
-                // جلب كل المهام (تم إلغاء شرط التوقيت الصارم مؤقتاً لضمان ظهور البيانات وحل المشكلة)
                 const { data: tasks, error: taskErr } = await _supabase.from('tasks').select('*');
                 if (taskErr) throw taskErr;
 
@@ -514,7 +544,6 @@
 
                 container.innerHTML = '';
                 tasks.forEach(task => {
-                    // العثور على الإثبات المقدم لهذه المهمة إن وجد
                     const userSub = submissions?.find(s => String(s.task_id).trim() === String(task.id).trim());
                     
                     let overlayHtml = '';
@@ -527,7 +556,6 @@
                         } else if (userSub.status === 'approved') {
                             overlayHtml = `<div class="completed-overlay"><i class="fas fa-check-circle"></i><span>✅ تمت الموافقة واحتساب الجائزة</span></div>`;
                         } else if (userSub.status === 'rejected') {
-                            // إذا رُفضت، نترك العميل يضغط عليها مرة أخرى ليعيد تقديمها بشكل صحيح
                             overlayHtml = `<div class="completed-overlay" style="color: var(--danger-red); background: rgba(0,0,0,0.6);"><i class="fas fa-times-circle" style="color: var(--danger-red); border-color: rgba(220,53,69,0.3)"></i><span>❌ رُفضت! (اضغط لتعديل الإثبات)</span></div>`;
                             isLinkDisabled = false; 
                         }
