@@ -411,9 +411,30 @@
                 await fetchWalletData();
                 await loadTaskAndSubmissionStatus();
 
+                // تفعيل الاستماع اللحظي بعد جلب البيانات والتحقق من هوية المستخدم
+                subscribeToSubmissionChanges();
+
             } catch (err) {
                 console.error("خطأ في التهيئة:", err);
             }
+        }
+
+        // دالة الاستماع للتغييرات في الوقت الفعلي (Realtime)
+        function subscribeToSubmissionChanges() {
+            _supabase
+                .channel('public:task_submissions')
+                .on('postgres_changes', { 
+                    event: '*', 
+                    schema: 'public', 
+                    table: 'task_submissions',
+                    filter: `user_id=eq.${CURRENT_USER_ID}` // يراقب تحديثات المستخدم الحالي فقط لضمان الخصوصية وسرعة الأداء
+                }, (payload) => {
+                    console.log('Realtime Update:', payload);
+                    // إعادة تحميل الرصيد وحالة الطلب فوراً عند تعديل الأدمن للبيانات
+                    fetchWalletData();
+                    loadTaskAndSubmissionStatus();
+                })
+                .subscribe();
         }
 
         async function fetchWalletData() {
