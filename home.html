@@ -411,9 +411,11 @@
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
-                // جلب الإعلانات النشطة
-                const { data: ads } = await _supabase.from('ads').select('*');
+                // جلب الإعلانات كاملة بدون شروط مسبقة لضمان تدفق البيانات المخزنة حديثاً
+                const { data: ads, error: fetchError } = await _supabase.from('ads').select('*');
                 
+                if (fetchError) throw fetchError;
+
                 // جلب سجلات المشاهدات الفعليّة من جدول ads_views للمستخدم الحالي
                 const { data: watched } = await _supabase
                     .from('ads_views')
@@ -428,13 +430,15 @@
                 container.innerHTML = '';
                 ads.forEach(ad => {
                     // 1. احتساب المكافأة ديناميكياً بناءً على مدة الإعلان (duration) المخزنة بالـ DB
-                    let adReward = 0.001; // القيمة الافتراضية للـ 10 ثوانٍ أو أي مدد مغايرة
+                    let adReward = 0.001; 
                     const duration = parseInt(ad.duration) || 10;
 
                     if (duration === 20) {
                         adReward = 0.005; // مكافأة الـ 20 ثانية المحددة
                     } else if (duration === 10) {
                         adReward = 0.001; // مكافأة الـ 10 ثوانٍ المحددة
+                    } else {
+                        adReward = parseFloat(ad.reward) || 0.001;
                     }
 
                     // البحث عن سجلات المشاهدة للتحقق من مرور الـ 24 ساعة
@@ -476,7 +480,7 @@
                 });
             } catch (err) { 
                 console.error(err);
-                container.innerHTML = 'حدث خطأ أثناء تحميل الإعلانات.'; 
+                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل الإعلانات.</div>'; 
             }
         }
 
@@ -525,7 +529,7 @@
                 });
             } catch (err) { 
                 console.error(err);
-                container.innerHTML = 'حدث خطأ أثناء تحميل المهام.'; 
+                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل المهام.</div>'; 
             }
         }
 
