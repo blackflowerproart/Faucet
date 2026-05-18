@@ -53,8 +53,8 @@
         const frameEl = document.getElementById('ad-frame');
         const loadingEl = document.getElementById('loading-view');
 
-        let secondsLeft = 10; // قيمة افتراضية احتياطية
-        let rewardAmount = 0.001; // قيمة افتراضية احتياطية
+        let secondsLeft = 10; 
+        let rewardAmount = 0.001; 
         let currentUser = null;
 
         window.onload = async () => {
@@ -72,7 +72,7 @@
                 return;
             }
 
-            // 2. جلب تفاصيل الإعلان مباشرة من جدول ads لضمان الحماية والأسعار الدقيقة
+            // 2. جلب تفاصيل الإعلان مباشرة من جدول ads بناءً على أسماء الحقول الفعلية لقاعدة بياناتك
             try {
                 const { data: adData, error: adError } = await _supabase
                     .from('ads')
@@ -82,24 +82,26 @@
 
                 if (adError || !adData) throw new Error("لم يتم العثور على الإعلان في قاعدة البيانات.");
 
-                // إعداد العداد بناءً على المدة الزمنية المسجلة للإعلان
-                secondsLeft = parseInt(adData.duration) || 10;
+                // [تعديل أساسي] ربط العداد بالعمود الفعلي duration_seconds
+                secondsLeft = parseInt(adData.duration_seconds) || 10;
                 
-                // التحديث الديناميكي للمكافآت العشرية لتتطابق تماماً مع صفحة الهوم:
-                if (secondsLeft === 20) {
-                    rewardAmount = 0.005; // سعر الـ 20 ثانية
-                } else if (secondsLeft === 10) {
-                    rewardAmount = 0.001; // سعر الـ 10 ثوانٍ
-                } else {
-                    // في حال تسجيل مدد زمنية مختلفة بشكل مخصص
-                    rewardAmount = parseFloat(adData.reward) || 0.001;
+                // [تعديل أساسي] جلب القيمة المالية مباشرة من العمود الحقيقي reward_amount
+                rewardAmount = parseFloat(adData.reward_amount);
+                
+                // حساب احتياطي في حال كان الحقل المالي فارغاً بالخطأ في السيرفر
+                if (isNaN(rewardAmount)) {
+                    if (secondsLeft === 20) {
+                        rewardAmount = 0.005;
+                    } else {
+                        rewardAmount = 0.001;
+                    }
                 }
 
-                // تشغيل رابط الإعلان داخل الإطار
-                frameEl.src = adData.url;
+                // تشغيل رابط الإعلان داخل الإطار (يتوافق مع العمود ad_link في جدولك)
+                frameEl.src = adData.ad_link || adData.url;
                 loadingEl.style.display = 'none';
 
-                // 3. بدء العد التنازلي للمشاهدة
+                // 3. بدء العد التنازلي للمشاهدة حسب المدة الزمنية الحقيقية للإعلان
                 timerEl.innerText = secondsLeft;
                 const countdown = setInterval(() => {
                     secondsLeft--;
@@ -133,13 +135,14 @@
                 if (rpcError) throw rpcError;
 
                 // 2. تسجيل المشاهدة الحالية في جدول التتبع ads_views لكي يتم حظر الإعلان 24 ساعة في صفحة الـ home
+                // تم تحويل معرف الإعلان إلى نص أو رقم مرن لتجنب أخطاء حقول المُعرّفات (UUID أو Integer)
                 const { error: insertError } = await _supabase
                     .from('ads_views')
-                    .insert([{ user_id: currentUser.id, ad_id: parseInt(adId) }]);
+                    .insert([{ user_id: currentUser.id, ad_id: adId }]);
                 
                 if (insertError) console.warn("View log error:", insertError.message);
 
-                alert(`✅ مبروك! تمت مشاهدة الإعلان بنجاح وإضافة ${rewardAmount} BFP إلى محفظتك.`);
+                alert(`✅ مبروك! تمت مشاهدة الإعلان بنجاح وإضافة ${rewardAmount.toFixed(3)} BFP إلى محفظتك.`);
                 window.location.href = 'home.html';
             } catch (err) {
                 console.error(err);
