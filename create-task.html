@@ -42,7 +42,7 @@
         <div class="reward-tag">
             المكافأة الفردية: <span id="reward-price">0.5</span> BFP
             <span class="total-cost">إجمالي التكلفة المطلوب حسمها: <span id="total-price">5</span> BFP</span>
-            <small style="display: block; font-size: 0.85rem; margin-top: 5px; color: #eee;">صلاحية المهمة: أسبوع واحد فقط (تختفي بعدها تلقائياً)</small>
+            <small style="display: block; font-size: 0.85rem; margin-top: 5px; color: #eee;">مدة المهمة: أسبوع واحد وتختفي بعدها تلقائياً</small>
         </div>
         
         <button id="submit-btn" onclick="submitTask()">تأكيد ونشر المهمة</button>
@@ -53,9 +53,10 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const FIXED_REWARD = 0.5; // تسعير ثابت لكل فرد بناءً على طلبك
+        // السعر الثابت للمهمة لكل فرد
+        const FIXED_REWARD = 0.5;
 
-        // حساب إجمالي المبلغ بناءً على المكافأة الثابتة وعدد المنفذين
+        // حساب إجمالي المبلغ بناءً على المكافأة الثابتة وعدد المنفذين المستهدفين
         function calculateTotalCost() {
             let limit = parseInt(document.getElementById('task-limit').value) || 0;
             if (limit < 1) limit = 1;
@@ -147,29 +148,29 @@
 
                 if (deductError) throw new Error("فشل حسم الرصيد من المحفظة، يرجى المحاولة لاحقاً.");
 
-                // حساب تاريخ الانتهاء (الوقت الحالي + 7 أيام)
+                // حساب تاريخ انتهاء المهمة وتحديد مدته (الوقت الحالي + 7 أيام)
                 const expiresAt = new Date();
                 expiresAt.setDate(expiresAt.getDate() + 7);
 
-                // 4. إدخال بيانات المهمة بالكامل داخل جدول الـ tasks مع حقل صلاحية الانتهاء
+                // 4. إدخال بيانات المهمة بالكامل داخل جدول الـ tasks
                 const { error: insertError } = await _supabase
                     .from('tasks')
                     .insert([
                         {
-                            user_id: user.id,       
-                            creator_id: user.id,   
+                            user_id: user.id,       // معرّف المنشئ الأساسي
+                            creator_id: user.id,   // معرّف الناشر للربط مع صفحة المراجعة والتحويل المالي
                             title: title,
                             description: desc,
                             site_url: url ? url : null,
                             image_url: imageUrl,
-                            points_reward: FIXED_REWARD, // تم تعيينها بـ 0.5 تلقائياً
-                            target_limit: limit,
-                            expires_at: expiresAt.toISOString() // حفظ تاريخ انتهاء المهمة بالقاعدة
+                            points_reward: FIXED_REWARD, // تسعير ثابت بـ 0.5
+                            target_limit: limit,    // عدد المنفذين المطلوبين للمهمة في القاعدة
+                            expires_at: expiresAt.toISOString() // تاريخ الانتهاء التلقائي (بعد أسبوع)
                         }
                     ]);
 
                 if (insertError) {
-                    // تراجع (Rollback) في حال الفشل
+                    // تراجع (Rollback) لإعادة الرصيد للمستخدم في حال فشل رفع المهمة لسبب ما
                     await _supabase.from('wallets').update({ balance: currentBalance }).eq('user_id', user.id);
                     throw insertError;
                 }
