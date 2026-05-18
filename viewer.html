@@ -72,7 +72,7 @@
                 return;
             }
 
-            // 2. جلب تفاصيل الإعلان مباشرة من جدول ads بناءً على أسماء الحقول الفعلية لقاعدة بياناتك
+            // 2. جلب تفاصيل الإعلان من جدول ads
             try {
                 const { data: adData, error: adError } = await _supabase
                     .from('ads')
@@ -82,13 +82,9 @@
 
                 if (adError || !adData) throw new Error("لم يتم العثور على الإعلان في قاعدة البيانات.");
 
-                // [تعديل أساسي] ربط العداد بالعمود الفعلي duration_seconds
                 secondsLeft = parseInt(adData.duration_seconds) || 10;
-                
-                // [تعديل أساسي] جلب القيمة المالية مباشرة من العمود الحقيقي reward_amount
                 rewardAmount = parseFloat(adData.reward_amount);
                 
-                // حساب احتياطي في حال كان الحقل المالي فارغاً بالخطأ في السيرفر
                 if (isNaN(rewardAmount)) {
                     if (secondsLeft === 20) {
                         rewardAmount = 0.005;
@@ -97,11 +93,10 @@
                     }
                 }
 
-                // تشغيل رابط الإعلان داخل الإطار (يتوافق مع العمود ad_link في جدولك)
                 frameEl.src = adData.ad_link || adData.url;
                 loadingEl.style.display = 'none';
 
-                // 3. بدء العد التنازلي للمشاهدة حسب المدة الزمنية الحقيقية للإعلان
+                // 3. بدء العد التنازلي للمشاهدة
                 timerEl.innerText = secondsLeft;
                 const countdown = setInterval(() => {
                     secondsLeft--;
@@ -120,13 +115,13 @@
             }
         };
 
-        // دالة تأكيد المشاهدة وإضافة الأرباح الدقيقة للمحفظة وتسجيل التتبع في السجلات
+        // دالة تأكيد المشاهدة، إضافة المكافأة وحفظ الحظر الفوري محلياً وسحابياً
         async function handleClaim() {
             try {
                 btnEl.disabled = true;
                 btnEl.innerText = "جاري الحفظ وإضافة الرصيد...";
 
-                // 1. استدعاء الـ RPC لزيادة رصيد المحفظة بالقيمة المحسوبة ديناميكياً
+                // 1. استدعاء الـ RPC لزيادة رصيد محفظة المستخدم
                 const { error: rpcError } = await _supabase.rpc('increment_balance', { 
                     user_id_input: currentUser.id, 
                     amount: parseFloat(rewardAmount) 
@@ -134,13 +129,17 @@
 
                 if (rpcError) throw rpcError;
 
-                // 2. تسجيل المشاهدة الحالية في جدول التتبع ads_views لكي يتم حظر الإعلان 24 ساعة في صفحة الـ home
-                // تم تحويل معرف الإعلان إلى نص أو رقم مرن لتجنب أخطاء حقول المُعرّفات (UUID أو Integer)
+                // 2. تسجيل المشاهدة في جدول السيرفر ads_views للتوثيق الأساسي
                 const { error: insertError } = await _supabase
                     .from('ads_views')
                     .insert([{ user_id: currentUser.id, ad_id: adId }]);
                 
                 if (insertError) console.warn("View log error:", insertError.message);
+
+                // [التعديل المطلوب]: تخزين المعرف محلياً ليعمل الحظر الفوري في صفحة home بدون أي تأخير زمني
+                if (adId) {
+                    localStorage.setItem(`watched_ad_${adId}`, new Date().getTime());
+                }
 
                 alert(`✅ مبروك! تمت مشاهدة الإعلان بنجاح وإضافة ${rewardAmount.toFixed(3)} BFP إلى محفظتك.`);
                 window.location.href = 'home.html';
