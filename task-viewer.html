@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل وتنفيذ المهمة - منصة الأرباح</title>
+    <title>تفاصيل وتنفيذ المهمة - The Black Flower</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -47,6 +47,34 @@
             z-index: 100;
         }
 
+        .brand-zone {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+            margin-bottom: 15px;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .brand-title {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.4rem;
+            margin: 5px 0 2px 0;
+            letter-spacing: 1px;
+        }
+
+        .brand-sub {
+            font-size: 0.8rem;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            margin: 0;
+        }
+
         .user-profile {
             text-align: center;
             border-bottom: 1px solid #222;
@@ -55,15 +83,16 @@
         }
 
         .user-avatar {
-            font-size: 3.5rem;
+            font-size: 2.5rem;
             color: var(--primary-green);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .username {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             margin: 5px 0;
+            word-break: break-all;
         }
 
         .balance-card {
@@ -269,12 +298,6 @@
             background: #218838;
         }
 
-        .submit-btn:disabled {
-            background: #444;
-            color: #888;
-            cursor: not-allowed;
-        }
-
         /* رسالة نجاح تقديم المهمة مسبقاً */
         .status-alert {
             display: flex;
@@ -311,6 +334,12 @@
 
     <div class="sidebar">
         <div>
+            <div class="brand-zone">
+                <img src="wight.jpg" alt="Logo" class="brand-logo">
+                <h1 class="brand-title">The Black Flower</h1>
+                <p class="brand-sub">Professional art</p>
+            </div>
+
             <div class="user-profile">
                 <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
                 <div id="user-display-name" class="username">جاري التحميل...</div>
@@ -354,12 +383,13 @@
         let TASK_REWARD = 0;
 
         window.onload = async () => {
-            // الحصول على معرف المهمة من رابط URL
             const urlParams = new URLSearchParams(window.location.search);
-            TASK_ID = urlParams.get('id');
+            // تنظيف وتنقية المعرف القادم من الرابط فوراً لمنع أخطاء البيانات
+            const rawId = urlParams.get('id');
+            TASK_ID = rawId ? rawId.trim() : null;
 
-            if (!TASK_ID) {
-                alert("لم يتم العثور على معرف المهمة المحددة.");
+            if (!TASK_ID || TASK_ID === "undefined" || TASK_ID === "null") {
+                alert("لم يتم العثور على معرف صحيح للمهمة المحددة.");
                 window.location.href = "index.html";
                 return;
             }
@@ -374,8 +404,10 @@
                     CURRENT_USER_ID = user.id;
                     document.getElementById('user-display-name').innerText = user.email.split('@')[0];
                 } else {
-                    CURRENT_USER_ID = "test-user-id";
-                    document.getElementById('user-display-name').innerText = "مستخدم تجريبي";
+                    // حظر دخول المستخدم الوهمي لمنع أخطاء الـ RLS وحجب البيانات
+                    alert("لم يتم العثور على جلسة تسجيل دخول نشطة، يرجى تسجيل الدخول أولاً.");
+                    window.location.href = "login.html";
+                    return;
                 }
 
                 await fetchWalletData();
@@ -405,7 +437,7 @@
             const submissionContainer = document.getElementById('submission-container');
 
             try {
-                // 1. جلب تفاصيل المهمة
+                // 1. جلب تفاصيل المهمة باستخدام المعرّف النظيف
                 const { data: task, error: taskErr } = await _supabase
                     .from('tasks')
                     .select('*')
@@ -413,7 +445,13 @@
                     .maybeSingle();
 
                 if (taskErr || !task) {
-                    detailsContainer.innerHTML = `<div style="color:var(--danger-red); text-align:center;">عذراً، لم يتم العثور على هذه المهمة أو أنها انتهت.</div>`;
+                    console.error("Supabase Error or Empty:", taskErr);
+                    detailsContainer.innerHTML = `
+                        <div style="color:var(--danger-red); text-align:center;">
+                            عذراً، لم يتم العثور على هذه المهمة أو أنها انتهت.<br>
+                            <small style="color:gray;">المعرف المطلوب الفاشل: ${TASK_ID}</small>
+                        </div>`;
+                    submissionContainer.innerHTML = '';
                     return;
                 }
 
@@ -434,8 +472,8 @@
                     ` : ''}
                 `;
 
-                // 2. التحقق مما إذا كان المستخدم قد أرسل إثباتاً لهذه المهمة من قبل مسبقاً
-                const { data: submission, error: subErr } = await _supabase
+                // 2. التحقق من حالة الإثبات المقدم لهذه المهمة
+                const { data: submission } = await _supabase
                     .from('task_submissions')
                     .select('*')
                     .eq('task_id', TASK_ID)
@@ -443,7 +481,6 @@
                     .maybeSingle();
 
                 if (submission) {
-                    // إذا قدم المستخدم إثبات مسبقاً، نعرض له حالته بدلاً من الفورم
                     let statusHtml = '';
                     if (submission.status === 'pending') {
                         statusHtml = `
@@ -451,7 +488,7 @@
                                 <i class="fas fa-clock fa-2x"></i>
                                 <div>
                                     <div style="font-size: 1.1rem;">تم إرسال الإثبات وهو قيد المراجعة حالياً</div>
-                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #aaa;">نص الإثبات الذي أرسلته: "${submission.proof_text}"</div>
+                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #aaa;">نص الإثبات: "${submission.proof_text}"</div>
                                 </div>
                             </div>`;
                     } else if (submission.status === 'approved') {
@@ -464,35 +501,42 @@
                                 </div>
                             </div>`;
                     } else if (submission.status === 'rejected') {
+                        // في حال الرفض، نعرض رسالة الرفض ونعيد إظهار الـ Form بالأسفل ليتمكن من المحاولة ثانية وتحديث الإثبات
                         statusHtml = `
-                            <div class="status-alert rejected">
+                            <div class="status-alert rejected" style="margin-bottom:20px;">
                                 <i class="fas fa-times-circle fa-2x"></i>
                                 <div>
-                                    <div style="font-size: 1.1rem;">للأسف، تم رفض طلبك من قِبل المسؤول</div>
-                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #f5b3b3;">سبب الرفض المذكور: "${submission.rejection_reason || 'لم يتم تحديد سبب مخصص'}"</div>
+                                    <div style="font-size: 1.1rem;">للأسف، تم رفض طلبك السابق من قِبل المسؤول</div>
+                                    <div style="font-size: 0.85rem; font-weight: normal; margin-top: 4px; color: #f5b3b3;">سبب الرفض: "${submission.rejection_reason || 'لم يتم تحديد سبب مخصص'}"</div>
                                 </div>
-                            </div>`;
+                            </div>
+                            ${getFormHtml(submission.proof_text)}`;
                     }
                     submissionContainer.innerHTML = statusHtml;
                 } else {
-                    // إذا لم يقدم إثبات بعد، نعرض له نموذج الإرسال (Form)
-                    submissionContainer.innerHTML = `
-                        <form id="proofForm" onsubmit="handleSubmitProof(event)" class="submission-form">
-                            <h3 class="form-title"><i class="fas fa-paper-plane" style="color:var(--primary-green)"></i> تقديم إثبات تنفيذ المهمة</h3>
-                            <div class="form-group">
-                                <label for="proofText">اكتب إثبات العمل هنا (مثال: اسم حسابك الذي نفذت به الشروط أو لقطة تأكيد):</label>
-                                <textarea id="proofText" class="form-control" rows="4" placeholder="اكتب هنا التفاصيل بوضوح لكي يراجعها الأدمن..." required></textarea>
-                            </div>
-                            <button type="submit" id="btnSubmit" class="submit-btn">
-                                <i class="fas fa-check"></i> إرسال المراجعة للأدمن
-                            </button>
-                        </form>
-                    `;
+                    // عرض نموذج جديد إذا لم يسبق الإرسال
+                    submissionContainer.innerHTML = getFormHtml();
                 }
 
             } catch (error) {
                 console.error("خطأ في جلب بيانات المهمة والاستمارة:", error);
             }
+        }
+
+        // دالة مساعدة لإنشاء وعرض الـ Form بطريقة نظيفة وقابلة لإعادة الاستخدام
+        function getFormHtml(previousText = '') {
+            return `
+                <form id="proofForm" onsubmit="handleSubmitProof(event)" class="submission-form">
+                    <h3 class="form-title"><i class="fas fa-paper-plane" style="color:var(--primary-green)"></i> تقديم إثبات تنفيذ المهمة</h3>
+                    <div class="form-group">
+                        <label for="proofText">اكتب إثبات العمل الجديد هنا بوضوح (اسم حسابك، أو تفاصيل المتابعة):</label>
+                        <textarea id="proofText" class="form-control" rows="4" placeholder="اكتب هنا التفاصيل بوضوح لكي يراجعها الأدمن..." required>${previousText}</textarea>
+                    </div>
+                    <button type="submit" id="btnSubmit" class="submit-btn">
+                        <i class="fas fa-check"></i> إرسال المراجعة للأدمن
+                    </button>
+                </form>
+            `;
         }
 
         async function handleSubmitProof(e) {
@@ -509,23 +553,20 @@
                 btnSubmit.disabled = true;
                 btnSubmit.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري الإرسال للمسؤول...`;
 
-                // إدراج طلب مراجعة جديد في جدول 'task-submissions'
+                // استخدام دالة upsert حتى تقوم بتعديل الطلب القديم المرفوض بدلاً من عمل طلبات مكررة تفجر قاعدة البيانات
                 const { error } = await _supabase
                     .from('task_submissions')
-                    .insert([
-                        {
-                            user_id: CURRENT_USER_ID,
-                            task_id: TASK_ID,
-                            proof_text: proofText,
-                            status: 'pending' // القيمة الافتراضية بانتظار المراجعة للأدمن
-                        }
-                    ]);
+                    .upsert({
+                        user_id: CURRENT_USER_ID,
+                        task_id: TASK_ID,
+                        proof_text: proofText,
+                        status: 'pending',
+                        rejection_reason: null // تصفير سبب الرفض المسبق لبدء مراجعة جديدة
+                    }, { onConflict: 'user_id,task_id' });
 
                 if (error) throw error;
 
-                alert("تم إرسال إثباتك للأدمن بنجاح! سيتم فحصها في صفحة إدارة المهام واحتساب المكافأة قريباً.");
-                
-                // إعادة تحميل الصفحة لتحديث الحالة وعرض المربع الأصفر المقفل
+                alert("تم إرسال إثباتك للمسؤول بنجاح! سيتم فحص الطلب واحتساب الأرباح قريباً.");
                 await loadTaskAndSubmissionStatus();
 
             } catch (err) {
