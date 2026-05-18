@@ -503,7 +503,7 @@
                 tasks.forEach(task => {
                     const hasSubmitted = submissions?.some(s => String(s.task_id).trim() === String(task.id).trim());
 
-                    // [تعديل أساسي] تم تغيير الرابط هنا ليوجّه مباشرةً إلى صفحة task-viewer.html
+                    // التعديل هنا: تم تغيير الوجهة إلى task-viewer.html بدلاً من الرابط السابق
                     container.innerHTML += `
                         <div class="item-card" style="position: relative;">
                             ${hasSubmitted ? `
