@@ -66,7 +66,6 @@
             margin: 5px 0;
         }
 
-        /* عرض الرصيد المالي المزدوج */
         .balance-card {
             background: #1c1c1c;
             border: 1px solid #333;
@@ -163,14 +162,12 @@
             color: var(--primary-green);
         }
 
-        /* شبكة عرض العناصر */
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
-        /* تصميم الكرت الأساسي */
         .item-card {
             background: var(--card-bg);
             border: 1px solid #252525;
@@ -237,7 +234,7 @@
             border-color: var(--primary-green);
         }
 
-        /* تأثير الحجب والمربع الشفاف الأسود مع الصح الأخضر الإعلاني */
+        /* تأثير الحجب والمربع الشفاف الأسود مع الصح الأخضر */
         .completed-overlay {
             position: absolute;
             top: 0;
@@ -256,6 +253,9 @@
             color: var(--primary-green);
             font-weight: bold;
             font-size: 1.1rem;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
         }
 
         .completed-overlay i {
@@ -331,14 +331,11 @@
     </div>
 
     <script>
-        // إعدادات الاتصال بـ Supabase
         const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OX0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let CURRENT_USER_ID = null;
-        
-        // سعر الـ BFP الواحد يساوي 0.50 دولار (نصف دولار)
         const BFP_TO_USD_RATE = 0.50; 
 
         window.onload = async () => {
@@ -368,10 +365,9 @@
             }
         }
 
-        // جلب رصيد المحفظة واحتساب قيمته بالدولار
         async function fetchWalletData() {
             try {
-                const { data: wallet, error } = await _supabase
+                const { data: wallet } = await _supabase
                     .from('wallets')
                     .select('balance')
                     .eq('user_id', CURRENT_USER_ID)
@@ -380,18 +376,15 @@
                 if (wallet) {
                     const bfpBalance = wallet.balance || 0;
                     const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(4); 
-
                     document.getElementById('user-balance-bfp').innerText = `${bfpBalance} BFP`;
                     document.getElementById('user-balance-usd').innerText = `=$${usdBalance} دولار`;
                 }
-            } catch (err) {
-                console.error(err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         async function fetchUnreadMessagesCount() {
             try {
-                const { data, error } = await _supabase
+                const { data } = await _supabase
                     .from('user_messages')
                     .select('id')
                     .eq('user_id', CURRENT_USER_ID)
@@ -407,16 +400,14 @@
             } catch (err) { console.error(err); }
         }
 
-        // جلب الإعلانات وتحديد سعر المكافأة ديناميكياً حسب مدة الإعلان في جدول الـ DB وحجبه بالكامل لو شوهد سابقاً
+        // جلب الإعلانات وحجبها تلقائياً إذا شوهدت خلال آخر 24 ساعة
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
-                // جلب الإعلانات كاملة بدون شروط مسبقة لضمان تدفق البيانات المخزنة حديثاً
                 const { data: ads, error: fetchError } = await _supabase.from('ads').select('*');
-                
                 if (fetchError) throw fetchError;
 
-                // جلب سجلات المشاهدات الفعليّة من جدول ads_views للمستخدم الحالي
+                // جلب سجلات المشاهدات للمستخدم الحالي لفلترة الـ 24 ساعة
                 const { data: watched } = await _supabase
                     .from('ads_views')
                     .select('ad_id, created_at')
@@ -429,25 +420,14 @@
 
                 container.innerHTML = '';
                 ads.forEach(ad => {
-                    // [تعديل أساسي] جلب المدة والمكافأة والعنوان باستخدام المسميات الحقيقية لجدول الـ DB لديك
                     const duration = parseInt(ad.duration_seconds) || 10;
-                    let adReward = parseFloat(ad.reward_amount);
+                    let adReward = parseFloat(ad.reward_amount) || (duration === 20 ? 0.005 : 0.001);
 
-                    // إذا كانت قيمة المكافأة فارغة في قاعدة البيانات، يتم حسابها تلقائياً بناءً على المدة المتاحة
-                    if (isNaN(adReward)) {
-                        if (duration === 20) {
-                            adReward = 0.005; 
-                        } else {
-                            adReward = 0.001; 
-                        }
-                    }
-
-                    // التحقق من وجود العنوان والوصف، وفي حال غيابهما نضع نصاً بديلًا منسقاً
                     const adTitle = ad.title || "إعلان ترويجي مميز";
-                    const adDesc = ad.description || `شاهد هذا الإعلان الترويجي السريع لمدة ${duration} ثانية لكسب النقاط مجاناً.`;
+                    const adDesc = ad.description || `شاهد هذا الإعلان لمدة ${duration} ثانية لكسب النقاط مجاناً.`;
 
-                    // البحث عن سجلات المشاهدة للتحقق من مرور الـ 24 ساعة
-                    const watchRecords = watched?.filter(w => w.ad_id === ad.id);
+                    // فلترة الـ 24 ساعة الحسابية
+                    const watchRecords = watched?.filter(w => String(w.ad_id) === String(ad.id));
                     let isLocked = false;
 
                     if (watchRecords && watchRecords.length > 0) {
@@ -464,7 +444,6 @@
                         }
                     }
 
-                    // 2. طباعة الإعلان وتغليفه بالمربع الأسود الشفاف (completed-overlay) عند تمام المشاهدة حظراً لإعادة الدخول إليها
                     container.innerHTML += `
                         <div class="item-card">
                             ${isLocked ? `
@@ -477,7 +456,7 @@
                                 <span class="reward-badge">+${adReward.toFixed(3)} BFP</span>
                             </div>
                             <p class="card-desc">${adDesc}</p>
-                            <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.4;"' : ''}>
+                            <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
                                 <i class="fas fa-eye"></i> بدء المشاهدة (${duration} ثانية)
                             </a>
                         </div>
@@ -489,12 +468,13 @@
             }
         }
 
-        // جلب المهام الفعالة والنشطة
+        // جلب المهام المتاحة (تبقى مغلقة بالمربع الأسود عند إنجازها وتختفي تلقائياً فور انتهاء مدة صلاحيتها)
         async function loadTasks() {
             const container = document.getElementById('tasks-container');
             try {
                 const nowISO = new Date().toISOString();
 
+                // السيرفر يجلب فقط المهام التي لم تنتهِ صلاحيتها بعد (تُحذف تلقائياً بعد أسبوع من إنشائها حسب تاريخ expires_at)
                 const { data: tasks } = await _supabase
                     .from('tasks')
                     .select('*')
@@ -512,21 +492,21 @@
 
                 container.innerHTML = '';
                 tasks.forEach(task => {
-                    const hasSubmitted = submissions?.some(s => s.task_id === task.id);
+                    const hasSubmitted = submissions?.some(s => String(s.task_id) === String(task.id));
 
                     container.innerHTML += `
                         <div class="item-card">
                             ${hasSubmitted ? `
                             <div class="completed-overlay">
                                 <i class="fas fa-check-circle"></i>
-                                <span>🔒 تم الإنجاز بنجاح</span>
+                                <span>🔒 تم تقديم الإثبات وبانتظار المراجعة</span>
                             </div>` : ''}
                             <div class="card-top">
                                 <h4 class="card-title">${task.title}</h4>
                                 <span class="reward-badge">+${task.points_reward} BFP</span>
                             </div>
-                            <p class="card-desc">${task.description || 'نفذ الشروط المطلوبة للمهمة وقدم الإثبات الصحيح لتنال المكافأة.'}</p>
-                            <a href="${hasSubmitted ? '#' : `task-details.html?id=${task.id}`}" class="action-link" ${hasSubmitted ? 'style="pointer-events: none; opacity: 0.4;"' : ''}>
+                            <p class="card-desc">${task.description || 'نفذ الشروط المطلوبة للمهمة وقدم الإثبات لتنال المكافأة.'}</p>
+                            <a href="${hasSubmitted ? '#' : `task-details.html?id=${task.id}`}" class="action-link" ${hasSubmitted ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
                                 <i class="fas fa-external-link-alt"></i> تفاصيل المهمة
                             </a>
                         </div>
