@@ -213,6 +213,11 @@
             color: var(--muted-text);
             margin: 0;
             line-height: 1.4;
+            /* تحديد حد أقصى للسطور في الواجهة لعدم تمدد البطاقة بشكل مشوه */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .action-link {
@@ -484,11 +489,15 @@
             try {
                 const nowISO = new Date().toISOString();
 
-                const { data: tasks } = await _supabase
+                // جلب المهام النشطة فقط والتي لم تنتهِ صلاحيتها بعد
+                const { data: tasks, error: taskErr } = await _supabase
                     .from('tasks')
                     .select('*')
                     .gt('expires_at', nowISO); 
 
+                if (taskErr) throw taskErr;
+
+                // جلب تسليمات المستخدم الحالي لفحص الحالات
                 const { data: submissions } = await _supabase
                     .from('task_submissions')
                     .select('task_id, status')
@@ -503,7 +512,7 @@
                 tasks.forEach(task => {
                     const hasSubmitted = submissions?.some(s => String(s.task_id).trim() === String(task.id).trim());
 
-                    // التعديل هنا: تم تغيير الوجهة إلى task-viewer.html بدلاً من الرابط السابق
+                    // تم ضبط رابط الـ href ليتوجه مباشرةً إلى task-viewer.html مصحوباً بـ id المهمة المطلوبة
                     container.innerHTML += `
                         <div class="item-card" style="position: relative;">
                             ${hasSubmitted ? `
