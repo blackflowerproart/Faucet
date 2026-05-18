@@ -10,7 +10,7 @@
         .container { max-width: 500px; margin: auto; background: #111; padding: 35px; border-radius: 20px; border: 1px solid #333; }
         select, input, textarea { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #1a1a1a; color: #fff; font-size: 1.1rem; box-sizing: border-box; outline: none; font-family: Arial; text-align: right; }
         input:focus, textarea:focus { border-color: #28a745; }
-        textarea { height: 100px; resize: none; }
+        textarea { height: 120px; resize: none; }
         label { display: block; text-align: right; margin-top: 15px; font-weight: bold; color: #ccc; }
         .file-input-container { background: #1a1a1a; border: 1px dashed #444; padding: 20px; border-radius: 10px; margin: 10px 0; cursor: pointer; position: relative; }
         .file-input-container input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
@@ -26,13 +26,13 @@
 <body>
     <h1>إنشاء مهمة جديدة للمتصفحين</h1>
     <div class="container">
-        <input type="text" id="task-title" placeholder="عنوان المهمة (مثال: اشترك في قناتنا)">
-        <textarea id="task-desc" placeholder="تفاصيل وشروط المهمة..."></textarea>
+        <input type="text" id="task-title" placeholder="عنوان المهمة (مثال: اشترك في قناتنا وفعل الجرس)">
+        <textarea id="task-desc" placeholder="تفاصيل وشروط المهمة... (اكتب هنا طريقة التنفيذ والإثبات المطلوب بالتفصيل ليظهر للمستخدمين في صفحة العرض)"></textarea>
         <input type="url" id="task-url" placeholder="رابط الموقع المعني بالمهمة (https://...)">
         
-        <label>إرفاق صورة توضيحية للمهمة:</label>
+        <label>إرفاق صورة توضيحية للمهمة (ستظهر للمستخدم لشرح الفكرة):</label>
         <div class="file-input-container">
-            <span id="file-label">📸 اضغط هنا لاختيار صورة</span>
+            <span id="file-label">📸 اضغط هنا لاختيار صورة توضيحية</span>
             <input type="file" id="task-image" accept="image/*" onchange="previewFile()">
             <img id="image-preview" class="preview-img" src="" alt="Preview">
         </div>
@@ -118,7 +118,7 @@
             const isPromoApplied = (promoInput === FREE_PROMO_CODE);
             const totalCost = isPromoApplied ? 0 : (FIXED_REWARD * limit);
 
-            if (!title || !desc) return alert("يرجى إدخال عنوان المهمة وتفاصيلها على الأقل");
+            if (!title || !desc) return alert("يرجى إدخال عنوان المهمة وتفاصيلها (طريقة التنفيذ)");
 
             try {
                 btn.disabled = true;
@@ -144,7 +144,7 @@
 
                 let imageUrl = null;
 
-                // 2. رفع الصورة إلى الـ Storage في حال توفرها
+                // 2. رفع الصورة إلى الـ Storage في حال توفرها لكي تظهر بصفحة المشاهدة
                 if (imageFile) {
                     const fileExt = imageFile.name.split('.').pop();
                     const fileName = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
@@ -177,7 +177,7 @@
                 const expiresAt = new Date();
                 expiresAt.setDate(expiresAt.getDate() + 7);
 
-                // 4. إدخال بيانات المهمة بالكامل داخل جدول الـ tasks
+                // 4. إدخال بيانات المهمة بالكامل داخل جدول الـ tasks لتتمكن صفحة task-viewer.html من جلبها
                 const { error: insertError } = await _supabase
                     .from('tasks')
                     .insert([
@@ -185,9 +185,9 @@
                             user_id: user.id,       
                             creator_id: user.id,   
                             title: title,
-                            description: desc,
+                            description: desc, // تفاصيل وطريقة التنفيذ المكتوبة بالـ textarea
                             site_url: url ? url : null,
-                            image_url: imageUrl,
+                            image_url: imageUrl, // رابط الصورة التوضيحية المرفوعة
                             points_reward: FIXED_REWARD, 
                             target_limit: limit,    
                             expires_at: expiresAt.toISOString() 
