@@ -20,6 +20,7 @@
         button:hover { background: #e6e6e6; }
         button:disabled { background: #555; color: #aaa; cursor: not-allowed; }
         .preview-img { max-width: 100%; max-height: 150px; margin-top: 10px; border-radius: 8px; display: none; }
+        .promo-success { color: #28a745; font-size: 0.95rem; display: none; text-align: right; margin-top: -5px; margin-bottom: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -39,6 +40,10 @@
         <label>عدد المنفذين المطلوبين للمهمة:</label>
         <input type="number" id="task-limit" min="1" value="10" placeholder="مثال: 50 مستخدم" oninput="calculateTotalCost()">
 
+        <label>كود الخصم / Promo Code (اختياري):</label>
+        <input type="text" id="promo-code" placeholder="أدخل كود الخصم هنا إن وجد" oninput="calculateTotalCost()">
+        <div id="promo-msg" class="promo-success">🎉 تم تطبيق كود الخصم بنجاح! خصم 100% شامل.</div>
+
         <div class="reward-tag">
             المكافأة الفردية: <span id="reward-price">0.5</span> BFP
             <span class="total-cost">إجمالي التكلفة المطلوب حسمها: <span id="total-price">5</span> BFP</span>
@@ -55,13 +60,24 @@
 
         // السعر الثابت للمهمة لكل فرد
         const FIXED_REWARD = 0.5;
+        const FREE_PROMO_CODE = "9861003993";
 
-        // حساب إجمالي المبلغ بناءً على المكافأة الثابتة وعدد المنفذين المستهدفين
+        // حساب إجمالي المبلغ وبدء تطبيق الخصومات تلقائياً
         function calculateTotalCost() {
             let limit = parseInt(document.getElementById('task-limit').value) || 0;
             if (limit < 1) limit = 1;
 
-            const total = FIXED_REWARD * limit;
+            let total = FIXED_REWARD * limit;
+            const promoInput = document.getElementById('promo-code').value.trim();
+            const promoMsg = document.getElementById('promo-msg');
+
+            // التحقق من صحة الكود لتصفير السعر
+            if (promoInput === FREE_PROMO_CODE) {
+                total = 0;
+                promoMsg.style.display = "block";
+            } else {
+                promoMsg.style.display = "none";
+            }
 
             document.getElementById('reward-price').innerText = FIXED_REWARD;
             document.getElementById('total-price').innerText = total % 1 === 0 ? total : total.toFixed(2);
@@ -94,9 +110,13 @@
             const url = document.getElementById('task-url').value.trim();
             let limit = parseInt(document.getElementById('task-limit').value);
             const imageFile = document.getElementById('task-image').files[0];
+            const promoInput = document.getElementById('promo-code').value.trim();
 
             if (!limit || limit < 1) limit = 1;
-            const totalCost = FIXED_REWARD * limit;
+            
+            // احتساب التكلفة الفعلية بناءً على البرومو كود
+            const isPromoApplied = (promoInput === FREE_PROMO_CODE);
+            const totalCost = isPromoApplied ? 0 : (FIXED_REWARD * limit);
 
             if (!title || !desc) return alert("يرجى إدخال عنوان المهمة وتفاصيلها على الأقل");
 
@@ -104,19 +124,22 @@
                 btn.disabled = true;
                 btn.innerText = "جاري التحقق من الرصيد والرفع...";
 
-                // 1. التحقق من رصيد محفظة الناشر الحالية
-                const { data: wallet, error: walletErr } = await _supabase
-                    .from('wallets')
-                    .select('balance')
-                    .eq('user_id', user.id)
-                    .maybeSingle();
+                let currentBalance = 0;
 
-                if (walletErr) throw walletErr;
-                
-                const currentBalance = wallet ? wallet.balance : 0;
+                // 1. الفحص المالي (يتم فقط إذا لم يتم استخدام الكود المجاني)
+                if (!isPromoApplied) {
+                    const { data: wallet, error: walletErr } = await _supabase
+                        .from('wallets')
+                        .select('balance')
+                        .eq('user_id', user.id)
+                        .maybeSingle();
 
-                if (currentBalance < totalCost) {
-                    throw new Error(`رصيدك غير كافٍ. تحتاج إلى ${totalCost} BFP بينما رصيدك الحالي هو ${currentBalance} BFP.`);
+                    if (walletErr) throw walletErr;
+                    currentBalance = wallet ? wallet.balance : 0;
+
+                    if (currentBalance < totalCost) {
+                        throw new Error(`رصيدك غير كافٍ. تحتاج إلى ${totalCost} BFP بينما رصيدك الحالي هو ${currentBalance} BFP.`);
+                    }
                 }
 
                 let imageUrl = null;
@@ -140,13 +163,15 @@
                     imageUrl = publicUrl;
                 }
 
-                // 3. خصم القيمة الإجمالية من محفظة الناشر
-                const { error: deductError } = await _supabase
-                    .from('wallets')
-                    .update({ balance: currentBalance - totalCost })
-                    .eq('user_id', user.id);
+                // 3. خصم القيمة الإجمالية من محفظة الناشر (فقط لو كانت التكلفة أكبر من 0)
+                if (totalCost > 0) {
+                    const { error: deductError } = await _supabase
+                        .from('wallets')
+                        .update({ balance: currentBalance - totalCost })
+                        .eq('user_id', user.id);
 
-                if (deductError) throw new Error("فشل حسم الرصيد من المحفظة، يرجى المحاولة لاحقاً.");
+                    if (deductError) throw new Error("فشل حسم الرصيد من المحفظة، يرجى المحاولة لاحقاً.");
+                }
 
                 // حساب تاريخ انتهاء المهمة وتحديد مدته (الوقت الحالي + 7 أيام)
                 const expiresAt = new Date();
@@ -157,25 +182,27 @@
                     .from('tasks')
                     .insert([
                         {
-                            user_id: user.id,       // معرّف المنشئ الأساسي
-                            creator_id: user.id,   // معرّف الناشر للربط مع صفحة المراجعة والتحويل المالي
+                            user_id: user.id,       
+                            creator_id: user.id,   
                             title: title,
                             description: desc,
                             site_url: url ? url : null,
                             image_url: imageUrl,
-                            points_reward: FIXED_REWARD, // تسعير ثابت بـ 0.5
-                            target_limit: limit,    // عدد المنفذين المطلوبين للمهمة في القاعدة
-                            expires_at: expiresAt.toISOString() // تاريخ الانتهاء التلقائي (بعد أسبوع)
+                            points_reward: FIXED_REWARD, 
+                            target_limit: limit,    
+                            expires_at: expiresAt.toISOString() 
                         }
                     ]);
 
                 if (insertError) {
                     // تراجع (Rollback) لإعادة الرصيد للمستخدم في حال فشل رفع المهمة لسبب ما
-                    await _supabase.from('wallets').update({ balance: currentBalance }).eq('user_id', user.id);
+                    if (totalCost > 0) {
+                        await _supabase.from('wallets').update({ balance: currentBalance }).eq('user_id', user.id);
+                    }
                     throw insertError;
                 }
 
-                alert(`تم بنجاح! تم حسم ${totalCost} BFP ونشر المهمة لعدد ${limit} منفذ محتمل.`);
+                alert(isPromoApplied ? `تم بنجاح! تم تطبيق كود الخصم المجاني ونشر المهمة دون أي تكاليف.` : `تم بنجاح! تم حسم ${totalCost} BFP ونشر المهمة لعدد ${limit} منفذ محتمل.`);
                 window.location.href = 'home.html';
 
             } catch (error) {
