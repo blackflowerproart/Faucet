@@ -400,14 +400,13 @@
             } catch (err) { console.error(err); }
         }
 
-        // جلب الإعلانات وحجبها تلقائياً إذا شوهدت خلال آخر 24 ساعة (مع معالجة نوع معرّف الإعلان)
+        // جلب الإعلانات وحجبها تلقائياً إذا شوهدت خلال آخر 24 ساعة (من السيرفر أو محلياً)
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
                 const { data: ads, error: fetchError } = await _supabase.from('ads').select('*');
                 if (fetchError) throw fetchError;
 
-                // جلب سجلات المشاهدات للمستخدم الحالي لفلترة الـ 24 ساعة
                 const { data: watched, error: watchError } = await _supabase
                     .from('ads_views')
                     .select('ad_id, created_at')
@@ -428,21 +427,34 @@
                     const adTitle = ad.title || "إعلان ترويجي مميز";
                     const adDesc = ad.description || `شاهد هذا الإعلان لمدة ${duration} ثانية لكسب النقاط مجاناً.`;
 
-                    // [تعديل آمن ومجرب] تحويل المعرفات لنصوص لإلغاء أي تعارض بين الـ Integer والـ String
-                    const watchRecords = watched?.filter(w => String(w.ad_id).trim() === String(ad.id).trim());
                     let isLocked = false;
 
-                    if (watchRecords && watchRecords.length > 0) {
-                        const latestWatch = watchRecords.reduce((latest, current) => {
-                            return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
-                        });
+                    // 1. فحص الحجب الفوري من الـ LocalStorage (الذي تم حفظه فور الضغط في صفحة viewer)
+                    const localWatchTime = localStorage.getItem(`watched_ad_${ad.id}`);
+                    if (localWatchTime) {
+                        const hoursPassedLocal = (new Date().getTime() - parseInt(localWatchTime)) / (1000 * 60 * 60);
+                        if (hoursPassedLocal < 24) {
+                            isLocked = true;
+                        } else {
+                            localStorage.removeItem(`watched_ad_${ad.id}`); // تنظيف إذا انتهت المدة
+                        }
+                    }
 
-                        const watchedTime = new Date(latestWatch.created_at).getTime();
-                        const currentTime = new Date().getTime();
-                        const hoursPassed = (currentTime - watchedTime) / (1000 * 60 * 60);
-                        
-                        if (hoursPassed < 24) {
-                            isLocked = true; 
+                    // 2. فحص السيرفر والـ DB (كخط دفاع أساسي ومزامنة)
+                    if (!isLocked) {
+                        const watchRecords = watched?.filter(w => String(w.ad_id).trim() === String(ad.id).trim());
+                        if (watchRecords && watchRecords.length > 0) {
+                            const latestWatch = watchRecords.reduce((latest, current) => {
+                                return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
+                            });
+
+                            const watchedTime = new Date(latestWatch.created_at).getTime();
+                            const currentTime = new Date().getTime();
+                            const hoursPassed = (currentTime - watchedTime) / (1000 * 60 * 60);
+                            
+                            if (hoursPassed < 24) {
+                                isLocked = true; 
+                            }
                         }
                     }
 
@@ -470,13 +482,11 @@
             }
         }
 
-        // جلب المهام المتاحة (تبقى مغلقة بالمربع الأسود عند إنجازها وتختفي تلقائياً فور انتهاء مدة صلاحيتها)
         async function loadTasks() {
             const container = document.getElementById('tasks-container');
             try {
                 const nowISO = new Date().toISOString();
 
-                // السيرفر يجلب فقط المهام التي لم تنتهِ صلاحيتها بعد (تُحذف تلقائياً بعد أسبوع من إنشائها حسب تاريخ expires_at)
                 const { data: tasks } = await _supabase
                     .from('tasks')
                     .select('*')
