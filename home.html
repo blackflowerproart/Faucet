@@ -237,7 +237,7 @@
             border-color: var(--primary-green);
         }
 
-        /* تأثير الحجب والمربع الشفاف الأسود مع الصح الأخضر */
+        /* تأثير الحجب والمربع الشفاف الأسود مع الصح الأخضر الإعلاني */
         .completed-overlay {
             position: absolute;
             top: 0;
@@ -338,11 +338,8 @@
 
         let CURRENT_USER_ID = null;
         
-        // تعديل: سعر الـ BFP الواحد يساوي 0.50 دولار (نصف دولار)
+        // سعر الـ BFP الواحد يساوي 0.50 دولار (نصف دولار)
         const BFP_TO_USD_RATE = 0.50; 
-        
-        // تعديل: تحديد القيمة الثابتة لمكافأة مشاهدة الإعلان بـ 0.005 BFP بدلًا من القيمة السابقة
-        const FIXED_AD_REWARD = 0.005;
 
         window.onload = async () => {
             await initSession();
@@ -371,7 +368,7 @@
             }
         }
 
-        // جلب رصيد المحفظة واحتساب قيمته بالدولار بناءً على التحديث الجديد مع دعم الكسور الصغيرة
+        // جلب رصيد المحفظة واحتساب قيمته بالدولار
         async function fetchWalletData() {
             try {
                 const { data: wallet, error } = await _supabase
@@ -382,9 +379,8 @@
 
                 if (wallet) {
                     const bfpBalance = wallet.balance || 0;
-                    const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(4); // زيادة دقة الكسور للدولار بسبب القيم الصغيرة
+                    const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(4); 
 
-                    // عرض الرصيد بشكل مناسب للأرقام العشرية الصغرى
                     document.getElementById('user-balance-bfp').innerText = `${bfpBalance} BFP`;
                     document.getElementById('user-balance-usd').innerText = `=$${usdBalance} دولار`;
                 }
@@ -411,14 +407,14 @@
             } catch (err) { console.error(err); }
         }
 
-        // جلب الإعلانات وتوجيهها لصفحة viewer.html مع التحقق من الحظر لمدة 24 ساعة والتسعير الجديد
+        // جلب الإعلانات وتحديد سعر المكافأة ديناميكياً حسب مدة الإعلان في جدول الـ DB وحجبه بالكامل لو شوهد سابقاً
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
                 // جلب الإعلانات النشطة
                 const { data: ads } = await _supabase.from('ads').select('*');
                 
-                // جلب سجلات المشاهدات الفعليّة من جدول ads_views للمخدم الحالي
+                // جلب سجلات المشاهدات الفعليّة من جدول ads_views للمستخدم الحالي
                 const { data: watched } = await _supabase
                     .from('ads_views')
                     .select('ad_id, created_at')
@@ -431,12 +427,21 @@
 
                 container.innerHTML = '';
                 ads.forEach(ad => {
-                    // البحث عن آخر مشاهدة لهذا الإعلان بالتحديد
+                    // 1. احتساب المكافأة ديناميكياً بناءً على مدة الإعلان (duration) المخزنة بالـ DB
+                    let adReward = 0.001; // القيمة الافتراضية للـ 10 ثوانٍ أو أي مدد مغايرة
+                    const duration = parseInt(ad.duration) || 10;
+
+                    if (duration === 20) {
+                        adReward = 0.005; // مكافأة الـ 20 ثانية المحددة
+                    } else if (duration === 10) {
+                        adReward = 0.001; // مكافأة الـ 10 ثوانٍ المحددة
+                    }
+
+                    // البحث عن سجلات المشاهدة للتحقق من مرور الـ 24 ساعة
                     const watchRecords = watched?.filter(w => w.ad_id === ad.id);
                     let isLocked = false;
 
                     if (watchRecords && watchRecords.length > 0) {
-                        // جلب تاريخ أحدث مشاهدة للإعلان
                         const latestWatch = watchRecords.reduce((latest, current) => {
                             return new Date(current.created_at) > new Date(latest.created_at) ? current : latest;
                         });
@@ -445,13 +450,12 @@
                         const currentTime = new Date().getTime();
                         const hoursPassed = (currentTime - watchedTime) / (1000 * 60 * 60);
                         
-                        // إذا لم يمر 24 ساعة يتم تفعيل الحظر الشفاف
                         if (hoursPassed < 24) {
                             isLocked = true; 
                         }
                     }
 
-                    // عرض الإعلان بالتسعير الجديد الثابت لعشرين ثانية (0.005 BFP)
+                    // 2. طباعة الإعلان وتغليفه بالمربع الأسود الشفاف (completed-overlay) عند تمام المشاهدة حظراً لإعادة الدخول إليها
                     container.innerHTML += `
                         <div class="item-card">
                             ${isLocked ? `
@@ -461,11 +465,11 @@
                             </div>` : ''}
                             <div class="card-top">
                                 <h4 class="card-title">${ad.title}</h4>
-                                <span class="reward-badge">+${FIXED_AD_REWARD} BFP</span>
+                                <span class="reward-badge">+${adReward} BFP</span>
                             </div>
-                            <p class="card-desc">${ad.description || 'شاهد هذا الإعلان الترويجي السريع لمدة 20 ثانية لكسب النقاط مجاناً.'}</p>
+                            <p class="card-desc">${ad.description || `شاهد هذا الإعلان الترويجي السريع لمدة ${duration} ثانية لكسب النقاط مجاناً.`}</p>
                             <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.4;"' : ''}>
-                                <i class="fas fa-eye"></i> بدء المشاهدة
+                                <i class="fas fa-eye"></i> بدء المشاهدة (${duration} ثانية)
                             </a>
                         </div>
                     `;
@@ -476,17 +480,16 @@
             }
         }
 
-        // جلب المهام الفعالة والنشطة المتاحة مع تصفية أوتوماتيكية لأي مهمة انتهت صلاحيتها
+        // جلب المهام الفعالة والنشطة
         async function loadTasks() {
             const container = document.getElementById('tasks-container');
             try {
                 const nowISO = new Date().toISOString();
 
-                // ✨ التعديل والفلترة: جلب المهام النشطة فقط التي يكون تاريخ انتهائها أكبر من الوقت الحالي
                 const { data: tasks } = await _supabase
                     .from('tasks')
                     .select('*')
-                    .gt('expires_at', nowISO); // جلب الصالح فقط لضمان تصفية المهام فوراً
+                    .gt('expires_at', nowISO); 
 
                 const { data: submissions } = await _supabase
                     .from('task_submissions')
