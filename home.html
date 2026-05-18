@@ -400,7 +400,7 @@
             } catch (err) { console.error(err); }
         }
 
-        // جلب الإعلانات وحجبها تلقائياً إذا شوهدت خلال آخر 24 ساعة
+        // جلب الإعلانات وحجبها تلقائياً إذا شوهدت خلال آخر 24 ساعة (مع معالجة نوع معرّف الإعلان)
         async function loadAds() {
             const container = document.getElementById('ads-container');
             try {
@@ -408,10 +408,12 @@
                 if (fetchError) throw fetchError;
 
                 // جلب سجلات المشاهدات للمستخدم الحالي لفلترة الـ 24 ساعة
-                const { data: watched } = await _supabase
+                const { data: watched, error: watchError } = await _supabase
                     .from('ads_views')
                     .select('ad_id, created_at')
                     .eq('user_id', CURRENT_USER_ID);
+
+                if (watchError) console.warn("خطأ في جلب سجلات المشاهدة:", watchError.message);
 
                 if (!ads || ads.length === 0) {
                     container.innerHTML = `<div class="loading-text">لا توجد إعلانات متوفرة حالياً.</div>`;
@@ -426,8 +428,8 @@
                     const adTitle = ad.title || "إعلان ترويجي مميز";
                     const adDesc = ad.description || `شاهد هذا الإعلان لمدة ${duration} ثانية لكسب النقاط مجاناً.`;
 
-                    // فلترة الـ 24 ساعة الحسابية
-                    const watchRecords = watched?.filter(w => String(w.ad_id) === String(ad.id));
+                    // [تعديل آمن ومجرب] تحويل المعرفات لنصوص لإلغاء أي تعارض بين الـ Integer والـ String
+                    const watchRecords = watched?.filter(w => String(w.ad_id).trim() === String(ad.id).trim());
                     let isLocked = false;
 
                     if (watchRecords && watchRecords.length > 0) {
@@ -445,7 +447,7 @@
                     }
 
                     container.innerHTML += `
-                        <div class="item-card">
+                        <div class="item-card" style="position: relative;">
                             ${isLocked ? `
                             <div class="completed-overlay">
                                 <i class="fas fa-check-circle"></i>
@@ -492,10 +494,10 @@
 
                 container.innerHTML = '';
                 tasks.forEach(task => {
-                    const hasSubmitted = submissions?.some(s => String(s.task_id) === String(task.id));
+                    const hasSubmitted = submissions?.some(s => String(s.task_id).trim() === String(task.id).trim());
 
                     container.innerHTML += `
-                        <div class="item-card">
+                        <div class="item-card" style="position: relative;">
                             ${hasSubmitted ? `
                             <div class="completed-overlay">
                                 <i class="fas fa-check-circle"></i>
