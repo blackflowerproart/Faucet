@@ -3,30 +3,561 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Flower - الرئيسية</title>
+    <title>The Black Flower - لوحة الأرباح والمهام</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        body { background-color: #000; color: #fff; font-family: 'Arial', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
-        .container { width: 90%; max-width: 600px; padding: 20px; }
-        img { width: 150px; height: auto; margin-bottom: 10px; border-radius: 10px; }
-        h1 { font-family: 'Times New Roman', serif; font-size: 3rem; margin: 10px 0; letter-spacing: 2px; }
-        .sub-title { font-family: Arial, sans-serif; font-size: 1.2rem; color: #bbb; text-transform: uppercase; margin-bottom: 40px; }
-        .btn-box { display: flex; flex-direction: column; gap: 20px; width: 100%; }
-        button { padding: 18px; font-size: 1.3rem; font-weight: bold; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s; width: 100%; }
-        .login-btn { background-color: #fff; color: #000; }
-        .earn-btn { background-color: #28a745; color: #fff; }
-        button:hover { opacity: 0.8; transform: scale(1.02); }
-        @media (min-width: 768px) { .btn-box { flex-direction: row; } }
+        :root {
+            --primary-green: #28a745;
+            --danger-red: #dc3545;
+            --dark-bg: #0b0b0b;
+            --card-bg: #141414;
+            --hover-bg: #1c1c1c;
+            --text-color: #ffffff;
+            --muted-text: #888888;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            direction: rtl;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ----------------- الشاشة الجانبية (Sidebar) ----------------- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--card-bg);
+            border-left: 1px solid #222;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .brand-zone {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+            margin-bottom: 15px;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+        .brand-title {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.4rem;
+            margin: 5px 0 2px 0;
+            letter-spacing: 1px;
+        }
+
+        .brand-sub {
+            font-size: 0.8rem;
+            color: var(--muted-text);
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .user-profile {
+            text-align: center;
+            border-bottom: 1px solid #222;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .user-avatar {
+            font-size: 2.5rem;
+            color: var(--primary-green);
+            margin-bottom: 8px;
+        }
+
+        .username {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin: 5px 0;
+            word-break: break-all;
+        }
+
+        .balance-card {
+            background: #1c1c1c;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 12px;
+            margin-top: 15px;
+        }
+
+        .balance-bfp {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+
+        .balance-usd {
+            font-size: 0.9rem;
+            color: var(--muted-text);
+            margin-top: 4px;
+        }
+
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+            margin-top: 10px;
+        }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #181818;
+            border: 1px solid #252525;
+            color: var(--text-color);
+            padding: 14px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .menu-btn:hover {
+            background: var(--hover-bg);
+            border-color: #444;
+            color: var(--primary-green);
+        }
+
+        .menu-btn.logout {
+            background: rgba(220, 53, 69, 0.1);
+            border-color: rgba(220, 53, 69, 0.2);
+            color: var(--danger-red);
+            margin-top: auto;
+        }
+
+        .menu-btn.logout:hover {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        .sidebar-badge {
+            position: absolute;
+            left: 15px;
+            background: var(--danger-red);
+            color: white;
+            font-size: 0.75rem;
+            padding: 2px 7px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* ----------------- المحتوى الأساسي للصفحة ----------------- */
+        .main-content {
+            margin-right: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        .section-header {
+            font-size: 1.4rem;
+            color: #fff;
+            margin: 35px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+        }
+
+        .section-header i {
+            color: var(--primary-green);
+        }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border: 1px solid #252525;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: 0.2s;
+        }
+
+        .item-card:hover {
+            border-color: #383838;
+            transform: translateY(-2px);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: bold;
+            margin: 0;
+            color: #eee;
+        }
+
+        .reward-badge {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--primary-green);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid rgba(40, 167, 69, 0.2);
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--muted-text);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .action-link {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: auto;
+            transition: 0.2s;
+        }
+
+        .action-link:hover {
+            background: var(--primary-green);
+            border-color: var(--primary-green);
+        }
+
+        .completed-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            z-index: 10;
+            color: var(--primary-green);
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .completed-overlay i {
+            font-size: 2.2rem;
+            background: rgba(40, 167, 69, 0.15);
+            padding: 12px;
+            border-radius: 50%;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+
+        .loading-text {
+            color: var(--muted-text);
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; position: relative; border-left: none; border-bottom: 1px solid #222; }
+            .main-content { margin-right: 0; padding: 20px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="wight.jpg" alt="Logo">
-        <h1>The Black Flower</h1>
-        <p class="sub-title">Professional art</p>
-        <div class="btn-box">
-            <button class="login-btn" onclick="location.href='login.html'">Login</button>
-            <button class="earn-btn" onclick="location.href='register.html'">Start Earning</button>
+
+    <div class="sidebar">
+        <div>
+            <div class="brand-zone">
+                <img src="wight.jpg" alt="Logo" class="brand-logo">
+                <h1 class="brand-title">The Black Flower</h1>
+                <p class="brand-sub">Professional art</p>
+            </div>
+
+            <div class="user-profile">
+                <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+                <div id="user-display-name" class="username">جاري التحميل...</div>
+                
+                <div class="balance-card">
+                    <div id="user-balance-bfp" class="balance-bfp">0.00 BFP</div>
+                    <div id="user-balance-usd" class="balance-usd">=$0.00 دولار</div>
+                </div>
+            </div>
+
+            <div class="sidebar-menu">
+                <a href="create-task.html" class="menu-btn">
+                    <i class="fas fa-plus-circle"></i> إضافة مهمة جديدة
+                </a>
+                <a href="create-ad.html" class="menu-btn">
+                    <i class="fas fa-bullhorn"></i> إضافة إعلان جديد
+                </a>
+                <a href="messages.html" class="menu-btn">
+                    <i class="fas fa-envelope"></i> البريد والرسائل
+                    <span id="msg-badge" class="sidebar-badge">0</span>
+                </a>
+            </div>
         </div>
+
+        <a href="#" class="menu-btn logout" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
     </div>
+
+    <div class="main-content">
+        
+        <div class="section-header">
+            <i class="fas fa-play-circle"></i> الإعلانات المتوفرة (المشاهدة المتاحة)
+        </div>
+        <div id="ads-container" class="items-grid">
+            <div class="loading-text">جاري تحميل الإعلانات...</div>
+        </div>
+
+        <div class="section-header">
+            <i class="fas fa-clipboard-list"></i> المهام المتاحة للعمل
+        </div>
+        <div id="tasks-container" class="items-grid">
+            <div class="loading-text">جاري تحميل المهام المتاحة...</div>
+        </div>
+
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://qxtubfnbbqnxteoocqrg.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4dHViZm5iYnFueHRlb29jcXJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MjE3NjksImV4cCI6MjA5Mzk5Nzc2OY0.Ns_Jc4omGVlK6pikEucMG__rmeDKxcaDdnSeYhhRjTU';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let CURRENT_USER_ID = null;
+        const BFP_TO_USD_RATE = 0.50; 
+
+        window.onload = async () => {
+            await initSession();
+        };
+
+        async function initSession() {
+            try {
+                // محاولة جلب المستخدم النشط الفعلي من الـ Auth الخاص بـ سوبابيز
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (user) {
+                    CURRENT_USER_ID = user.id;
+                    document.getElementById('user-display-name').innerText = user.email.split('@')[0];
+                } else {
+                    // إذا لم يسجل دخول، يوجهه لصفحة تسجيل الدخول لكي لا يظهر كمستخدم تجريبي وتختفي البيانات
+                    alert("لم يتم العثور على جلسة تسجيل دخول نشطة، يرجى تسجيل الدخول أولاً.");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                await Promise.all([
+                    fetchWalletData(),
+                    fetchUnreadMessagesCount(),
+                    loadAds(),
+                    loadTasks()
+                ]);
+
+            } catch (err) {
+                console.error("خطأ أثناء تهيئة البيانات:", err);
+            }
+        }
+
+        async function fetchWalletData() {
+            try {
+                const { data: wallet } = await _supabase
+                    .from('wallets')
+                    .select('balance')
+                    .eq('user_id', CURRENT_USER_ID)
+                    .maybeSingle();
+
+                if (wallet) {
+                    const bfpBalance = wallet.balance || 0;
+                    const usdBalance = (bfpBalance * BFP_TO_USD_RATE).toFixed(4); 
+                    document.getElementById('user-balance-bfp').innerText = `${bfpBalance} BFP`;
+                    document.getElementById('user-balance-usd').innerText = `=$${usdBalance} دولار`;
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function fetchUnreadMessagesCount() {
+            try {
+                const { data } = await _supabase
+                    .from('user_messages')
+                    .select('id')
+                    .eq('user_id', CURRENT_USER_ID)
+                    .eq('is_read', false);
+
+                const badge = document.getElementById('msg-badge');
+                if (data && data.length > 0) {
+                    badge.innerText = data.length;
+                    badge.style.display = 'block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function loadAds() {
+            const container = document.getElementById('ads-container');
+            try {
+                const { data: ads, error: fetchError } = await _supabase.from('ads').select('*');
+                if (fetchError) throw fetchError;
+
+                const { data: watched } = await _supabase
+                    .from('ads_views')
+                    .select('ad_id, created_at')
+                    .eq('user_id', CURRENT_USER_ID);
+
+                if (!ads || ads.length === 0) {
+                    container.innerHTML = `<div class="loading-text">لا توجد إعلانات متوفرة حالياً.</div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                ads.forEach(ad => {
+                    const duration = parseInt(ad.duration_seconds) || 10;
+                    let adReward = parseFloat(ad.reward_amount) || (duration === 20 ? 0.005 : 0.001);
+                    const adTitle = ad.title || "إعلان ترويجي مميز";
+                    const adDesc = ad.description || `شاهد هذا الإعلان لمدة ${duration} ثانية لكسب النقاط مجاناً.`;
+
+                    let isLocked = false;
+                    const localWatchTime = localStorage.getItem(`watched_ad_${ad.id}`);
+                    if (localWatchTime) {
+                        const hoursPassedLocal = (new Date().getTime() - parseInt(localWatchTime)) / (1000 * 60 * 60);
+                        if (hoursPassedLocal < 24) isLocked = true;
+                    }
+
+                    if (!isLocked && watched) {
+                        const watchRecords = watched.filter(w => String(w.ad_id).trim() === String(ad.id).trim());
+                        if (watchRecords.length > 0) {
+                            const latestWatch = watchRecords.reduce((latest, current) => new Date(current.created_at) > new Date(latest.created_at) ? current : latest);
+                            const hoursPassed = (new Date().getTime() - new Date(latestWatch.created_at).getTime()) / (1000 * 60 * 60);
+                            if (hoursPassed < 24) isLocked = true;
+                        }
+                    }
+
+                    container.innerHTML += `
+                        <div class="item-card">
+                            ${isLocked ? `<div class="completed-overlay"><i class="fas fa-check-circle"></i><span>تمت المشاهدة (مغلق 24 ساعة)</span></div>` : ''}
+                            <div class="card-top">
+                                <h4 class="card-title">${adTitle}</h4>
+                                <span class="reward-badge">+${adReward.toFixed(3)} BFP</span>
+                            </div>
+                            <p class="card-desc">${adDesc}</p>
+                            <a href="${isLocked ? '#' : `viewer.html?id=${ad.id}`}" class="action-link" ${isLocked ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
+                                <i class="fas fa-eye"></i> بدء المشاهدة (${duration} ثانية)
+                            </a>
+                        </div>`;
+                });
+            } catch (err) { 
+                console.error(err);
+                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل الإعلانات.</div>'; 
+            }
+        }
+
+        async function loadTasks() {
+            const container = document.getElementById('tasks-container');
+            try {
+                // جلب كل المهام (تم إلغاء شرط التوقيت الصارم مؤقتاً لضمان ظهور البيانات وحل المشكلة)
+                const { data: tasks, error: taskErr } = await _supabase.from('tasks').select('*');
+                if (taskErr) throw taskErr;
+
+                const { data: submissions } = await _supabase
+                    .from('task_submissions')
+                    .select('task_id, status')
+                    .eq('user_id', CURRENT_USER_ID);
+
+                if (!tasks || tasks.length === 0) {
+                    container.innerHTML = `<div class="loading-text">لا توجد مهام متاحة حالياً في النظام.</div>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                tasks.forEach(task => {
+                    // العثور على الإثبات المقدم لهذه المهمة إن وجد
+                    const userSub = submissions?.find(s => String(s.task_id).trim() === String(task.id).trim());
+                    
+                    let overlayHtml = '';
+                    let isLinkDisabled = false;
+
+                    if (userSub) {
+                        isLinkDisabled = true;
+                        if (userSub.status === 'pending') {
+                            overlayHtml = `<div class="completed-overlay" style="color: #ffc107;"><i class="fas fa-clock" style="color: #ffc107; border-color: rgba(255,193,7,0.3)"></i><span>🔒 قيد المراجعة لدى الأدمن</span></div>`;
+                        } else if (userSub.status === 'approved') {
+                            overlayHtml = `<div class="completed-overlay"><i class="fas fa-check-circle"></i><span>✅ تمت الموافقة واحتساب الجائزة</span></div>`;
+                        } else if (userSub.status === 'rejected') {
+                            // إذا رُفضت، نترك العميل يضغط عليها مرة أخرى ليعيد تقديمها بشكل صحيح
+                            overlayHtml = `<div class="completed-overlay" style="color: var(--danger-red); background: rgba(0,0,0,0.6);"><i class="fas fa-times-circle" style="color: var(--danger-red); border-color: rgba(220,53,69,0.3)"></i><span>❌ رُفضت! (اضغط لتعديل الإثبات)</span></div>`;
+                            isLinkDisabled = false; 
+                        }
+                    }
+
+                    container.innerHTML += `
+                        <div class="item-card">
+                            ${overlayHtml}
+                            <div class="card-top">
+                                <h4 class="card-title">${task.title}</h4>
+                                <span class="reward-badge">+${task.points_reward || 0} BFP</span>
+                            </div>
+                            <p class="card-desc">${task.description || 'نفذ الشروط المطلوبة للمهمة وقدم الإثبات لتنال المكافأة.'}</p>
+                            <a href="${isLinkDisabled ? '#' : `task-viewer.html?id=${task.id}`}" class="action-link" ${isLinkDisabled ? 'style="pointer-events: none; opacity: 0.3;"' : ''}>
+                                <i class="fas fa-external-link-alt"></i> تفاصيل المهمة وتأكيدها
+                            </a>
+                        </div>`;
+                });
+            } catch (err) { 
+                console.error(err);
+                container.innerHTML = '<div class="loading-text">حدث خطأ أثناء تحميل المهام.</div>'; 
+            }
+        }
+
+        async function handleLogout() {
+            if (confirm("هل أنت متأكد من رغبتك في تسجيل الخروج؟")) {
+                await _supabase.auth.signOut();
+                window.location.href = "login.html";
+            }
+        }
+    </script>
 </body>
 </html>
